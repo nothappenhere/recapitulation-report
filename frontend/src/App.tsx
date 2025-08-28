@@ -1,7 +1,10 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
-import { LoginForm } from "./components/login-form";
-import { ResetPasswordForm } from "./components/reset-password-form";
-import { RegisterForm } from "./components/register-form";
+import { LoginForm } from "./pages/Login";
+import { ResetPasswordForm } from "./pages/ResetPassword";
+import { RegisterForm } from "./pages/Register";
+import { DashboardPage } from "./pages/Dashboard";
+import TicketPriceSection from "./components/ticket-price-section";
+import { AddTicketPrice } from "./components/add-ticket-price-form";
 
 function App() {
   return (
@@ -15,7 +18,9 @@ function App() {
         </Route>
 
         <Route path="/dashboard" element={<DashboardPage />}>
-          {/* <Route index element={<SectionCards />} /> */}
+          <Route index element={<Navigate to="harga-tiket" />} />
+          <Route path="harga-tiket" element={<TicketPriceSection />} />
+          <Route path="harga-tiket/add" element={<AddTicketPrice />} />
         </Route>
       </Routes>
     </BrowserRouter>

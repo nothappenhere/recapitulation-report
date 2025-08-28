@@ -283,25 +283,3 @@ export const checkAuth = async (req, res) => {
   }
 };
 
-/**
- * @desc Mendapatkan daftar user yang aktif login dalam 1 jam terakhir
- * @route GET /api/auth/active-users
- */
-export const activeUsers = async (req, res) => {
-  try {
-    const oneHoursAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
-    const users = await User.find({ lastLogin: { $gte: oneHoursAgo } });
-
-    return sendResponse(
-      res,
-      200,
-      true,
-      "Successfully acquired an active user 1 hours ago",
-      { users }
-    );
-  } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
-  }
-};

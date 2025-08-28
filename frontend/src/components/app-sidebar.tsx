@@ -1,9 +1,10 @@
-import * as React from "react"
-import { GalleryVerticalEnd } from "lucide-react"
+import * as React from "react";
+import { GalleryVerticalEnd } from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
@@ -13,186 +14,85 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import { NavUser } from "./nav-user";
+import { useUser } from "@/hooks/UserContext";
+import { Link, NavLink } from "react-router";
+import { capitalizeFirstLetter } from "@/lib/utils";
 
-// This is sample data.
-const data = {
-  navMain: [
+const navConfig = {
+  administrator: [
     {
       title: "Getting Started",
       url: "#",
       items: [
-        {
-          title: "Installation",
-          url: "#",
-        },
-        {
-          title: "Project Structure",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Building Your Application",
-      url: "#",
-      items: [
-        {
-          title: "Routing",
-          url: "#",
-        },
-        {
-          title: "Data Fetching",
-          url: "#",
-          isActive: true,
-        },
-        {
-          title: "Rendering",
-          url: "#",
-        },
-        {
-          title: "Caching",
-          url: "#",
-        },
-        {
-          title: "Styling",
-          url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
-        },
-        {
-          title: "Testing",
-          url: "#",
-        },
-        {
-          title: "Authentication",
-          url: "#",
-        },
-        {
-          title: "Deploying",
-          url: "#",
-        },
-        {
-          title: "Upgrading",
-          url: "#",
-        },
-        {
-          title: "Examples",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "API Reference",
-      url: "#",
-      items: [
-        {
-          title: "Components",
-          url: "#",
-        },
-        {
-          title: "File Conventions",
-          url: "#",
-        },
-        {
-          title: "Functions",
-          url: "#",
-        },
-        {
-          title: "next.config.js Options",
-          url: "#",
-        },
-        {
-          title: "CLI",
-          url: "#",
-        },
-        {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Architecture",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
-        },
-        {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Community",
-      url: "#",
-      items: [
-        {
-          title: "Contribution Guide",
-          url: "#",
-        },
+        { title: "Harga Tiket", url: "harga-tiket" },
+        { title: "User Management", url: "users" },
+        { title: "Course Management", url: "courses" },
       ],
     },
   ],
-}
+  user: [
+    {
+      title: "My Courses",
+      url: "#",
+      items: [
+        { title: "Enrolled Courses", url: "/courses/enrolled" },
+        { title: "Progress", url: "/courses/progress" },
+      ],
+    },
+  ],
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useUser();
+  const role = user?.role || "guest";
+  const menuData = navConfig[role] || [];
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <GalleryVerticalEnd className="size-4" />
+              <Link to="/dashboard">
+                <div className="text-sidebar-primary-foreground flex aspect-square size-9 items-center justify-center rounded-full">
+                  <img src="/img/logo-mg.png" alt="Logo Museum Geologi" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">Documentation</span>
-                  <span className="">v1.0.0</span>
+                  <span className="font-medium">EduTrack</span>
+                  <span className="text-xs">
+                    {capitalizeFirstLetter(user?.role)}
+                  </span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {data.navMain.map((item) => (
+            {menuData.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
-                  <a href={item.url} className="font-medium">
+                  <NavLink to={item.url} className="font-medium">
                     {item.title}
-                  </a>
+                  </NavLink>
                 </SidebarMenuButton>
+
                 {item.items?.length ? (
                   <SidebarMenuSub>
-                    {item.items.map((item) => (
-                      <SidebarMenuSubItem key={item.title}>
-                        <SidebarMenuSubButton asChild isActive={item.isActive}>
-                          <a href={item.url}>{item.title}</a>
-                        </SidebarMenuSubButton>
+                    {item.items.map((sub) => (
+                      <SidebarMenuSubItem key={sub.title}>
+                        <NavLink to={sub.url} end>
+                          {({ isActive }) => (
+                            <SidebarMenuSubButton asChild isActive={isActive}>
+                              <span>{sub.title}</span>
+                            </SidebarMenuSubButton>
+                          )}
+                        </NavLink>
                       </SidebarMenuSubItem>
                     ))}
                   </SidebarMenuSub>
@@ -202,7 +102,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <NavUser
+          user={
+            user || {
+              _id: "12345",
+              fullName: "Guest",
+              username: "guest123",
+              role: "guest role",
+              avatar: "/avatars/default.jpg",
+            }
+          }
+        />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

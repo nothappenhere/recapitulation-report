@@ -9,6 +9,7 @@ import hargaTiketRoutes from "./routes/hargaTiketRoutes.js";
 import stokTiketRoutes from "./routes/stokTiketRoutes.js";
 import kodeTiketRoutes from "./routes/kodeTiketRoutes.js";
 import penjualanTiketRoutes from "./routes/penjualanTiketRoutes.js";
+import transaksiRoutes from "./routes/transaksiRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -30,6 +31,7 @@ app.use("/api/harga-tiket", hargaTiketRoutes);
 app.use("/api/stok-tiket", stokTiketRoutes);
 app.use("/api/kode-tiket", kodeTiketRoutes);
 app.use("/api/penjualan-tiket", penjualanTiketRoutes);
+app.use("/api/transaksi", transaksiRoutes);
 
 connectDB().then(() => {
   const PORT = process.env.PORT || 5000;

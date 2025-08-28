@@ -59,7 +59,7 @@ export const updateKodeTiketStatus = async (req, res) => {
 };
 
 export const buyTicket = async (req, res) => {
-  const { golongan, jumlah } = req.body;
+  const { userId, golongan, jumlah } = req.body;
 
   try {
     if (!golongan || !jumlah || jumlah <= 0) {
@@ -72,29 +72,45 @@ export const buyTicket = async (req, res) => {
       return sendResponse(res, 400, false, "Stok tiket tidak mencukupi");
     }
 
-    // ambil tiket yang available sesuai jumlah
-    const tickets = await KodeTiket.find({ golongan, status: "available" })
-      .limit(jumlah);
+    // ambil harga satuan dari HargaTiket
+    const harga = await HargaTiket.findOne({ golongan });
+    if (!harga) {
+      return sendResponse(res, 400, false, "Harga tiket untuk golongan ini belum diatur");
+    }
 
+    // ambil tiket yang available sesuai jumlah
+    const tickets = await KodeTiket.find({ golongan, status: "available" }).limit(jumlah);
     if (tickets.length < jumlah) {
       return sendResponse(res, 400, false, "Jumlah tiket available kurang");
     }
 
-    // update status tiket menjadi sold
+    // update status tiket jadi sold
     const ids = tickets.map((t) => t._id);
     await KodeTiket.updateMany(
       { _id: { $in: ids } },
       { $set: { status: "sold" } }
     );
 
-    // update stok tiket
+    // update stok
     stok.jumlah_tiket -= jumlah;
     await stok.save();
 
+    // hitung total harga
+    const totalHarga = jumlah * harga.harga_satuan;
+
+    // simpan transaksi
+    const transaksi = new TransaksiTiket({
+      user: userId || null,
+      golongan,
+      jumlah,
+      kode_tiket: tickets.map((t) => t.kode),
+      total_harga: totalHarga,
+      status_transaksi: "success",
+    });
+    await transaksi.save();
+
     return sendResponse(res, 200, true, "Pembelian berhasil", {
-      purchased: jumlah,
-      tickets: tickets.map((t) => t.kode), // balikin kode tiketnya
-      sisa_stok: stok.jumlah_tiket,
+      transaksi,
     });
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

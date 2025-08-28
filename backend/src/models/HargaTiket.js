@@ -3,13 +3,13 @@ import mongoose from "mongoose";
 // 1. Creata a Schema
 const hargaTiketSchema = new mongoose.Schema(
   {
-    golongan: {
+    group: {
       type: String,
       enum: ["Pelajar", "Umum", "Asing", "Khusus"],
       required: true,
       unique: true,
     },
-    harga_satuan: {
+    unitPrice: {
       type: Number,
       required: true,
     },

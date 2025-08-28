@@ -9,11 +9,10 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/lib/axios";
 
-export function RegisterForm({
+export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,21 +29,16 @@ export function RegisterForm({
         return;
       }
 
-      const response = await api.post("/auth/register", {
-        fullName,
-        username,
-        password,
-        role: "user",
-      });
+      const response = await api.post("/auth/login", { username, password });
       const data = response.data.data?.user;
 
-      toast.success(`${response.data.message}.`);
-      navigate("/auth/login");
+      toast.success(`Welcome, ${data.fullName}.`);
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
       const message = err.response?.data?.message
         ? `${err.response.data.message}!`
-        : "Register failed, please try again.";
+        : "Login failed, please try again.";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -57,34 +51,13 @@ export function RegisterForm({
         <div className={cn("flex flex-col gap-6", className)} {...props}>
           <Card className="overflow-hidden p-0">
             <CardContent className="grid p-0 md:grid-cols-2">
-              <div className="bg-muted relative hidden md:block">
-                <img
-                  src="/placeholder.svg"
-                  alt="Image"
-                  className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-                />
-              </div>
-
               <form className="p-6 md:p-8" onSubmit={(e) => handleSubmit(e)}>
                 <div className="flex flex-col gap-8">
                   <div className="flex flex-col items-center text-center">
-                    <h1 className="text-2xl font-bold">Create account</h1>
+                    <h1 className="text-2xl font-bold">Welcome back</h1>
                     <p className="text-muted-foreground text-balance">
-                      Enter your personal information to create an account.
+                      Login to your account
                     </p>
-                  </div>
-
-                  {/* Full Name Field */}
-                  <div className="grid gap-3">
-                    <Label htmlFor="full-name">Full Name</Label>
-                    <Input
-                      id="full-name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                    />
                   </div>
 
                   {/* Username Field */}
@@ -102,7 +75,16 @@ export function RegisterForm({
 
                   {/* Password Field */}
                   <div className="grid gap-3 relative">
-                    <Label htmlFor="password">Password</Label>
+                    <div className="flex items-center">
+                      <Label htmlFor="password">Password</Label>
+                      <Link
+                        to="/auth/reset-password"
+                        className="ml-auto text-sm underline-offset-2 hover:underline"
+                      >
+                        Forgot your password?
+                      </Link>
+                    </div>
+
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
@@ -112,7 +94,7 @@ export function RegisterForm({
                       required
                     />
 
-                    <span className="absolute top-10 right-10 size-2 flex items-center text-neutral-600">
+                    <span className="absolute top-[45px] right-10 size-2 flex items-center text-neutral-600">
                       <Button
                         variant={"link"}
                         type="button"
@@ -131,7 +113,7 @@ export function RegisterForm({
                   </div>
 
                   <Button type="submit" className="w-full">
-                    {loading ? "Loading..." : "Create account"}
+                    {loading ? "Loading..." : "Log in"}
                   </Button>
 
                   <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -141,24 +123,26 @@ export function RegisterForm({
                   </div>
 
                   <div className="text-center text-sm">
-                    Already have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link
-                      to="/auth/login"
+                      to="/auth/register"
                       className="underline underline-offset-4"
                     >
-                      Log in
+                      Sign up
                     </Link>
                   </div>
                 </div>
               </form>
+
+              <div className="bg-muted relative hidden md:block">
+                <img
+                  src="/img/bg-education.jpg"
+                  alt="Image"
+                  className="absolute inset-0 h-full w-full object-cover object-center dark:brightness-[0.2] dark:grayscale"
+                />
+              </div>
             </CardContent>
           </Card>
-
-          {/* Footer */}
-          <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-            By clicking continue, you agree to our{" "}
-            <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-          </div>
         </div>
       </div>
     </div>

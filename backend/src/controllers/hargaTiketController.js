@@ -14,22 +14,45 @@ export const getAllTicketPrice = async (req, res) => {
   }
 };
 
-export const createTicketPrice = async (req, res) => {
-  const { golongan, harga_satuan } = req.body;
+export const getTicketPriceById = async (req, res) => {
+  const { id } = req.params;
 
   try {
-    if (!golongan || !harga_satuan) {
+    const ticketPrice = await HargaTiket.findById(id);
+    if (!ticketPrice) {
+      return sendResponse(res, 404, false, "Ticket price not found");
+    }
+
+    return sendResponse(
+      res,
+      200,
+      true,
+      `Successfully get Ticket Price with ID ${id}`,
+      { ticketPrice }
+    );
+  } catch (err) {
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
+  }
+};
+
+export const createTicketPrice = async (req, res) => {
+  const { group, unitPrice } = req.body;
+
+  try {
+    if (!group || !unitPrice) {
       return sendResponse(res, 400, false, "All fields are required");
     }
 
-    const ticketPrice = new HargaTiket({ golongan, harga_satuan });
+    const ticketPrice = new HargaTiket({ group, unitPrice });
     await ticketPrice.save();
 
     return sendResponse(
       res,
       201,
       true,
-      `Successfully create Ticket Price for golongan ${golongan}`,
+      `Successfully create Ticket Price for group ${group}`,
       {
         ticketPrice,
       }
@@ -43,7 +66,7 @@ export const createTicketPrice = async (req, res) => {
 
 export const updateTicketPrice = async (req, res) => {
   const { id } = req.params;
-  const { golongan, harga_satuan } = req.body;
+  const { group, unitPrice } = req.body;
 
   try {
     const ticketPrice = await HargaTiket.findById(id);
@@ -52,8 +75,8 @@ export const updateTicketPrice = async (req, res) => {
     }
 
     // update only if provided
-    if (golongan !== undefined) ticketPrice.golongan = golongan;
-    if (harga_satuan !== undefined) ticketPrice.harga_satuan = harga_satuan;
+    if (group !== undefined) ticketPrice.group = group;
+    if (unitPrice !== undefined) ticketPrice.unitPrice = unitPrice;
     await ticketPrice.save();
 
     return sendResponse(
