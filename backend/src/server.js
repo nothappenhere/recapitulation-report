@@ -4,7 +4,10 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
 import { connectDB } from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
 import hargaTiketRoutes from "./routes/hargaTiketRoutes.js";
+import stokTiketRoutes from "./routes/stokTiketRoutes.js";
+import kodeTiketRoutes from "./routes/kodeTiketRoutes.js";
 import penjualanTiketRoutes from "./routes/penjualanTiketRoutes.js";
 
 dotenv.config();
@@ -22,7 +25,10 @@ app.use(express.json()); // Parse JSON body
 app.use(express.urlencoded({ extended: false }));
 
 // routes
+app.use("/api/auth", authRoutes);
 app.use("/api/harga-tiket", hargaTiketRoutes);
+app.use("/api/stok-tiket", stokTiketRoutes);
+app.use("/api/kode-tiket", kodeTiketRoutes);
 app.use("/api/penjualan-tiket", penjualanTiketRoutes);
 
 connectDB().then(() => {

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-const HargaTiketSchema = new mongoose.Schema(
+// 1. Creata a Schema
+const hargaTiketSchema = new mongoose.Schema(
   {
     golongan: {
       type: String,
@@ -13,7 +14,8 @@ const HargaTiketSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true } // createdAt & updatedAt
 );
 
-export default mongoose.model("HargaTiket", HargaTiketSchema);
+// 2. Create a Model based on the Schema
+export const HargaTiket = mongoose.model("HargaTiket", hargaTiketSchema);

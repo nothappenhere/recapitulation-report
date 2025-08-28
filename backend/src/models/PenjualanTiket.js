@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-const PenjualanDetailSchema = new mongoose.Schema(
+// 1. Creata a Schema
+const penjualanDetailSchema = new mongoose.Schema(
   {
     golongan: {
       type: String,
@@ -19,23 +20,28 @@ const PenjualanDetailSchema = new mongoose.Schema(
   { _id: false }
 );
 
-const PenjualanTiketSchema = new mongoose.Schema(
+// 1. Creata a Schema
+const penjualanTiketSchema = new mongoose.Schema(
   {
+    tanggal_kunjungan: {
+      type: Date,
+      required: true,
+    },
     bulan: {
       type: String,
       enum: [
-        "January",
-        "February",
-        "March",
+        "Januari",
+        "Februari",
+        "Maret",
         "April",
         "Mei",
-        "June",
-        "July",
-        "August",
+        "Juni",
+        "Juli",
+        "Agustus",
         "September",
-        "October",
+        "Oktober",
         "November",
-        "December",
+        "Desember",
       ],
       required: true,
     },
@@ -45,18 +51,25 @@ const PenjualanTiketSchema = new mongoose.Schema(
     },
     total_pengunjung: {
       type: Number,
+      required: true,
       default: 0,
     },
     total_pendapatan: {
       type: Number,
+      required: true,
       default: 0,
     },
     detail: {
-      type: [PenjualanDetailSchema], // array of subdocuments
+      type: [penjualanDetailSchema], // array of subdocuments
+      required: true,
       default: [],
     },
   },
-  { timestamps: true }
+  { timestamps: true } // createdAt & updatedAt
 );
 
-export default mongoose.model("PenjualanTiket", PenjualanTiketSchema);
+// 2. Create a Model based on the Schema
+export const PenjualanTiket = mongoose.model(
+  "PenjualanTiket",
+  penjualanTiketSchema
+);
