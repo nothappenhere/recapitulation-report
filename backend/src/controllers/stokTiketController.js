@@ -16,15 +16,15 @@ export const getAllStockTicket = async (req, res) => {
 };
 
 export const createStockTicket = async (req, res) => {
-  const { golongan, jumlah_tiket } = req.body;
+  const { group, totalTicket } = req.body;
 
   try {
-    if (!golongan || !jumlah_tiket) {
+    if (!group || !totalTicket) {
       return sendResponse(res, 400, false, "All fields are required");
     }
 
     // Simpan stok tiket
-    const stockTicket = new StokTiket({ golongan, jumlah_tiket });
+    const stockTicket = new StokTiket({ group, totalTicket });
     await stockTicket.save();
 
     // Tentukan prefix golongan
@@ -34,14 +34,14 @@ export const createStockTicket = async (req, res) => {
       Asing: "A",
       Khusus: "K",
     };
-    const prefix = prefixMap[golongan];
+    const prefix = prefixMap[group];
 
     // Generate kode tiket
     const kodeTiketDocs = [];
-    for (let i = 1; i <= jumlah_tiket; i++) {
+    for (let i = 1; i <= totalTicket; i++) {
       kodeTiketDocs.push({
         kode: `${i}${prefix}`,
-        golongan,
+        group,
         stokTiket: stockTicket._id,
         status: "available",
       });
@@ -52,10 +52,10 @@ export const createStockTicket = async (req, res) => {
       res,
       201,
       true,
-      `Successfully created Stock Ticket for golongan ${golongan}`,
+      `Successfully created Stock Ticket for golongan ${group}`,
       {
         stockTicket,
-        totalGenerated: jumlah_tiket,
+        totalGenerated: totalTicket,
       }
     );
   } catch (err) {
@@ -67,7 +67,7 @@ export const createStockTicket = async (req, res) => {
 
 export const updateStockTicket = async (req, res) => {
   const { id } = req.params;
-  const { jumlah_tiket } = req.body;
+  const { totalTicket } = req.body;
 
   try {
     const stockTicket = await StokTiket.findById(id);
@@ -75,7 +75,7 @@ export const updateStockTicket = async (req, res) => {
       return sendResponse(res, 404, false, "Stock Ticket not found");
     }
 
-    if (jumlah_tiket) {
+    if (totalTicket) {
       // Hapus semua kode tiket lama
       await KodeTiket.deleteMany({ stokTiket: stockTicket._id });
 
@@ -86,20 +86,20 @@ export const updateStockTicket = async (req, res) => {
         Asing: "A",
         Khusus: "K",
       };
-      const prefix = prefixMap[stockTicket.golongan];
+      const prefix = prefixMap[stockTicket.group];
 
       const kodeTiketDocs = [];
-      for (let i = 1; i <= jumlah_tiket; i++) {
+      for (let i = 1; i <= totalTicket; i++) {
         kodeTiketDocs.push({
           kode: `${i}${prefix}`,
-          golongan: stockTicket.golongan,
+          group: stockTicket.group,
           stokTiket: stockTicket._id,
           status: "available",
         });
       }
       await KodeTiket.insertMany(kodeTiketDocs);
 
-      stockTicket.jumlah_tiket = jumlah_tiket;
+      stockTicket.totalTicket = totalTicket;
     }
 
     await stockTicket.save();
@@ -108,7 +108,7 @@ export const updateStockTicket = async (req, res) => {
       res,
       200,
       true,
-      `Successfully updated Stock Ticket for golongan ${stockTicket.golongan}`,
+      `Successfully updated Stock Ticket for golongan ${stockTicket.group}`,
       { stockTicket }
     );
   } catch (err) {
@@ -140,7 +140,7 @@ export const deleteStockTicket = async (req, res) => {
       res,
       200,
       true,
-      `Successfully deleted Stock Ticket for golongan ${stockTicket.golongan}`,
+      `Successfully deleted Stock Ticket for golongan ${stockTicket.group}`,
       {
         deletedStock: stockTicket,
         deletedTicketCount: deletedTickets.deletedCount, // jumlah tiket yang ikut terhapus

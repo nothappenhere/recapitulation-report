@@ -15,13 +15,12 @@ import {
 } from "@/components/ui/sidebar";
 import { UserProvider } from "@/hooks/UserContext";
 import { slugToTitle } from "@/lib/stringFormatter";
-import { capitalizeFirstLetter } from "@/lib/utils";
 import { Link, Outlet, useLocation } from "react-router";
 
 export function DashboardPage() {
   const location = useLocation();
-  const firstPath = location.pathname.split("/").filter(Boolean).shift();
-  const lastPath = location.pathname.split("/").filter(Boolean).pop();
+  const allPaths = location.pathname.split("/").filter(Boolean);
+  const paths = allPaths[0] === "dashboard" ? allPaths.slice(1) : allPaths;
 
   return (
     <UserProvider>
@@ -35,20 +34,35 @@ export function DashboardPage() {
               <Separator orientation="vertical" className="mr-2 h-4" />
               <Breadcrumb>
                 <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
+                  {/* Always show Dashboard */}
+                  <BreadcrumbItem>
                     <BreadcrumbLink asChild>
-                      <Link to={`/${firstPath}`}>Dashboard</Link>
+                      <Link to="/dashboard">Dashboard</Link>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
 
-                  {!location.pathname.endsWith("dashboard") && (
-                    <>
-                      <BreadcrumbSeparator className="hidden md:block" />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage>{slugToTitle(lastPath)}</BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </>
-                  )}
+                  {/* Render path segments as breadcrumb */}
+                  {paths.map((segment, index) => {
+                    const isLast = index === paths.length - 1;
+                    const pathTo = paths.slice(0, index + 1).join("/");
+
+                    return (
+                      <div key={segment} className="flex items-center gap-2">
+                        <BreadcrumbItem>
+                          <BreadcrumbSeparator className="hidden md:block mt-0.5" />
+                          {isLast ? (
+                            <BreadcrumbPage>
+                              {slugToTitle(segment)}
+                            </BreadcrumbPage>
+                          ) : (
+                            <BreadcrumbLink asChild>
+                              <Link to={pathTo}>{slugToTitle(segment)}</Link>
+                            </BreadcrumbLink>
+                          )}
+                        </BreadcrumbItem>
+                      </div>
+                    );
+                  })}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>

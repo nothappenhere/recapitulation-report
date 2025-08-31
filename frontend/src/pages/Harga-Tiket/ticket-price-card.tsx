@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SquarePen, Trash2 } from "lucide-react";
-import { formatRupiah } from "@/lib/formatRupiah";
+import { formatRupiah } from "@/lib/formatter";
 
 function TicketPriceCard({ ticketPrice, onEdit, onDelete }) {
   return (

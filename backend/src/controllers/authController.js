@@ -1,30 +1,36 @@
 import bcrypt from "bcrypt";
-
 import { User } from "../models/User.js";
 import { sendResponse } from "../utils/response.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 
 /**
- * @desc Get all users with pagination (limit & page dari query)
- * @route GET /api/auth/
+ * @desc Login user → generate JWT token & simpan di cookie
+ * @route POST /api/auth/login
  */
-export const getAllUsers = async (req, res) => {
+export const login = async (req, res) => {
+  const { username, password } = req.body;
+
   try {
-    const page = parseInt(req.query.page) || 1; // default page 1
-    const limit = parseInt(req.query.limit) || 10; // default 10 items per page
-    const skip = (page - 1) * limit;
+    const user = await User.findOne({ username });
+    if (!user) {
+      return sendResponse(res, 400, false, "Invalid credentials");
+    }
 
-    const totalUsers = await User.countDocuments();
-    const users = await User.find()
-      .sort({ createdAt: 1 })
-      .skip(skip)
-      .limit(limit);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return sendResponse(res, 400, false, "Invalid credentials");
+    }
 
-    return sendResponse(res, 200, true, `Successful get users page ${page}`, {
-      users,
-      totalUsers,
-      currentPage: page,
-      totalPages: Math.ceil(totalUsers / limit),
+    generateTokenAndSetCookie(res, user._id);
+
+    user.lastLogin = new Date();
+    await user.save();
+
+    return sendResponse(res, 200, true, "Logged in successfully", {
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
     });
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
@@ -34,89 +40,7 @@ export const getAllUsers = async (req, res) => {
 };
 
 /**
- * @desc Get detail user berdasarkan ID
- * @route GET /api/auth/user/:id
- */
-export const getUserById = async (req, res) => {
-  const id = req.params.id;
-
-  try {
-    const userWithId = await User.findById(id);
-    if (!userWithId) {
-      return sendResponse(res, 404, false, `User with id ${id} not found`);
-    }
-
-    return sendResponse(res, 200, true, `User with id ${id} found`, {
-      user: { ...userWithId._doc, password: undefined },
-    });
-  } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
-  }
-};
-
-/**
- * @desc Update data user berdasarkan ID (nama, email, username, role, password)
- * @route PUT /api/auth/user/:id
- */
-export const updateUserById = async (req, res) => {
-  const id = req.params.id;
-  const { fullName, username, email, password, role } = req.body;
-
-  try {
-    const userAlreadyExists = await User.findById(id);
-    if (!userAlreadyExists) {
-      return sendResponse(res, 404, false, "User not found");
-    }
-
-    const updateData = {};
-    if (fullName) updateData.fullName = fullName;
-    if (username) updateData.username = username;
-    if (email) updateData.email = email;
-    if (role) updateData.role = role;
-    if (password) {
-      updateData.password = await bcrypt.hash(password, 10);
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
-
-    return sendResponse(res, 200, true, "User updated successfully", {
-      user: updatedUser,
-    });
-  } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
-  }
-};
-
-/**
- * @desc Delete user berdasarkan ID
- * @route DELETE /api/auth/user/:id
- */
-export const deleteUserById = async (req, res) => {
-  const id = req.params.id;
-
-  try {
-    const userAlreadyExists = await User.findById(id);
-    if (!userAlreadyExists) {
-      return sendResponse(res, 404, false, "User not found");
-    }
-
-    await User.findByIdAndDelete(id);
-    return sendResponse(res, 200, true, "User deleted successfully");
-  } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
-  }
-};
-
-/**
- * @desc Register / signup user baru (role: administrator | educator | user)
+ * @desc Register / signup user baru (role: administrator | user)
  * @route POST /api/auth/signup
  */
 export const register = async (req, res) => {
@@ -159,42 +83,6 @@ export const register = async (req, res) => {
 };
 
 /**
- * @desc Login user → generate JWT token & simpan di cookie
- * @route POST /api/auth/login
- */
-export const login = async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return sendResponse(res, 400, false, "Invalid credentials");
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return sendResponse(res, 400, false, "Invalid credentials");
-    }
-
-    generateTokenAndSetCookie(res, user._id);
-
-    user.lastLogin = new Date();
-    await user.save();
-
-    return sendResponse(res, 200, true, "Logged in successfully", {
-      user: {
-        ...user._doc,
-        password: undefined,
-      },
-    });
-  } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
-  }
-};
-
-/**
  * @desc Logout user → hapus token dari cookie
  * @route POST /api/auth/logout
  */
@@ -210,10 +98,10 @@ export const logout = async (req, res) => {
 };
 
 /**
- * @desc Verifikasi apakah email sudah terdaftar di database
- * @route POST /api/auth/verify-email
+ * @desc Verifikasi apakah akun sudah terdaftar di database
+ * @route POST /api/auth/verify-account
  */
-export const verifyUsername = async (req, res) => {
+export const verifyAccount = async (req, res) => {
   const { username } = req.body;
 
   try {
@@ -224,7 +112,7 @@ export const verifyUsername = async (req, res) => {
       });
     }
 
-    return sendResponse(res, 200, true, "Registered user", { exists: true });
+    return sendResponse(res, 200, true, "Registered user", { exist: true });
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
       detail: err.message,
@@ -233,7 +121,7 @@ export const verifyUsername = async (req, res) => {
 };
 
 /**
- * @desc Reset password user berdasarkan email
+ * @desc Reset password user 
  * @route PUT /api/auth/reset-password
  */
 export const resetPassword = async (req, res) => {
@@ -282,4 +170,3 @@ export const checkAuth = async (req, res) => {
     });
   }
 };
-

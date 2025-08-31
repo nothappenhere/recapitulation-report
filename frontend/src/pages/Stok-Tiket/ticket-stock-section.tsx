@@ -1,64 +1,62 @@
 import api from "@/lib/axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import TicketPriceCard from "./ticket-price-card";
-import TicketPriceDialog from "./ticket-price-dialog";
-import { CircleQuestionMark } from "lucide-react";
-import { Button } from "./ui/button";
+import TicketStockCard from "./ticket-stock-card";
+import TicketStockDialog from "./ticket-stock-dialog";
+import { TicketStockAlert } from "./ticket-stock-alert";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
-import { TicketPriceAlert } from "./ticket-price-alert";
 
-export default function TicketPriceSection() {
-  const [ticketPrices, setTicketPrices] = useState([]);
-  const [selectedTicketPrice, setSelectedTicketPrice] = useState(null);
+export default function TicketStockSection() {
+  const [ticketStocks, setTicketStocks] = useState([]);
+  const [selectedTicketStock, setSelectedTicketStock] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    async function fetchTicketPrices() {
+    async function fetchTicketStocks() {
       try {
         setLoading(true);
-        const res = await api.get(`/harga-tiket`);
-        const { ticketPrice } = res.data.data;
+        const res = await api.get(`/stok-tiket`);
+        const { stockTicket } = res.data.data;
 
-        setTicketPrices(ticketPrice);
+        setTicketStocks(stockTicket);
       } catch (err) {
-        toast.error("Gagal memuat data harga tiket.");
+        toast.error("Gagal memuat data stok tiket.");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchTicketPrices();
+    fetchTicketStocks();
   }, []);
 
   async function handleUpdateTicketPrice(e, updatedData) {
     e.preventDefault();
 
-    if (!selectedTicketPrice?._id) {
+    if (!selectedTicketStock?._id) {
       toast.error("Data tiket tidak ditemukan.");
       return;
     }
 
     try {
       const res = await api.put(
-        `/harga-tiket/${selectedTicketPrice._id}`,
+        `/stok-tiket/${selectedTicketStock._id}`,
         updatedData
       );
 
-      const updatedTicket = res.data.data.ticketPrice;
-      toast.success("Harga tiket berhasil diperbarui.");
-      setTicketPrices((prev) =>
+      const updatedTicket = res.data.data.stockTicket;
+      toast.success("Stok tiket berhasil diperbarui.");
+      setTicketStocks((prev) =>
         prev.map((tp) =>
-          tp._id === selectedTicketPrice._id ? updatedTicket : tp
+          tp._id === selectedTicketStock._id ? updatedTicket : tp
         )
       );
 
       setOpenEdit(false);
-      setSelectedTicketPrice(null);
+      setSelectedTicketStock(null);
     } catch (err) {
-      console.error(err);
       toast.error("Gagal memperbarui harga tiket.");
     }
   }
@@ -66,23 +64,23 @@ export default function TicketPriceSection() {
   async function handleDeleteTicketPrice(e) {
     e.preventDefault();
 
-    if (!selectedTicketPrice?._id) {
+    if (!selectedTicketStock?._id) {
       toast.error("Data tiket tidak ditemukan.");
       return;
     }
 
     try {
-      await api.delete(`/harga-tiket/${selectedTicketPrice._id}`);
+      await api.delete(`/stok-tiket/${selectedTicketStock._id}`);
 
-      toast.success("Harga tiket berhasil dihapus.");
-      setTicketPrices((prev) =>
-        prev.filter((tp) => tp._id !== selectedTicketPrice._id)
+      toast.success("Stok tiket berhasil dihapus.");
+      setTicketStocks((prev) =>
+        prev.filter((tp) => tp._id !== selectedTicketStock._id)
       );
 
       setOpenDelete(false);
-      setSelectedTicketPrice(null);
+      setSelectedTicketStock(null);
     } catch (err) {
-      toast.error("Gagal menghapus harga tiket.");
+      toast.error("Gagal menghapus stok tiket.");
     }
   }
 
@@ -94,16 +92,16 @@ export default function TicketPriceSection() {
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 md:gap-6">
             <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-              {ticketPrices.map((ticketPrice) => (
-                <TicketPriceCard
-                  key={ticketPrice._id}
-                  ticketPrice={ticketPrice}
+              {ticketStocks.map((ticketStock) => (
+                <TicketStockCard
+                  key={ticketStock._id}
+                  ticketStock={ticketStock}
                   onEdit={() => {
-                    setSelectedTicketPrice(ticketPrice);
+                    setSelectedTicketStock(ticketStock);
                     setOpenEdit(true);
                   }}
                   onDelete={() => {
-                    setSelectedTicketPrice(ticketPrice);
+                    setSelectedTicketStock(ticketStock);
                     setOpenDelete(true);
                   }}
                 />
@@ -111,25 +109,25 @@ export default function TicketPriceSection() {
             </div>
 
             <div className="flex items-center justify-center">
-              <Button className="mt-2.5" disabled={ticketPrices.length === 4}>
-                <Link to="add">Tambah Harga</Link>
+              <Button className="mt-2.5" disabled={ticketStocks.length === 4}>
+                <Link to="add">Tambah Stok Tiket</Link>
               </Button>
             </div>
 
-            {selectedTicketPrice && (
+            {selectedTicketStock && (
               <>
-                <TicketPriceDialog
+                <TicketStockDialog
                   open={openEdit}
                   setOpen={setOpenEdit}
                   onUpdate={handleUpdateTicketPrice}
-                  ticketPrice={selectedTicketPrice}
+                  ticketStock={selectedTicketStock}
                 />
 
-                <TicketPriceAlert
+                <TicketStockAlert
                   open={openDelete}
                   setOpen={setOpenDelete}
                   onDelete={handleDeleteTicketPrice}
-                  ticketPrice={selectedTicketPrice}
+                  ticketPrice={selectedTicketStock}
                 />
               </>
             )}

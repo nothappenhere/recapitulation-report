@@ -1,5 +1,4 @@
 import * as React from "react";
-import { GalleryVerticalEnd } from "lucide-react";
 
 import {
   Sidebar,
@@ -27,7 +26,7 @@ const navConfig = {
       url: "#",
       items: [
         { title: "Harga Tiket", url: "harga-tiket" },
-        { title: "User Management", url: "users" },
+        { title: "Stok Tiket", url: "stok-tiket" },
         { title: "Course Management", url: "courses" },
       ],
     },
@@ -37,7 +36,7 @@ const navConfig = {
       title: "My Courses",
       url: "#",
       items: [
-        { title: "Enrolled Courses", url: "/courses/enrolled" },
+        { title: "Reservasi", url: "reservation" },
         { title: "Progress", url: "/courses/progress" },
       ],
     },

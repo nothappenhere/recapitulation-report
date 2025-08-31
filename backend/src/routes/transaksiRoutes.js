@@ -5,6 +5,7 @@ import {
   deleteTransaction,
   getRekapPenjualan,
   getRekapTahunan,
+  getRekapPerProvinsi,
 } from "../controllers/transaksiController.js";
 
 const router = express.Router();
@@ -18,7 +19,8 @@ router.get("/:id", getTransactionById);
 // DELETE transaksi (opsional, kalau perlu admin bisa hapus data)
 router.delete("/:id", deleteTransaction);
 
-router.get("/rekap", getRekapPenjualan);      // 🔹 per bulan
+router.get("/rekap", getRekapPenjualan); // 🔹 per bulan
 router.get("/rekap-tahunan", getRekapTahunan); // 🔹 per tahun
+router.get("/rekap-provinsi", getRekapPerProvinsi);
 
 export default router;

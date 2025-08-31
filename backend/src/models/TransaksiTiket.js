@@ -3,9 +3,34 @@ import mongoose from "mongoose";
 // 1. Creata a Schema
 const transaksiTiketSchema = new mongoose.Schema(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // relasi ke User (opsional kalau ada sistem user)
+    nomor_reservasi: {
+      type: Number,
+    },
+    nomor_penjualan: {
+      type: Number,
+    },
+    nama_rombongan: {
+      type: String,
+      required: false,
+    },
+    nama_pemesan: {
+      type: String,
+      required: false,
+    },
+    alamat: {
+      type: String,
+      required: false,
+    },
+    provinsi: {
+      type: String,
+      required: false,
+    },
+    kabupaten_kota: {
+      type: String,
+      required: false,
+    },
+    kecamatan: {
+      type: String,
       required: false,
     },
     golongan: {
@@ -13,7 +38,7 @@ const transaksiTiketSchema = new mongoose.Schema(
       enum: ["Pelajar", "Umum", "Asing", "Khusus"],
       required: true,
     },
-    jumlah: {
+    jumlah_personil: {
       type: Number,
       required: true,
     },

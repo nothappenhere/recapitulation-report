@@ -8,7 +8,7 @@ const kodeTiketSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    golongan: {
+    group: {
       type: String,
       enum: ["Pelajar", "Umum", "Asing", "Khusus"],
       required: true,

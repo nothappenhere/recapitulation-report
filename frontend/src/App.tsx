@@ -1,10 +1,20 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
-import { LoginForm } from "./pages/Login";
-import { ResetPasswordForm } from "./pages/ResetPassword";
-import { RegisterForm } from "./pages/Register";
+
+// Auth Page
+import LoginForm from "./pages/Auth/Login";
+import RegisterForm from "./pages/Auth/Register";
+import ResetPasswordForm from "./pages/Auth/ResetPassword";
 import { DashboardPage } from "./pages/Dashboard";
-import TicketPriceSection from "./components/ticket-price-section";
-import { AddTicketPrice } from "./components/add-ticket-price-form";
+
+import TicketPriceSection from "./pages/Harga-Tiket/ticket-price-section";
+import { AddTicketPrice } from "./pages/Harga-Tiket/ticket-price-form";
+import TicketStockSection from "./pages/Stok-Tiket/ticket-stock-section";
+import { AddTicketStock } from "./pages/Stok-Tiket/ticket-stock-form";
+import TransaksiForm from "./pages/TransaksiForm";
+// import WeeklyReport from "./pages/WeeklyReport";
+import WeeklyReportPage from "./pages/WeeklyReportPage";
+import ReservationForm from "./pages/Reservation-Form";
+import ReservationTable from "./pages/Reservations/ReservationTable";
 
 function App() {
   return (
@@ -18,9 +28,19 @@ function App() {
         </Route>
 
         <Route path="/dashboard" element={<DashboardPage />}>
-          <Route index element={<Navigate to="harga-tiket" />} />
+          {/* <Route index element={<Navigate to="harga-tiket" />} /> */}
           <Route path="harga-tiket" element={<TicketPriceSection />} />
           <Route path="harga-tiket/add" element={<AddTicketPrice />} />
+
+          <Route path="stok-tiket" element={<TicketStockSection />} />
+          <Route path="stok-tiket/add" element={<AddTicketStock />} />
+
+          <Route path="transaksi" element={<TransaksiForm />} />
+
+          <Route path="laporan-mingguan" element={<WeeklyReportPage />} />
+
+          <Route path="reservation" element={<ReservationTable />} />
+          <Route path="reservation/add" element={<ReservationForm />} />
         </Route>
       </Routes>
     </BrowserRouter>

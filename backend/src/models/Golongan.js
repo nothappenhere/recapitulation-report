@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
-const hargaTiketSchema = new mongoose.Schema({
-  group: {
+const golonganSchema = new mongoose.Schema({
+  category: {
     type: String,
     enum: ["Pelajar", "Umum", "Asing", "Khusus"],
     required: true,
@@ -12,4 +12,4 @@ const hargaTiketSchema = new mongoose.Schema({
   },
 });
 
-export const HargaTiket = mongoose.model("HargaTiket", hargaTiketSchema);
+export const Golongan = mongoose.model("Golongan", golonganSchema);

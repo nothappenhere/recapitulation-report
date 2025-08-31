@@ -38,21 +38,21 @@ export const getTicketPriceById = async (req, res) => {
 };
 
 export const createTicketPrice = async (req, res) => {
-  const { group, unitPrice } = req.body;
+  const { category, unitPrice } = req.body;
 
   try {
-    if (!group || !unitPrice) {
+    if (!category || !unitPrice) {
       return sendResponse(res, 400, false, "All fields are required");
     }
 
-    const ticketPrice = new HargaTiket({ group, unitPrice });
+    const ticketPrice = new HargaTiket({ category, unitPrice });
     await ticketPrice.save();
 
     return sendResponse(
       res,
       201,
       true,
-      `Successfully create Ticket Price for group ${group}`,
+      `Successfully create Ticket Price for category ${category}`,
       {
         ticketPrice,
       }
@@ -66,16 +66,15 @@ export const createTicketPrice = async (req, res) => {
 
 export const updateTicketPrice = async (req, res) => {
   const { id } = req.params;
-  const { group, unitPrice } = req.body;
+  const { category, unitPrice } = req.body;
 
   try {
     const ticketPrice = await HargaTiket.findById(id);
     if (!ticketPrice) {
-      return sendResponse(res, 404, false, "Ticket price not found");
+      return sendResponse(res, 404, false, "Ticket Price not found");
     }
 
-    // update only if provided
-    if (group !== undefined) ticketPrice.group = group;
+    if (category !== undefined) ticketPrice.category = category;
     if (unitPrice !== undefined) ticketPrice.unitPrice = unitPrice;
     await ticketPrice.save();
 
