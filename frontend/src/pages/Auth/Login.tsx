@@ -1,15 +1,15 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, type LoginFormValues } from "@/schemas/loginSchema";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import api from "@/lib/axios";
+import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
+import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Link, useNavigate } from "react-router";
-import { useState } from "react";
-import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
-import api from "@/lib/axios";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -18,40 +18,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import type { AxiosError } from "axios";
 
-const formSchema = z.object({
-  username: z.string().trim().lowercase().nonempty("Username cannot be empty!"),
-  password: z
-    .string()
-    .trim()
-    .nonempty("Password cannot be empty!")
-    .min(8, "Password must be at least 8 characters long!")
-    .regex(/[0-9]/, "Passwords must contain at least 1 number!")
-    .regex(/[a-z]/, "Passwords must contain at least 1 lowercase letter!")
-    .regex(/[A-Z]/, "Passwords must contain at least 1 uppercase letter!")
-    .regex(
-      /[^A-Za-z0-9]/,
-      "Passwords must contain at least 1 special character!"
-    ),
-});
-
-export default function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       username: "",
       password: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: LoginFormValues): Promise<void> => {
     setLoading(true);
 
     try {
@@ -59,21 +41,22 @@ export default function LoginForm({
         username: values.username,
         password: values.password,
       });
+
       const { user } = response.data.data;
       form.reset();
 
-      toast.success(`Welcome, ${user.fullName}.`);
+      toast.success(`Selamat datang, ${user.fullName}.`);
       navigate("/dashboard");
     } catch (err) {
-      console.error(err);
-      const message = err.response?.data?.message
-        ? `${err.response.data.message}!`
+      const error = err as AxiosError<{ message?: string }>;
+      const message = error.response?.data?.message
+        ? `${error.response.data.message}!`
         : "Login failed, please try again.";
       toast.error(message);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
@@ -208,3 +191,5 @@ export default function LoginForm({
     </div>
   );
 }
+
+export default LoginForm;

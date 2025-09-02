@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { UserProvider } from "@/hooks/UserContext";
 import { slugToTitle } from "@/lib/stringFormatter";
+import React from "react";
 import { Link, Outlet, useLocation } from "react-router";
 
 export function DashboardPage() {
@@ -40,16 +41,14 @@ export function DashboardPage() {
                       <Link to="/dashboard">Dashboard</Link>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
-
                   {/* Render path segments as breadcrumb */}
                   {paths.map((segment, index) => {
                     const isLast = index === paths.length - 1;
                     const pathTo = paths.slice(0, index + 1).join("/");
-
                     return (
                       <div key={segment} className="flex items-center gap-2">
+                        <BreadcrumbSeparator className="hidden md:block mt-0.5" />
                         <BreadcrumbItem>
-                          <BreadcrumbSeparator className="hidden md:block mt-0.5" />
                           {isLast ? (
                             <BreadcrumbPage>
                               {slugToTitle(segment)}

@@ -7,37 +7,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { SquarePen, Trash2 } from "lucide-react";
 import { formatRupiah } from "@/lib/formatter";
+import { ColumnsActions } from "../ReservationsPage/column-actions";
+import { useNavigate } from "react-router";
 
 function TicketPriceCard({ ticketPrice, onEdit, onDelete }) {
+  const navigate = useNavigate();
+
   return (
     <Card className="@container/card hover:bg-neutral-100">
       <CardHeader>
         <CardDescription>
-          Tiket untuk golongan{" "}
-          <Badge variant={"outline"}>{ticketPrice.group}</Badge>
+          Harga Tiket golongan{" "}
+          <Badge variant={"outline"}>{ticketPrice.category}</Badge>
         </CardDescription>
         <CardTitle className="text-2xl font-bold tabular-nums @[250px]/card:text-3xl">
           {formatRupiah(ticketPrice.unitPrice)}
         </CardTitle>
 
-        <CardAction className="flex gap-2">
-          <Badge
-            onClick={() => onEdit(true)}
-            className="py-1.5 bg-blue-500 hover:bg-blue-600 text-white hover:cursor-pointer"
-          >
-            <SquarePen />
-            Edit
-          </Badge>
-
-          <Badge
-            onClick={() => onDelete(true)}
-            className="py-1.5 bg-rose-500 hover:bg-rose-600 text-white hover:cursor-pointer"
-          >
-            <Trash2 />
-            Hapus
-          </Badge>
+        <CardAction className="border rounded-sm">
+          <ColumnsActions
+            item={ticketPrice}
+            getId={(tp) => tp._id || ""}
+            onEdit={(tp) => navigate(`/dashboard/ticket-price/${tp._id}`)}
+            onDelete={onDelete}
+          />
         </CardAction>
       </CardHeader>
 

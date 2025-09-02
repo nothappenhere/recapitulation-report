@@ -1,4 +1,3 @@
-// utils/response.js
 export const sendResponse = (
   res,
   statusCode,
@@ -15,5 +14,11 @@ export const sendResponse = (
     errors,
     path: res.req.originalUrl,
     timestamp: new Date().toISOString(),
+  });
+};
+
+export const sendError = (res, err) => {
+  sendResponse(res, 500, false, "Internal server error", null, {
+    detail: err.message,
   });
 };

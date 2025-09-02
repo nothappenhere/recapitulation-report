@@ -30,13 +30,14 @@ app.use(express.urlencoded({ extended: false }));
 
 // routes
 app.use("/api/auth", authRoutes);
-app.use("/api/harga-tiket", hargaTiketRoutes);
+
 app.use("/api/stok-tiket", stokTiketRoutes);
 app.use("/api/kode-tiket", kodeTiketRoutes);
 app.use("/api/penjualan-tiket", penjualanTiketRoutes);
 app.use("/api/transaksi", transaksiRoutes);
 app.use("/api/laporan", WeeklyReportRoutes);
 
+app.use("/api/ticket-price", hargaTiketRoutes);
 app.use("/api/wilayah", wilayahRoutes);
 app.use("/api/reservations", reservationRoutes);
 

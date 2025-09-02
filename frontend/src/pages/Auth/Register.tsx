@@ -7,7 +7,6 @@ import { useState } from "react";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/lib/axios";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -18,27 +17,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-const formSchema = z.object({
-  fullName: z
-    .string()
-    .trim()
-    .nonempty("Full name cannot be empty!")
-    .min(3, "Full name must be at least 3 characters long!"),
-  username: z.string().trim().lowercase().nonempty("Username cannot be empty!"),
-  password: z
-    .string()
-    .trim()
-    .nonempty("Password cannot be empty!")
-    .min(8, "Password must be at least 8 characters long!")
-    .regex(/[0-9]/, "Passwords must contain at least 1 number!")
-    .regex(/[a-z]/, "Passwords must contain at least 1 lowercase letter!")
-    .regex(/[A-Z]/, "Passwords must contain at least 1 uppercase letter!")
-    .regex(
-      /[^A-Za-z0-9]/,
-      "Passwords must contain at least 1 special character!"
-    ),
-});
+import {
+  registerSchema,
+  type RegisterFormValues,
+} from "@/schemas/registerSchema";
+import type { AxiosError } from "axios";
 
 export default function RegisterForm({
   className,
@@ -48,8 +31,8 @@ export default function RegisterForm({
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       fullName: "",
       username: "",
@@ -57,7 +40,7 @@ export default function RegisterForm({
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: RegisterFormValues): Promise<void> => {
     setLoading(true);
 
     try {
@@ -71,15 +54,15 @@ export default function RegisterForm({
       toast.success(`${response.data.message}.`);
       navigate("/auth/login");
     } catch (err) {
-      console.error(err);
-      const message = err.response?.data?.message
-        ? `${err.response.data.message}!`
+      const error = err as AxiosError<{ message?: string }>;
+      const message = error.response?.data?.message
+        ? `${error.response.data.message}!`
         : "Register failed, please try again.";
       toast.error(message);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">

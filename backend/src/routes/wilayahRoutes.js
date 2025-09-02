@@ -1,59 +1,23 @@
 import express from "express";
-import axios from "axios";
+import {
+  getProvinces,
+  getRegenciesOrCities,
+  getDistricts,
+  getVillages,
+} from "../controllers/wilayahController.js";
 
 const router = express.Router();
 
-// Get all provinces
-router.get("/provinces", async (req, res) => {
-  try {
-    const response = await axios.get("https://wilayah.id/api/provinces.json");
-    res.json(response.data);
-  } catch (error) {
-    console.error("Failed to fetch provinces:", error.message);
-    res.status(500).json({ error: "Failed to fetch provinces" });
-  }
-});
+// Mendapatkan data semua provinsi yang ada di Indonesia.
+router.get("/provinces", getProvinces);
 
-// Get regencies by province code
-router.get("/regencies", async (req, res) => {
-  try {
-    const { provinceCode } = req.query;
-    const response = await axios.get(
-      `https://wilayah.id/api/regencies/${provinceCode}.json`
-    );
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch regencies" });
-  }
-});
+// Mendapatkan data kabupaten atau kota dari provinsi.
+router.get("/regencies/:provinceCode", getRegenciesOrCities);
 
-// Get districts by regency code
-router.get("/districts", async (req, res) => {
-  try {
-    const { provinceCode } = req.query;
-    const { regencyCode } = req.query;
-    const response = await axios.get(
-      `https://wilayah.id/api/districts/${provinceCode}.${regencyCode}.json`
-    );
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch districts" });
-  }
-});
+// Mendapatkan data kecamatan dari kabupaten atau kota.
+router.get("/districts/:provinceCode/:regencyCode", getDistricts);
 
-// Get villages by district code
-router.get("/villages", async (req, res) => {
-  try {
-    const { provinceCode } = req.query;
-    const { regencyCode } = req.query;
-    const { districtCode } = req.query;
-    const response = await axios.get(
-      `https://wilayah.id/api/villages/${provinceCode}.${regencyCode}.${districtCode}.json`
-    );
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch villages" });
-  }
-});
+// Mendapatkan data kelurahan atau desa dari kecamatan.
+router.get("/villages/:provinceCode/:regencyCode/:districtCode", getVillages);
 
 export default router;

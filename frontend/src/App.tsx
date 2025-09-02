@@ -6,15 +6,16 @@ import RegisterForm from "./pages/Auth/Register";
 import ResetPasswordForm from "./pages/Auth/ResetPassword";
 import { DashboardPage } from "./pages/Dashboard";
 
-import TicketPriceSection from "./pages/Harga-Tiket/ticket-price-section";
-import { AddTicketPrice } from "./pages/Harga-Tiket/ticket-price-form";
+import TicketPriceTable from "./pages/TicketPage/TicketPriceTable";
+import { AddTicketPrice } from "./pages/TicketPage/ticket-price-form";
 import TicketStockSection from "./pages/Stok-Tiket/ticket-stock-section";
 import { AddTicketStock } from "./pages/Stok-Tiket/ticket-stock-form";
 import TransaksiForm from "./pages/TransaksiForm";
 // import WeeklyReport from "./pages/WeeklyReport";
 import WeeklyReportPage from "./pages/WeeklyReportPage";
-import ReservationForm from "./pages/Reservation-Form";
-import ReservationTable from "./pages/Reservations/ReservationTable";
+
+import ReservationTable from "./pages/ReservationsPage/ReservationTable";
+import ReservationForm from "./pages/ReservationsPage/Reservation-Form";
 
 function App() {
   return (
@@ -29,8 +30,12 @@ function App() {
 
         <Route path="/dashboard" element={<DashboardPage />}>
           {/* <Route index element={<Navigate to="harga-tiket" />} /> */}
-          <Route path="harga-tiket" element={<TicketPriceSection />} />
-          <Route path="harga-tiket/add" element={<AddTicketPrice />} />
+
+          <Route path="ticket-price">
+            <Route index element={<TicketPriceTable />} />
+            <Route path="add" element={<AddTicketPrice />} />
+            <Route path=":ticketId" element={<AddTicketPrice />} />
+          </Route>
 
           <Route path="stok-tiket" element={<TicketStockSection />} />
           <Route path="stok-tiket/add" element={<AddTicketStock />} />
@@ -39,8 +44,11 @@ function App() {
 
           <Route path="laporan-mingguan" element={<WeeklyReportPage />} />
 
-          <Route path="reservation" element={<ReservationTable />} />
-          <Route path="reservation/add" element={<ReservationForm />} />
+          <Route path="reservation">
+            <Route index element={<ReservationTable />} />
+            <Route path="add" element={<ReservationForm />} />
+            <Route path=":reservationId" element={<ReservationForm />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

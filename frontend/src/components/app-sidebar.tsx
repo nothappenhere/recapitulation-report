@@ -36,8 +36,9 @@ const navConfig = {
       title: "My Courses",
       url: "#",
       items: [
+        { title: "Harga Tiket", url: "ticket-price" },
         { title: "Reservasi", url: "reservation" },
-        { title: "Progress", url: "/courses/progress" },
+        { title: "Walk in", url: "walk-in" },
       ],
     },
   ],

@@ -1,29 +1,38 @@
 import api from "@/lib/axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import TicketPriceCard from "./ticket-price-card";
+import TicketPriceCard from "./TicketPriceCard";
 import TicketPriceDialog from "./ticket-price-dialog";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
 import { TicketPriceAlert } from "./ticket-price-alert";
+import type { AxiosError } from "axios";
+import type { TicketPriceFormValues } from "@/schemas/ticketPriceSchema";
+import AlertDelete from "@/components/AlertDelete";
 
-export default function TicketPriceSection() {
+function TicketPriceTable() {
   const [ticketPrices, setTicketPrices] = useState([]);
+
   const [selectedTicketPrice, setSelectedTicketPrice] = useState(null);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+
+  const [isEditOpen, setEditOpen] = useState(false);
+  const [isDeleteOpen, setDeleteOpen] = useState(false);
+  const [selectedItem, setSelectedItem] =
+    useState<TicketPriceFormValues | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchTicketPrices() {
+      setLoading(true);
       try {
-        setLoading(true);
-        const res = await api.get(`/harga-tiket`);
-        const { ticketPrice } = res.data.data;
-
-        setTicketPrices(ticketPrice);
+        const res = await api.get(`/ticket-price`);
+        setTicketPrices(res.data.data);
       } catch (err) {
-        toast.error("Gagal memuat data harga tiket.");
+        const error = err as AxiosError<{ message?: string }>;
+        console.error("Gagal mengambil data:", error.message);
+        toast.error("Gagal mengambil data harga tiket");
       } finally {
         setLoading(false);
       }
@@ -32,8 +41,8 @@ export default function TicketPriceSection() {
     fetchTicketPrices();
   }, []);
 
-  async function handleUpdateTicketPrice(e, updatedData) {
-    e.preventDefault();
+  async function handleUpdateTicketPrice(updatedData) {
+    if (!selectedItem) return;
 
     if (!selectedTicketPrice?._id) {
       toast.error("Data tiket tidak ditemukan.");
@@ -62,73 +71,73 @@ export default function TicketPriceSection() {
     }
   }
 
-  async function handleDeleteTicketPrice(e) {
-    e.preventDefault();
-
-    if (!selectedTicketPrice?._id) {
-      toast.error("Data tiket tidak ditemukan.");
-      return;
-    }
+  async function confirmDelete() {
+    if (!selectedItem) return;
 
     try {
-      await api.delete(`/harga-tiket/${selectedTicketPrice._id}`);
-
-      toast.success("Harga tiket berhasil dihapus.");
+      await api.delete(`/ticket-price/${selectedItem._id}`);
       setTicketPrices((prev) =>
-        prev.filter((tp) => tp._id !== selectedTicketPrice._id)
+        prev.filter((tp) => tp._id !== selectedItem._id)
       );
-
-      setOpenDelete(false);
-      setSelectedTicketPrice(null);
+      toast.success("Harga tiket berhasil dihapus");
     } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      console.error("Gagal menghapus:", error.message);
       toast.error("Gagal menghapus harga tiket.");
+    } finally {
+      setSelectedItem(null);
+      setDeleteOpen(false);
     }
   }
 
   return (
     <>
-      {loading && <p className="text-center">Loading data...</p>}
+      {loading && <p className="text-center">Loading...</p>}
 
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 md:gap-6">
             <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+              {/* Ticket Price Card */}
               {ticketPrices.map((ticketPrice) => (
                 <TicketPriceCard
                   key={ticketPrice._id}
                   ticketPrice={ticketPrice}
                   onEdit={() => {
-                    setSelectedTicketPrice(ticketPrice);
-                    setOpenEdit(true);
+                    setSelectedItem(ticketPrice);
+                    setEditOpen(true);
                   }}
                   onDelete={() => {
-                    setSelectedTicketPrice(ticketPrice);
-                    setOpenDelete(true);
+                    setSelectedItem(ticketPrice);
+                    setDeleteOpen(true);
                   }}
                 />
               ))}
             </div>
 
             <div className="flex items-center justify-center">
-              <Button className="mt-2.5" disabled={ticketPrices.length === 4}>
-                <Link to="add">Tambah Harga</Link>
+              <Button
+                asChild
+                className="mt-2.5"
+                disabled={ticketPrices.length === 4}
+              >
+                <Link to="add">Add Ticket Price</Link>
               </Button>
             </div>
 
-            {selectedTicketPrice && (
+            {selectedItem && (
               <>
                 <TicketPriceDialog
-                  open={openEdit}
-                  setOpen={setOpenEdit}
-                  onUpdate={handleUpdateTicketPrice}
-                  ticketPrice={selectedTicketPrice}
+                  open={isEditOpen}
+                  setOpen={setEditOpen}
+                  // onUpdate={handleUpdateTicketPrice}
+                  ticketPrice={selectedItem}
                 />
 
-                <TicketPriceAlert
-                  open={openDelete}
-                  setOpen={setOpenDelete}
-                  onDelete={handleDeleteTicketPrice}
-                  ticketPrice={selectedTicketPrice}
+                <AlertDelete
+                  open={isDeleteOpen}
+                  setOpen={setDeleteOpen}
+                  onDelete={confirmDelete}
                 />
               </>
             )}
@@ -138,3 +147,5 @@ export default function TicketPriceSection() {
     </>
   );
 }
+
+export default TicketPriceTable;

@@ -34,11 +34,13 @@ import { Link } from "react-router";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  addTitle: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  addTitle,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -69,17 +71,20 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
+      {/* Table Header Control */}
       <div className="flex items-center justify-between py-4">
+        {/* Search Filters */}
         <Input
-          placeholder="Search by Reservation Number, Date, or Visit Time..."
+          placeholder="Search by Reservation Number, Date, Visit Time, or Anything..."
           value={globalFilter}
           onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-md"
         />
 
         <div className="flex justify-evenly items-center gap-3">
+          {/* Add Button */}
           <Button asChild>
-            <Link to={"add"}>Add Reservation</Link>
+            <Link to={"add"}>{addTitle}</Link>
           </Button>
 
           {/* Dropdown column visibility */}
@@ -166,16 +171,18 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {/* Pagination Control */}
+      {/* Table Footer Controls */}
       <div className="flex justify-between space-x-2 py-4 px-2">
+        {/* Selection Control */}
         <div className="text-muted-foreground flex-1 text-sm">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
 
+        {/* Pagination Control */}
         <div className="flex justify-center items-center">
           <Button
-            variant="outline"
+            variant={!table.getCanPreviousPage() ? "outline" : "default"}
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
@@ -193,7 +200,7 @@ export function DataTable<TData, TValue>({
             </span>
           </div>
           <Button
-            variant="outline"
+            variant={!table.getCanNextPage() ? "outline" : "default"}
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}

@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  reservationSchema,
+  reservationFormSchema,
   type ReservationFormValues,
 } from "@/schemas/reservationSchema";
 import {
@@ -41,106 +41,139 @@ import { id } from "date-fns/locale";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { formatRupiah } from "@/lib/formatter";
+import api from "@/lib/axios";
+import { useNavigate, useParams } from "react-router";
+import { z } from "zod";
+import toast from "react-hot-toast";
 
 export default function ReservationForm() {
+  const { reservationId } = useParams();
   const [provinces, setProvinces] = useState([]);
   const [regencies, setRegencies] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [villages, setVillages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const form = useForm<ReservationFormValues>({
-    resolver: zodResolver(reservationSchema),
+  const form = useForm<z.infer<typeof reservationFormSchema>>({
+    resolver: zodResolver(reservationFormSchema),
     defaultValues: {
-      reservationNumber: 0,
-      salesNumber: 0,
+      category: undefined,
       reservationDate: new Date(),
       visitingHour: "",
-      category: "",
-      groupName: "",
-      groupMemberTotal: 0,
       ordererName: "",
       phoneNumber: "",
       address: "",
+      groupName: "",
+      groupMemberTotal: 0,
       province: "",
-      districtOrCity: "",
-      subdistrict: "",
+      regencyOrCity: "",
+      district: "",
       village: "",
       paymentAmount: 0,
       downPayment: 0,
+      changeAmount: 0,
+      statusPayment: "Unpaid",
     },
   });
 
   const provinceCode = form.watch("province");
-  const regencyCode = form.watch("districtOrCity");
-  const districtCode = form.watch("subdistrict");
+  const regencyCode = form.watch("regencyOrCity");
+  const districtCode = form.watch("district");
 
-  // 1. Fetch data provinsi saat load:
+  //* 1. Fetch data provinsi saat load:
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/wilayah/provinces")
-      .then((res) => setProvinces(res.data.data))
-      .catch((err) => console.error("Failed to fetch provinces:", err));
+    const getProvinces = async () => {
+      try {
+        const response = await api.get("/wilayah/provinces");
+        setProvinces(response.data?.data?.data);
+      } catch (err) {
+        const error = err as AxiosError<{ message?: string }>;
+        console.error("Failed to fetch provinces:", error.message);
+        toast.error("Failed to fetch provinces, please refresh the page.");
+      }
+    };
+
+    getProvinces();
   }, []);
 
-  // 2. Fetch kabupaten/kota berdasarkan provinsi:
+  //* 2. Fetch kabupaten/kota berdasarkan provinsi:
   useEffect(() => {
     if (!provinceCode) return;
 
-    axios
-      .get(
-        `http://localhost:5000/api/wilayah/regencies?provinceCode=${provinceCode}`
-      )
-      .then((res) => {
-        setRegencies(res.data.data);
+    const getRegenciesOrCities = async () => {
+      try {
+        const response = await api.get(`/wilayah/regencies/${provinceCode}`);
+        setRegencies(response.data?.data?.data);
         setDistricts([]);
         setVillages([]);
-        form.setValue("districtOrCity", "");
-        form.setValue("subdistrict", "");
+        form.setValue("regencyOrCity", "");
+        form.setValue("district", "");
         form.setValue("village", "");
-      })
-      .catch((err) => console.error("Failed to fetch regencies:", err));
-  }, [provinceCode]);
+      } catch (err) {
+        const error = err as AxiosError<{ message?: string }>;
+        console.error("Failed to fetch regencies:", error.message);
+        toast.error("Failed to fetch regencies, please refresh the page.");
+      }
+    };
 
-  // 3. Fetch kecamatan berdasarkan kabupaten/kota:
+    getRegenciesOrCities();
+  }, [form, provinceCode]);
+
+  //* 3. Fetch kecamatan berdasarkan kabupaten/kota:
   useEffect(() => {
+    if (!provinceCode) return;
     if (!regencyCode) return;
 
-    const regencyCodeOnly = regencyCode.split(".")[1];
+    const getDistricts = async () => {
+      const regencyCodeOnly = regencyCode.split(".")[1];
 
-    axios
-      .get(
-        `http://localhost:5000/api/wilayah/districts?provinceCode=${provinceCode}&regencyCode=${regencyCodeOnly}`
-      )
-      .then((res) => {
-        setDistricts(res.data.data);
+      try {
+        const response = await api.get(
+          `/wilayah/districts/${provinceCode}/${regencyCodeOnly}`
+        );
+        setDistricts(response.data?.data?.data);
         setVillages([]);
-        form.setValue("subdistrict", "");
+        form.setValue("district", "");
         form.setValue("village", "");
-      })
-      .catch((err) => console.error("Failed to fetch districts:", err));
-  }, [regencyCode]);
+      } catch (err) {
+        const error = err as AxiosError<{ message?: string }>;
+        console.error("Failed to fetch districts:", error.message);
+        toast.error("Failed to fetch districts, please refresh the page.");
+      }
+    };
 
-  // 4. Fetch desa berdasarkan kecamatan:
+    getDistricts();
+  }, [form, provinceCode, regencyCode]);
+
+  //* 4. Fetch desa berdasarkan kecamatan:
   useEffect(() => {
+    if (!provinceCode) return;
+    if (!regencyCode) return;
     if (!districtCode) return;
 
     const parts = districtCode.split(".");
     const regencyCodeOnly = parts[1];
     const districtCodeOnly = parts[2];
 
-    axios
-      .get(
-        `http://localhost:5000/api/wilayah/villages?provinceCode=${provinceCode}&regencyCode=${regencyCodeOnly}&districtCode=${districtCodeOnly}`
-      )
-      .then((res) => {
-        setVillages(res.data.data);
+    const getVillages = async () => {
+      try {
+        const response = await api.get(
+          `/wilayah/villages/${provinceCode}/${regencyCodeOnly}/${districtCodeOnly}`
+        );
+        setVillages(response.data?.data?.data);
         form.setValue("village", "");
-      })
-      .catch((err) => console.error("Failed to fetch villages:", err));
-  }, [districtCode]);
+      } catch (err) {
+        const error = err as AxiosError<{ message?: string }>;
+        console.error("Failed to fetch villages:", error.message);
+        toast.error("Failed to fetch villages, please refresh the page.");
+      }
+    };
+
+    getVillages();
+  }, [districtCode, form, provinceCode, regencyCode]);
 
   // Harga per kategori
   const pricePerCategory = {
@@ -152,7 +185,6 @@ export default function ReservationForm() {
 
   const category = form.watch("category");
   const groupMemberTotal = form.watch("groupMemberTotal");
-
   useEffect(() => {
     if (
       !category ||
@@ -165,41 +197,86 @@ export default function ReservationForm() {
     const total = price * groupMemberTotal;
 
     form.setValue("paymentAmount", total);
-  }, [category, groupMemberTotal]);
+  }, [form, category, groupMemberTotal]);
 
+  const paymentAmount = form.watch("paymentAmount");
+  const downPayment = form.watch("downPayment");
+  useEffect(() => {
+    const payment = paymentAmount || 0;
+    const down = downPayment || 0;
+
+    // Hitung uang kembalian
+    const change = down > payment ? down - payment : 0;
+    form.setValue("changeAmount", change);
+
+    // Tentukan status pembayaran
+    let status: "Paid" | "DP" | "Unpaid" = "Unpaid";
+
+    if (down >= payment && payment > 0) {
+      status = "Paid";
+    } else if (down > 0 && down < payment) {
+      status = "DP";
+    }
+
+    form.setValue("statusPayment", status);
+  }, [form, paymentAmount, downPayment]);
+
+  // 🔹 Fetch reservation by ID kalau sedang edit
+  useEffect(() => {
+    if (!reservationId) return;
+
+    const fetchReservation = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          `http://localhost:5000/api/reservations/${reservationId}`
+        );
+        const data = res.data;
+
+        // reset form dengan data dari server
+        form.reset({
+          ...data,
+          reservationDate: data.reservationDate
+            ? new Date(data.reservationDate)
+            : new Date(),
+        });
+      } catch (err) {
+        console.error("Failed to fetch reservation:", err);
+        alert("Data reservasi tidak ditemukan");
+        navigate("/reservations"); // balik ke list kalau gagal
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReservation();
+  }, [reservationId]);
+
+  //* Submit handler: create atau update
   const onSubmit = async (values: ReservationFormValues) => {
     try {
       setLoading(true);
-      console.log("Submitting form data:", values);
 
-      const response = await fetch("http://localhost:5000/api/reservations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-
-      if (!response.ok) {
-        // Bisa ambil pesan error dari response body juga kalau ada
-        const errorData = await response.json().catch(() => null);
-        const errorMessage = errorData?.message || "Failed to submit form";
-        throw new Error(errorMessage);
+      if (reservationId) {
+        // Update reservasi
+        await axios.put(
+          `http://localhost:5000/api/reservations/${reservationId}`,
+          values
+        );
+        alert("Reservasi berhasil diperbarui!");
+      } else {
+        // Tambah reservasi baru
+        const response = await api.post("/reservations", values);
+        console.log(response);
+        alert(
+          `Reservasi berhasil ditambahkan! No: ${response.data.data.reservationNumber}`
+        );
       }
 
-      const result = await response.json();
-      console.log("Server response:", result);
-
-      // Contoh: reset form setelah submit sukses
-      form.reset();
-
-      // Contoh: tampilkan notifikasi sukses (gunakan library notifikasi jika ada)
-      alert("Reservasi berhasil disimpan!");
+      navigate("/dashboard/reservation"); // balik ke list setelah submit
     } catch (error) {
-      console.error("Error submitting form:", error);
-      alert(
-        `Gagal submit form: ${error instanceof Error ? error.message : error}`
-      );
+      console.error(error);
+      alert("Gagal simpan reservasi!");
     } finally {
       setLoading(false);
     }
@@ -208,55 +285,23 @@ export default function ReservationForm() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-xl font-bold">Welcome back</CardTitle>
+        <CardTitle className="text-xl font-bold">
+          {reservationId ? "Edit Reservasi" : "Buat Reservasi Baru"}
+        </CardTitle>
         <CardDescription className="text-muted-foreground text-balance">
-          Login with your Apple or Google account
+          {reservationId
+            ? `Ubah detail reservasi dengan ID: ${reservationId}`
+            : "Isi formulir di bawah untuk membuat reservasi baru."}
         </CardDescription>
       </CardHeader>
+
       <Separator />
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
+              {/* ROW 1 */}
               <div className="grid grid-cols-3 gap-3">
-                {/* Nomor Reservasi Field */}
-                <FormField
-                  control={form.control}
-                  name="reservationNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nomor Reservasi</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Masukan nomor reservasi"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Nomor Penjualan Field */}
-                <FormField
-                  control={form.control}
-                  name="salesNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nomor Penjualan</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Masukan nomor penjualan"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 {/* Kategori Field */}
                 <FormField
                   control={form.control}
@@ -284,9 +329,7 @@ export default function ReservationForm() {
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 {/* Tanggal Reservasi Field */}
                 <FormField
                   control={form.control}
@@ -298,7 +341,7 @@ export default function ReservationForm() {
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
-                              variant={"outline"}
+                              variant="outline"
                               className={cn(
                                 "border-black rounded-sm pl-3 text-left font-normal",
                                 !field.value && "text-muted-foreground"
@@ -307,7 +350,9 @@ export default function ReservationForm() {
                               {field.value ? (
                                 format(field.value, "PPP", { locale: id })
                               ) : (
-                                <span>Pilih tanggal</span>
+                                <span className="text-muted-foreground">
+                                  Pilih tanggal reservasi
+                                </span>
                               )}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-75" />
                             </Button>
@@ -319,7 +364,7 @@ export default function ReservationForm() {
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
+                              date < new Date() || date < new Date("1900-01-01")
                             }
                             captionLayout="dropdown"
                           />
@@ -341,9 +386,9 @@ export default function ReservationForm() {
                         <div className="relative">
                           <Input
                             type="time"
-                            step="1"
+                            step="-1"
                             placeholder="Masukan waktu kunjungan"
-                            className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:size-4 [&::-webkit-calendar-picker-indicator]:opacity-75 [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:top-1/2 [&::-webkit-calendar-picker-indicator]:-translate-y-1/2 [&::-webkit-calendar-picker-indicator]:appearance-none"
+                            className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:size-4 [&::-webkit-calendar-picker-indicator]:right-2.5 [&::-webkit-calendar-picker-indicator]:top-1/2 [&::-webkit-calendar-picker-indicator]:-translate-y-1/2 [&::-webkit-calendar-picker-indicator]:appearance-none"
                             {...field}
                           />
                         </div>
@@ -354,6 +399,7 @@ export default function ReservationForm() {
                 />
               </div>
 
+              {/* ROW 2 */}
               <div className="grid grid-cols-4 gap-3">
                 {/* Nama Pemesan Field */}
                 <FormField
@@ -459,6 +505,7 @@ export default function ReservationForm() {
                 />
               </div>
 
+              {/* ROW 3 */}
               <div className="grid gap-3">
                 <FormField
                   control={form.control}
@@ -478,6 +525,7 @@ export default function ReservationForm() {
                 />
               </div>
 
+              {/* ROW 4 */}
               <div className="grid grid-cols-4 gap-3">
                 {/* Provinsi Field */}
                 <FormField
@@ -512,7 +560,7 @@ export default function ReservationForm() {
                 {/* Kabupaten/Kota Field */}
                 <FormField
                   control={form.control}
-                  name="districtOrCity"
+                  name="regencyOrCity"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Kabupaten/Kota</FormLabel>
@@ -542,7 +590,7 @@ export default function ReservationForm() {
                 {/* Kecamatan Field */}
                 <FormField
                   control={form.control}
-                  name="subdistrict"
+                  name="district"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Kecamatan</FormLabel>
@@ -553,7 +601,7 @@ export default function ReservationForm() {
                       >
                         <FormControl>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih Kecamatan" />
+                            <SelectValue placeholder="Pilih kecamatan" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -583,7 +631,7 @@ export default function ReservationForm() {
                       >
                         <FormControl>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih Kelurahan/Desa" />
+                            <SelectValue placeholder="Pilih kelurahan/desa" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -600,7 +648,8 @@ export default function ReservationForm() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* ROW 5 */}
+              <div className="grid grid-cols-4 gap-3">
                 {/* Total Pembayaran Field */}
                 <FormField
                   control={form.control}
@@ -613,7 +662,7 @@ export default function ReservationForm() {
                           type="text"
                           placeholder="Masukan total pembayaran"
                           disabled
-                          value={formatRupiah(field.value || 0)} // << tampilkan dalam format Rupiah
+                          value={formatRupiah(field.value || 0)}
                           onChange={() => {}}
                         />
                       </FormControl>
@@ -633,7 +682,7 @@ export default function ReservationForm() {
                         <Input
                           type="text"
                           placeholder="Masukan uang muka"
-                          value={formatRupiah(field.value || 0)} // tampilkan hasil format
+                          value={formatRupiah(field.value || 0)}
                           onChange={(e) => {
                             // Ambil hanya angka dari input (hapus Rp dan titik)
                             const rawValue = e.target.value.replace(
@@ -648,18 +697,63 @@ export default function ReservationForm() {
                     </FormItem>
                   )}
                 />
+
+                {/* Uang Kembalian Field */}
+                <FormField
+                  control={form.control}
+                  name="changeAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Uang Kembalian</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Masukan uang kembalian"
+                          disabled
+                          value={formatRupiah(field.value || 0)}
+                          onChange={() => {}}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Status Pembayaran Field */}
+                <FormField
+                  control={form.control}
+                  name="statusPayment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status Pembayaran</FormLabel>
+                      <Input
+                        type="text"
+                        disabled
+                        value={
+                          field.value === "Paid"
+                            ? "Lunas"
+                            : field.value === "DP"
+                            ? "DP"
+                            : "Belum Bayar"
+                        }
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Submit Button */}
-              <Separator />
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin" />
                     Loading
                   </>
+                ) : reservationId ? (
+                  "Update Reservasi"
                 ) : (
-                  "Tambah reservasi"
+                  "Tambah Reservasi"
                 )}
               </Button>
             </div>

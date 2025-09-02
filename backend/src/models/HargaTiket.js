@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const hargaTiketSchema = new mongoose.Schema({
-  group: {
+  category: {
     type: String,
     enum: ["Pelajar", "Umum", "Asing", "Khusus"],
     required: true,

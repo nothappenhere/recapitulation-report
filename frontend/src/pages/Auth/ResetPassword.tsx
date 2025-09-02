@@ -14,7 +14,6 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/lib/axios";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -25,22 +24,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-const formSchema = z.object({
-  username: z.string().trim().lowercase().nonempty("Username cannot be empty!"),
-  password: z
-    .string()
-    .trim()
-    .nonempty("Password cannot be empty!")
-    .min(8, "Password must be at least 8 characters long!")
-    .regex(/[0-9]/, "Passwords must contain at least 1 number!")
-    .regex(/[a-z]/, "Passwords must contain at least 1 lowercase letter!")
-    .regex(/[A-Z]/, "Passwords must contain at least 1 uppercase letter!")
-    .regex(
-      /[^A-Za-z0-9]/,
-      "Passwords must contain at least 1 special character!"
-    ),
-});
+import { loginSchema, type LoginFormValues } from "@/schemas/loginSchema";
+import type { AxiosError } from "axios";
 
 export default function ResetPasswordForm({
   className,
@@ -51,15 +36,18 @@ export default function ResetPasswordForm({
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       username: "",
       password: "",
     },
   });
 
-  async function handleVerifyAccount(e, values: z.infer<typeof formSchema>) {
+  const handleVerifyAccount = async (
+    e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>,
+    values: LoginFormValues
+  ): Promise<void> => {
     e.preventDefault();
     setLoading(true);
 
@@ -71,17 +59,17 @@ export default function ResetPasswordForm({
       setAccountExist(response.data.data?.exist);
       toast.success("Please enter new password.");
     } catch (err) {
-      console.error(err);
-      const message = err.response?.data?.message
-        ? `${err.response.data.message}!`
+      const error = err as AxiosError<{ message?: string }>;
+      const message = error.response?.data?.message
+        ? `${error.response.data.message}!`
         : "Verify account failed, please try again.";
       toast.error(message);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: LoginFormValues): Promise<void> => {
     setLoading(true);
 
     try {
@@ -93,15 +81,15 @@ export default function ResetPasswordForm({
       toast.success(`${response.data.message}.`);
       navigate("/auth/login");
     } catch (err) {
-      console.error(err);
-      const message = err.response?.data?.message
-        ? `${err.response.data.message}!`
+      const error = err as AxiosError<{ message?: string }>;
+      const message = error.response?.data?.message
+        ? `${error.response.data.message}!`
         : "Reset password failed, please try again.";
       toast.error(message);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">

@@ -1,118 +1,144 @@
 import { HargaTiket } from "../models/HargaTiket.js";
-import { sendResponse } from "../utils/response.js";
+import { sendError, sendResponse } from "../utils/response.js";
 
-export const getAllTicketPrice = async (req, res) => {
+/**
+ * * @desc Mengambil semua data harga tiket
+ * ? Mengembalikan seluruh data harga tiket yang ada di database
+ * @route GET /api/ticket-price
+ */
+export const getTicketPrices = async (req, res) => {
   try {
-    const ticketPrice = await HargaTiket.find();
-    return sendResponse(res, 200, true, `Successful get all Ticket Price`, {
-      ticketPrice,
-    });
+    const allTicketPrices = await HargaTiket.find();
+
+    return sendResponse(
+      res,
+      200,
+      true,
+      `Berhasil mendapatakan data semua harga tiket`,
+      allTicketPrices
+    );
   } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
+    return sendError(res, err);
   }
 };
 
+/**
+ * * @desc Mengambil satu data harga tiket berdasarkan ID
+ * ? ID diambil dari parameter URL dan digunakan untuk pencarian menggunakan method findById()
+ * ! Jika data tidak ditemukan, akan mengembalikan status 404
+ * @route GET /api/ticket-price/:id
+ * @param id - ID unik dari harga tiket yang ingin diambil
+ */
 export const getTicketPriceById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const ticketPrice = await HargaTiket.findById(id);
-    if (!ticketPrice) {
-      return sendResponse(res, 404, false, "Ticket price not found");
+    const ticketPriceById = await HargaTiket.findById(id);
+    if (!ticketPriceById) {
+      return sendResponse(res, 404, false, "Data harga tiket tidak ditemukan");
     }
 
     return sendResponse(
       res,
       200,
       true,
-      `Successfully get Ticket Price with ID ${id}`,
-      { ticketPrice }
+      `Berhasil mendapatkan data harga tiket untuk ID ${id}`,
+      ticketPriceById
     );
   } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
+    return sendError(res, err);
   }
 };
 
+/**
+ * * @desc Membuat harga tiket baru
+ * ? Menyimpan data harga tiket dari request body ke database MongoDB
+ * ! Pastikan struktur data sesuai dengan schema HargaTiket agar tidak terjadi validasi error
+ * @route POST /api/ticket-price
+ */
 export const createTicketPrice = async (req, res) => {
   const { category, unitPrice } = req.body;
 
   try {
-    if (!category || !unitPrice) {
-      return sendResponse(res, 400, false, "All fields are required");
-    }
-
-    const ticketPrice = new HargaTiket({ category, unitPrice });
-    await ticketPrice.save();
+    const newTicketPrice = new HargaTiket({ category, unitPrice });
+    await newTicketPrice.save();
 
     return sendResponse(
       res,
       201,
       true,
-      `Successfully create Ticket Price for category ${category}`,
-      {
-        ticketPrice,
-      }
+      `Berhasil membuat data harga tiket baru untuk kategori ${category}`,
+      newTicketPrice
     );
   } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
+    return sendError(res, err);
   }
 };
 
-export const updateTicketPrice = async (req, res) => {
+/**
+ * * @desc Memperbarui data harga tiket berdasarkan ID
+ * ? Mengupdate dokumen harga tiket menggunakan data dari request body
+ * ! Jalankan validasi schema dengan opsi runValidators: true
+ * @route PUT /api/ticket-price/:id
+ * @param id - ID unik dari harga tiket yang ingin diperbarui
+ */
+export const updateTicketPriceById = async (req, res) => {
   const { id } = req.params;
   const { category, unitPrice } = req.body;
 
   try {
-    const ticketPrice = await HargaTiket.findById(id);
-    if (!ticketPrice) {
-      return sendResponse(res, 404, false, "Ticket Price not found");
-    }
+    const updatedTicketPrice = await HargaTiket.findByIdAndUpdate(
+      id,
+      {
+        category,
+        unitPrice,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    if (!updatedTicketPrice)
+      return sendResponse(res, 404, false, "Data harga tiket tidak ditemukan");
 
-    if (category !== undefined) ticketPrice.category = category;
-    if (unitPrice !== undefined) ticketPrice.unitPrice = unitPrice;
-    await ticketPrice.save();
+    if (category !== undefined) updatedTicketPrice.category = category;
+    if (unitPrice !== undefined) updatedTicketPrice.unitPrice = unitPrice;
+    await updatedTicketPrice.save();
 
     return sendResponse(
       res,
       200,
       true,
-      `Successfully updated Ticket Price with ID ${id}`,
-      { ticketPrice }
+      `Berhasil memperbarui data harga tiket untuk ID ${id}`,
+      updatedTicketPrice
     );
   } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
+    return sendError(res, err);
   }
 };
 
-export const deleteTicketPrice = async (req, res) => {
+/**
+ * * @desc Menghapus data harga tiket berdasarkan ID
+ * ? Menghapus dokumen harga tiket dari database jika ditemukan
+ * ! Jika ID tidak ditemukan, akan mengembalikan response 404
+ * @route DELETE /api/ticket-price/:id
+ * @param id - ID unik dari harga tiket yang ingin dihapus
+ */
+export const deleteTicketPriceById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const ticketPrice = await HargaTiket.findById(id);
-    if (!ticketPrice) {
-      return sendResponse(res, 404, false, "Ticket price not found");
-    }
-
-    await ticketPrice.deleteOne();
+    const deletedTicketPrice = await HargaTiket.findByIdAndDelete(id);
+    if (!deletedTicketPrice)
+      return sendResponse(res, 404, false, "Data harga tiket tidak ditemukan");
 
     return sendResponse(
       res,
       200,
       true,
-      `Successfully deleted Ticket Price with ID ${id}`,
-      null
+      `Berhasil menghapus data harga tiket untuk ID ${id}`
     );
   } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
-    });
+    return sendError(res, err);
   }
 };

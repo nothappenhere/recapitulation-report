@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import toast from "react-hot-toast";
 import api from "@/lib/axios";
 
@@ -28,10 +28,32 @@ export function AddTicketPrice({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { ticketId } = useParams();
   const [existingGroups, setExistingGroups] = useState([]);
   const [group, setGroup] = useState("");
   const [unitPrice, setUnitPrice] = useState();
   const navigate = useNavigate();
+
+  // 🔹 Fetch reservation by ID kalau sedang edit
+  useEffect(() => {
+    if (!ticketId) return;
+
+    const fetchTicketPrice = async () => {
+      try {
+        // setLoading(true);
+        const res = await api.get(`ticket-price/${ticketId}`);
+        const data = res.data;
+      } catch (err) {
+        console.error("Failed to fetch reservation:", err);
+        alert("Data reservasi tidak ditemukan");
+        navigate("/reservations"); // balik ke list kalau gagal
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTicketPrice();
+  }, [ticketId]);
 
   useEffect(() => {
     async function fetchExistingTicketPrices() {
