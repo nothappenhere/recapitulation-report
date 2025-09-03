@@ -46,7 +46,15 @@ export function useReservationColumns(
       cell: ({ row }) => {
         const status = row.getValue("statusPayment");
         return (
-          <Badge variant={status === "Paid" ? "success" : "destructive"}>
+          <Badge
+            variant={
+              status === "Paid"
+                ? "success"
+                : status === "DP"
+                ? "warning"
+                : "destructive"
+            }
+          >
             {row.getValue("statusPayment")}
           </Badge>
         );

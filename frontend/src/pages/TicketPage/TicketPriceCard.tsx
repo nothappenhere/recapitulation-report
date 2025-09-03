@@ -11,7 +11,7 @@ import { formatRupiah } from "@/lib/formatter";
 import { ColumnsActions } from "../ReservationsPage/column-actions";
 import { useNavigate } from "react-router";
 
-function TicketPriceCard({ ticketPrice, onEdit, onDelete }) {
+export function TicketPriceCard({ ticketPrice, onEdit, onDelete }) {
   const navigate = useNavigate();
 
   return (
@@ -21,6 +21,7 @@ function TicketPriceCard({ ticketPrice, onEdit, onDelete }) {
           Harga Tiket golongan{" "}
           <Badge variant={"outline"}>{ticketPrice.category}</Badge>
         </CardDescription>
+
         <CardTitle className="text-2xl font-bold tabular-nums @[250px]/card:text-3xl">
           {formatRupiah(ticketPrice.unitPrice)}
         </CardTitle>
@@ -28,8 +29,8 @@ function TicketPriceCard({ ticketPrice, onEdit, onDelete }) {
         <CardAction className="border rounded-sm">
           <ColumnsActions
             item={ticketPrice}
-            getId={(tp) => tp._id || ""}
-            onEdit={(tp) => navigate(`/dashboard/ticket-price/${tp._id}`)}
+            getId={(tp) => tp._id}
+            onEdit={(tp) => navigate(tp._id)}
             onDelete={onDelete}
           />
         </CardAction>
@@ -44,5 +45,3 @@ function TicketPriceCard({ ticketPrice, onEdit, onDelete }) {
     </Card>
   );
 }
-
-export default TicketPriceCard;

@@ -28,7 +28,7 @@ export function ColumnsActions<T>({
   onDelete,
 }: ColumnsActionsProps<T>) {
   return (
-    <DropdownMenu >
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="size-8 p-0">
           <span className="sr-only">Open menu</span>
@@ -56,7 +56,7 @@ export function ColumnsActions<T>({
             Edit
           </DropdownMenuItem>
         )}
-
+        
         {/* Delete */}
         {onDelete && (
           <DropdownMenuItem

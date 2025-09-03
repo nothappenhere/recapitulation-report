@@ -6,8 +6,9 @@ import RegisterForm from "./pages/Auth/Register";
 import ResetPasswordForm from "./pages/Auth/ResetPassword";
 import { DashboardPage } from "./pages/Dashboard";
 
-import TicketPriceTable from "./pages/TicketPage/TicketPriceTable";
-import { AddTicketPrice } from "./pages/TicketPage/ticket-price-form";
+import TicketPricePage from "./pages/TicketPage/TicketPricePage";
+import TicketPriceForm from "./pages/TicketPage/TicketPriceForm";
+
 import TicketStockSection from "./pages/Stok-Tiket/ticket-stock-section";
 import { AddTicketStock } from "./pages/Stok-Tiket/ticket-stock-form";
 import TransaksiForm from "./pages/TransaksiForm";
@@ -15,7 +16,7 @@ import TransaksiForm from "./pages/TransaksiForm";
 import WeeklyReportPage from "./pages/WeeklyReportPage";
 
 import ReservationTable from "./pages/ReservationsPage/ReservationTable";
-import ReservationForm from "./pages/ReservationsPage/Reservation-Form";
+import ReservationForm from "./pages/ReservationsPage/ReservationForm";
 
 function App() {
   return (
@@ -32,9 +33,9 @@ function App() {
           {/* <Route index element={<Navigate to="harga-tiket" />} /> */}
 
           <Route path="ticket-price">
-            <Route index element={<TicketPriceTable />} />
-            <Route path="add" element={<AddTicketPrice />} />
-            <Route path=":ticketId" element={<AddTicketPrice />} />
+            <Route index element={<TicketPricePage />} />
+            <Route path="add" element={<TicketPriceForm />} />
+            <Route path=":ticketId" element={<TicketPriceForm />} />
           </Route>
 
           <Route path="stok-tiket" element={<TicketStockSection />} />

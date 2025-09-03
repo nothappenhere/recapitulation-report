@@ -42,11 +42,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import axios, { AxiosError } from "axios";
-import { formatRupiah } from "@/lib/formatter";
+import { formatPhoneNumber, formatRupiah } from "@/lib/formatter";
 import api from "@/lib/axios";
 import { useNavigate, useParams } from "react-router";
 import { z } from "zod";
 import toast from "react-hot-toast";
+
+const defaultFormValues: ReservationFormValues = {
+  category: undefined,
+  reservationDate: new Date(),
+  visitingHour: "",
+  ordererName: "",
+  phoneNumber: "",
+  address: "",
+  groupName: "",
+  groupMemberTotal: 0,
+  province: "",
+  regencyOrCity: "",
+  district: "",
+  village: "",
+  paymentAmount: 0,
+  downPayment: 0,
+  changeAmount: 0,
+  statusPayment: "Unpaid",
+};
 
 export default function ReservationForm() {
   const { reservationId } = useParams();
@@ -57,26 +76,11 @@ export default function ReservationForm() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const form = useForm<z.infer<typeof reservationFormSchema>>({
+  const isEditMode = Boolean(reservationId);
+
+  const form = useForm<ReservationFormValues>({
     resolver: zodResolver(reservationFormSchema),
-    defaultValues: {
-      category: undefined,
-      reservationDate: new Date(),
-      visitingHour: "",
-      ordererName: "",
-      phoneNumber: "",
-      address: "",
-      groupName: "",
-      groupMemberTotal: 0,
-      province: "",
-      regencyOrCity: "",
-      district: "",
-      village: "",
-      paymentAmount: 0,
-      downPayment: 0,
-      changeAmount: 0,
-      statusPayment: "Unpaid",
-    },
+    defaultValues: defaultFormValues,
   });
 
   const provinceCode = form.watch("province");
@@ -183,100 +187,93 @@ export default function ReservationForm() {
     Khusus: 0,
   };
 
-  const category = form.watch("category");
-  const groupMemberTotal = form.watch("groupMemberTotal");
+  const { watch, setValue, reset } = form;
+  const category = watch("category");
+  const groupMemberTotal = watch("groupMemberTotal");
+  const paymentAmount = watch("paymentAmount");
+  const downPayment = watch("downPayment");
+
+  // Hitung otomatis total dan status pembayaran
   useEffect(() => {
-    if (
-      !category ||
-      groupMemberTotal === undefined ||
-      groupMemberTotal === null
-    )
-      return;
+    const price = (pricePerCategory[category] || 0) * (groupMemberTotal || 0);
+    setValue("paymentAmount", price);
+  }, [category, groupMemberTotal]);
 
-    const price = pricePerCategory[category] ?? 0;
-    const total = price * groupMemberTotal;
-
-    form.setValue("paymentAmount", total);
-  }, [form, category, groupMemberTotal]);
-
-  const paymentAmount = form.watch("paymentAmount");
-  const downPayment = form.watch("downPayment");
   useEffect(() => {
-    const payment = paymentAmount || 0;
-    const down = downPayment || 0;
+    const change = Math.max(0, (downPayment || 0) - (paymentAmount || 0));
+    const status: "Paid" | "DP" | "Unpaid" =
+      downPayment >= paymentAmount ? "Paid" : downPayment > 0 ? "DP" : "Unpaid";
 
-    // Hitung uang kembalian
-    const change = down > payment ? down - payment : 0;
-    form.setValue("changeAmount", change);
-
-    // Tentukan status pembayaran
-    let status: "Paid" | "DP" | "Unpaid" = "Unpaid";
-
-    if (down >= payment && payment > 0) {
-      status = "Paid";
-    } else if (down > 0 && down < payment) {
-      status = "DP";
-    }
-
-    form.setValue("statusPayment", status);
-  }, [form, paymentAmount, downPayment]);
+    setValue("changeAmount", change);
+    setValue("statusPayment", status);
+  }, [paymentAmount, downPayment]);
 
   // 🔹 Fetch reservation by ID kalau sedang edit
-  useEffect(() => {
-    if (!reservationId) return;
+ useEffect(() => {
+  if (!isEditMode) return;
 
-    const fetchReservation = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(
-          `http://localhost:5000/api/reservations/${reservationId}`
-        );
-        const data = res.data;
+  const fetchData = async () => {
+    try {
+      setLoading(true);
 
-        // reset form dengan data dari server
-        form.reset({
-          ...data,
-          reservationDate: data.reservationDate
-            ? new Date(data.reservationDate)
-            : new Date(),
-        });
-      } catch (err) {
-        console.error("Failed to fetch reservation:", err);
-        alert("Data reservasi tidak ditemukan");
-        navigate("/reservations"); // balik ke list kalau gagal
-      } finally {
-        setLoading(false);
-      }
-    };
+      // fetch reservation data
+      const res = await api.get(`/reservations/${reservationId}`);
+      const data = res.data.data;
 
-    fetchReservation();
-  }, [reservationId]);
+      // fetch provinsi, regencies, districts, villages sesuai data
+      const provincesRes = await api.get("/wilayah/provinces");
+      setProvinces(provincesRes.data?.data?.data);
+
+      const regenciesRes = await api.get(`/wilayah/regencies/${data.province}`);
+      setRegencies(regenciesRes.data?.data?.data);
+
+      const regencyCodeOnly = data.regencyOrCity.split(".")[1];
+      const districtsRes = await api.get(`/wilayah/districts/${data.province}/${regencyCodeOnly}`);
+      setDistricts(districtsRes.data?.data?.data);
+
+      const districtParts = data.district.split(".");
+      const districtCodeOnly = districtParts[2];
+      const villagesRes = await api.get(
+        `/wilayah/villages/${data.province}/${regencyCodeOnly}/${districtCodeOnly}`
+      );
+      setVillages(villagesRes.data?.data?.data);
+
+      // reset form setelah semua options terisi
+      form.reset({
+        ...defaultFormValues,
+        ...data,
+        reservationDate: data.reservationDate ? new Date(data.reservationDate) : new Date(),
+      });
+    } catch (err) {
+      toast.error("Data reservasi tidak ditemukan!");
+      navigate("/dashboard/reservation");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [isEditMode, reservationId]);
+
 
   //* Submit handler: create atau update
   const onSubmit = async (values: ReservationFormValues) => {
     try {
       setLoading(true);
-
-      if (reservationId) {
-        // Update reservasi
-        await axios.put(
-          `http://localhost:5000/api/reservations/${reservationId}`,
-          values
-        );
-        alert("Reservasi berhasil diperbarui!");
+      if (isEditMode) {
+        await api.put(`/reservations/${reservationId}`, values);
+        toast.success("Reservasi berhasil diperbarui!");
       } else {
-        // Tambah reservasi baru
-        const response = await api.post("/reservations", values);
-        console.log(response);
-        alert(
-          `Reservasi berhasil ditambahkan! No: ${response.data.data.reservationNumber}`
+        const res = await api.post("/reservations", values);
+        toast.success(
+          `Reservasi berhasil ditambahkan: ${res.data.data.reservationNumber}`
         );
       }
 
-      navigate("/dashboard/reservation"); // balik ke list setelah submit
+      navigate("/dashboard/reservation");
     } catch (error) {
       console.error(error);
-      alert("Gagal simpan reservasi!");
+      toast.error("Gagal menyimpan data!");
     } finally {
       setLoading(false);
     }
@@ -285,11 +282,11 @@ export default function ReservationForm() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-xl font-bold">
-          {reservationId ? "Edit Reservasi" : "Buat Reservasi Baru"}
+        <CardTitle>
+          {isEditMode ? "Edit Reservasi" : "Buat Reservasi Baru"}
         </CardTitle>
-        <CardDescription className="text-muted-foreground text-balance">
-          {reservationId
+        <CardDescription>
+          {isEditMode
             ? `Ubah detail reservasi dengan ID: ${reservationId}`
             : "Isi formulir di bawah untuk membuat reservasi baru."}
         </CardDescription>
@@ -311,7 +308,7 @@ export default function ReservationForm() {
                       <FormLabel>Kategori</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger className="w-full">
@@ -347,7 +344,8 @@ export default function ReservationForm() {
                                 !field.value && "text-muted-foreground"
                               )}
                             >
-                              {field.value ? (
+                              {field.value instanceof Date &&
+                              !isNaN(field.value.getTime()) ? (
                                 format(field.value, "PPP", { locale: id })
                               ) : (
                                 <span className="text-muted-foreground">
@@ -433,31 +431,8 @@ export default function ReservationForm() {
                           placeholder="Masukan nomor telepon"
                           value={field.value}
                           onChange={(e) => {
-                            const rawValue = e.target.value.replace(/\D/g, ""); // ambil angka saja
-
-                            // Normalisasi awal menjadi +62
-                            let formatted = "";
-                            if (rawValue.startsWith("0")) {
-                              formatted = "+62" + rawValue.slice(1);
-                            } else if (rawValue.startsWith("62")) {
-                              formatted = "+62" + rawValue.slice(2);
-                            } else if (rawValue.startsWith("8")) {
-                              formatted = "+62" + rawValue;
-                            } else {
-                              formatted = rawValue;
-                            }
-
-                            // Tambahkan format spasi/dash sesuai kebutuhan
-                            const formatWithSpaces = formatted.replace(
-                              /^(\+62)(\d{3})(\d{4})(\d{0,4})/,
-                              (_, p1, p2, p3, p4) => {
-                                return [p1, p2, p3, p4]
-                                  .filter(Boolean)
-                                  .join("-");
-                              }
-                            );
-
-                            field.onChange(formatWithSpaces);
+                            const formatted = formatPhoneNumber(e.target.value);
+                            field.onChange(formatted);
                           }}
                         />
                       </FormControl>
@@ -536,7 +511,7 @@ export default function ReservationForm() {
                       <FormLabel>Provinsi</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         disabled={!provinces.length}
                       >
                         <FormControl>
@@ -566,7 +541,7 @@ export default function ReservationForm() {
                       <FormLabel>Kabupaten/Kota</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         disabled={!regencies.length}
                       >
                         <FormControl>
@@ -596,7 +571,7 @@ export default function ReservationForm() {
                       <FormLabel>Kecamatan</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         disabled={!districts.length}
                       >
                         <FormControl>
@@ -626,7 +601,7 @@ export default function ReservationForm() {
                       <FormLabel>Kelurahan/Desa</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         disabled={!villages.length}
                       >
                         <FormControl>
@@ -744,13 +719,10 @@ export default function ReservationForm() {
               </div>
 
               {/* Submit Button */}
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" disabled={loading}>
                 {loading ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    Loading
-                  </>
-                ) : reservationId ? (
+                  <Loader2 className="animate-spin" />
+                ) : isEditMode ? (
                   "Update Reservasi"
                 ) : (
                   "Tambah Reservasi"
