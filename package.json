@@ -1,0 +1,35 @@
+{
+  "name": "@rzkyakbr/recapitulation-report",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "turbo-windows-64": "^2.5.6"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint"
+  },
+  "packageManager": "npm@10.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nothappenhere/recapitulation-report.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nothappenhere/recapitulation-report/issues"
+  },
+  "homepage": "https://github.com/nothappenhere/recapitulation-report#readme",
+  "devDependencies": {
+    "turbo": "latest"
+  }
+}
