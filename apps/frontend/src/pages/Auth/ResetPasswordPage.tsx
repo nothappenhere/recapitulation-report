@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import api from "@/lib/axios";
+import { api } from "@rzkyakbr/libs";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

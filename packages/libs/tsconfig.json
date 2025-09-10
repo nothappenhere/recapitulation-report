@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    /* File Layout */
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    /* Environment Settings */
+    "target": "ES2020", // cukup modern tapi aman
+    "module": "NodeNext", // biar cocok dengan "type": "module" di package.json
+    "moduleResolution": "NodeNext", // resolusi modul modern (ESM + CJS)
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Type Declarations */
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    /* Type Checking */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "skipLibCheck": true,
+
+    /* Module/Import */
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
+
+    /* Optional stricter style checks */
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true
+  },
+  "include": ["src"],
+  "exclude": ["dist", "node_modules"]
+}

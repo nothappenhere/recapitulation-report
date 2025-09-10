@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import api from "@/lib/axios";
+import { api } from "@rzkyakbr/libs";
 
 const formSchema = z.object({
   visitDate: z.string().nonempty("Tanggal wajib diisi"),

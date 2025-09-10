@@ -37,7 +37,7 @@ const navConfig = {
       url: "#",
       items: [
         { title: "Harga Tiket", url: "ticket-price" },
-        { title: "Reservasi", url: "reservation" },
+        { title: "Booking Reservasi", url: "reservation" },
         { title: "Walk in", url: "walk-in" },
       ],
     },

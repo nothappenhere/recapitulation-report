@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
-import api from "@/lib/axios";
+import { api } from "@rzkyakbr/libs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -49,7 +49,7 @@ export default function RegisterPage({
       toast.success("User created successfully.");
       navigate("/auth/login");
     } catch (err) {
-      console.log(err)
+      console.log(err);
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
         ? `${error.response.data.message}!`

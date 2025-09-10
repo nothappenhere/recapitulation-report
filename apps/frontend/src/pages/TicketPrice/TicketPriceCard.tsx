@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatRupiah } from "@/lib/formatter";
+import { formatRupiah } from "@rzkyakbr/libs";
 import { ColumnsActions } from "../ReservationsPage/column-actions";
 import { useNavigate } from "react-router";
 

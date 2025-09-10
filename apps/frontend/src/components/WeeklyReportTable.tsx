@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import api from "@/lib/axios";
+import { api } from "@rzkyakbr/libs";
 
 export default function WeeklyReportTable({ refreshTrigger }) {
   const [reports, setReports] = useState<any[]>([]);

@@ -1,7 +1,7 @@
 {
-  "name": "@rzkyakbr/schemas",
+  "name": "@rzkyakbr/libs",
   "version": "1.0.0",
-  "description": "Shared Zod schemas for frontend & backend",
+  "description": "Shared Utility for frontend & backend",
   "type": "module",
   "private": true,
   "main": "./dist/index.js",
@@ -14,7 +14,10 @@
     "dev": "tsc -w -p tsconfig.json"
   },
   "dependencies": {
-    "zod": "^4.1.5"
+    "@rzkyakbr/frontend": "^0.0.0",
+    "axios": "^1.11.0",
+    "dotenv": "^17.2.2",
+    "react-aria-components": "^1.12.1"
   },
   "devDependencies": {
     "typescript": "^5.9.2"

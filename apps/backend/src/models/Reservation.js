@@ -11,7 +11,6 @@ const categoryCodes = {
 
 const reservationSchema = new mongoose.Schema(
   {
-    
     reservationNumber: { type: String, unique: true, required: false },
     salesNumber: { type: String, unique: true, required: false },
 

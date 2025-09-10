@@ -1,5 +1,5 @@
-import { formatPhoneNumber, formatRupiah } from "@/lib/formatter";
-import { type ReservationFormValues } from "@schemas/reservationSchema";
+import { formatPhoneNumber, formatRupiah } from "@rzkyakbr/libs";
+import { type ReservationFormValues } from "@rzkyakbr/schemas";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";

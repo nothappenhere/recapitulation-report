@@ -1,4 +1,4 @@
-import api from "@/lib/axios";
+import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { TicketPriceCard } from "./TicketPriceCard";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
-import type { TicketPriceFormSchema } from "@schemas/ticketPrice.schema";
+import type { TicketPriceFormSchema } from "@rzkyakbr/schemas";
 
 function TicketPricePage() {
   const [ticketPrices, setTicketPrices] = useState([]);

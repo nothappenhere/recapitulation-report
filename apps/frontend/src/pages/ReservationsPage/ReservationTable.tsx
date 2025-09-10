@@ -1,9 +1,9 @@
-import api from "@/lib/axios";
+import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { useReservationColumns } from "./columns";
 import { DataTable } from "./data-table";
 import { useCallback, useEffect, useState } from "react";
-import { type ReservationFormValues } from "@schemas/reservationSchema";
+import { type ReservationFormValues } from "@rzkyakbr/schemas";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 

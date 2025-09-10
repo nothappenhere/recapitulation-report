@@ -4,7 +4,7 @@ import {
   getRegenciesOrCities,
   getDistricts,
   getVillages,
-} from "../controllers/wilayahController.js";
+} from "../controllers/regionController.js";
 
 const router = express.Router();
 

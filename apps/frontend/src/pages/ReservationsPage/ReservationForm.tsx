@@ -11,8 +11,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  reservationFormSchema,
-  type ReservationFormValues,
+  BookingReservationSchema,
+  defaultBookingReservationFormValues,
+  type TBookingReservation,
 } from "@rzkyakbr/schemas";
 import {
   Card,
@@ -35,37 +36,27 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import {
+  SquareLibrary,
+  CalendarIcon,
+  ClockIcon,
+  Loader2,
+  MapPinned,
+} from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
-import axios, { AxiosError } from "axios";
-import { formatPhoneNumber, formatRupiah } from "@/lib/formatter";
-import api from "@/lib/axios";
+import { AxiosError } from "axios";
+import { formatPhoneNumber, formatRupiah } from "@rzkyakbr/libs";
+import { api } from "@rzkyakbr/libs";
 import { useNavigate, useParams } from "react-router";
-import { z } from "zod";
 import toast from "react-hot-toast";
-
-const defaultFormValues: ReservationFormValues = {
-  category: undefined,
-  reservationDate: new Date(),
-  visitingHour: "",
-  ordererName: "",
-  phoneNumber: "",
-  address: "",
-  groupName: "",
-  groupMemberTotal: 0,
-  province: "",
-  regencyOrCity: "",
-  district: "",
-  village: "",
-  paymentAmount: 0,
-  downPayment: 0,
-  changeAmount: 0,
-  statusPayment: "Unpaid",
-};
+import { SimpleField } from "@/components/form/SimpleField";
+import { SelectField } from "@/components/form/SelectField";
+import { DateField } from "@/components/form/DateField";
+import { Label } from "react-aria-components";
 
 export default function ReservationForm() {
   const { reservationId } = useParams();
@@ -78,9 +69,9 @@ export default function ReservationForm() {
 
   const isEditMode = Boolean(reservationId);
 
-  const form = useForm<ReservationFormValues>({
-    resolver: zodResolver(reservationFormSchema),
-    defaultValues: defaultFormValues,
+  const form = useForm<TBookingReservation>({
+    resolver: zodResolver(BookingReservationSchema),
+    defaultValues: defaultBookingReservationFormValues,
   });
 
   const provinceCode = form.watch("province");
@@ -91,8 +82,8 @@ export default function ReservationForm() {
   useEffect(() => {
     const getProvinces = async () => {
       try {
-        const response = await api.get("/wilayah/provinces");
-        setProvinces(response.data?.data?.data);
+        const response = await api.get("/region/provinces");
+        setProvinces(response.data?.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
         console.error("Failed to fetch provinces:", error.message);
@@ -109,10 +100,11 @@ export default function ReservationForm() {
 
     const getRegenciesOrCities = async () => {
       try {
-        const response = await api.get(`/wilayah/regencies/${provinceCode}`);
-        setRegencies(response.data?.data?.data);
+        const response = await api.get(`/region/regencies/${provinceCode}`);
+        setRegencies(response.data?.data);
         setDistricts([]);
         setVillages([]);
+
         form.setValue("regencyOrCity", "");
         form.setValue("district", "");
         form.setValue("village", "");
@@ -136,10 +128,11 @@ export default function ReservationForm() {
 
       try {
         const response = await api.get(
-          `/wilayah/districts/${provinceCode}/${regencyCodeOnly}`
+          `/region/districts/${provinceCode}/${regencyCodeOnly}`
         );
-        setDistricts(response.data?.data?.data);
+        setDistricts(response.data?.data);
         setVillages([]);
+
         form.setValue("district", "");
         form.setValue("village", "");
       } catch (err) {
@@ -165,9 +158,10 @@ export default function ReservationForm() {
     const getVillages = async () => {
       try {
         const response = await api.get(
-          `/wilayah/villages/${provinceCode}/${regencyCodeOnly}/${districtCodeOnly}`
+          `/region/villages/${provinceCode}/${regencyCodeOnly}/${districtCodeOnly}`
         );
-        setVillages(response.data?.data?.data);
+        setVillages(response.data?.data);
+
         form.setValue("village", "");
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
@@ -193,7 +187,7 @@ export default function ReservationForm() {
   const paymentAmount = watch("paymentAmount");
   const downPayment = watch("downPayment");
 
-  // Hitung otomatis total dan status pembayaran
+  //* Hitung otomatis total dan status pembayaran
   useEffect(() => {
     const price = (pricePerCategory[category] || 0) * (groupMemberTotal || 0);
     setValue("paymentAmount", price);
@@ -209,55 +203,60 @@ export default function ReservationForm() {
   }, [paymentAmount, downPayment]);
 
   // 🔹 Fetch reservation by ID kalau sedang edit
- useEffect(() => {
-  if (!isEditMode) return;
+  useEffect(() => {
+    if (!isEditMode) return;
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
 
-      // fetch reservation data
-      const res = await api.get(`/reservations/${reservationId}`);
-      const data = res.data.data;
+        // fetch reservation data
+        const res = await api.get(`/reservations/${reservationId}`);
+        const data = res.data.data;
 
-      // fetch provinsi, regencies, districts, villages sesuai data
-      const provincesRes = await api.get("/wilayah/provinces");
-      setProvinces(provincesRes.data?.data?.data);
+        // fetch provinsi, regencies, districts, villages sesuai data
+        const provincesRes = await api.get("/wilayah/provinces");
+        setProvinces(provincesRes.data?.data?.data);
 
-      const regenciesRes = await api.get(`/wilayah/regencies/${data.province}`);
-      setRegencies(regenciesRes.data?.data?.data);
+        const regenciesRes = await api.get(
+          `/wilayah/regencies/${data.province}`
+        );
+        setRegencies(regenciesRes.data?.data?.data);
 
-      const regencyCodeOnly = data.regencyOrCity.split(".")[1];
-      const districtsRes = await api.get(`/wilayah/districts/${data.province}/${regencyCodeOnly}`);
-      setDistricts(districtsRes.data?.data?.data);
+        const regencyCodeOnly = data.regencyOrCity.split(".")[1];
+        const districtsRes = await api.get(
+          `/wilayah/districts/${data.province}/${regencyCodeOnly}`
+        );
+        setDistricts(districtsRes.data?.data?.data);
 
-      const districtParts = data.district.split(".");
-      const districtCodeOnly = districtParts[2];
-      const villagesRes = await api.get(
-        `/wilayah/villages/${data.province}/${regencyCodeOnly}/${districtCodeOnly}`
-      );
-      setVillages(villagesRes.data?.data?.data);
+        const districtParts = data.district.split(".");
+        const districtCodeOnly = districtParts[2];
+        const villagesRes = await api.get(
+          `/wilayah/villages/${data.province}/${regencyCodeOnly}/${districtCodeOnly}`
+        );
+        setVillages(villagesRes.data?.data?.data);
 
-      // reset form setelah semua options terisi
-      form.reset({
-        ...defaultFormValues,
-        ...data,
-        reservationDate: data.reservationDate ? new Date(data.reservationDate) : new Date(),
-      });
-    } catch (err) {
-      toast.error("Data reservasi tidak ditemukan!");
-      navigate("/dashboard/reservation");
-    } finally {
-      setLoading(false);
-    }
-  };
+        // reset form setelah semua options terisi
+        form.reset({
+          ...defaultFormValues,
+          ...data,
+          reservationDate: data.reservationDate
+            ? new Date(data.reservationDate)
+            : new Date(),
+        });
+      } catch (err) {
+        toast.error("Data reservasi tidak ditemukan!");
+        navigate("/dashboard/reservation");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchData();
-}, [isEditMode, reservationId]);
-
+    fetchData();
+  }, [isEditMode, reservationId]);
 
   //* Submit handler: create atau update
-  const onSubmit = async (values: ReservationFormValues) => {
+  const onSubmit = async (values: TBookingReservation): Promise<void> => {
     try {
       setLoading(true);
       if (isEditMode) {
@@ -291,7 +290,6 @@ export default function ReservationForm() {
             : "Isi formulir di bawah untuk membuat reservasi baru."}
         </CardDescription>
       </CardHeader>
-
       <Separator />
       <CardContent>
         <Form {...form}>
@@ -299,429 +297,292 @@ export default function ReservationForm() {
             <div className="flex flex-col gap-6">
               {/* ROW 1 */}
               <div className="grid grid-cols-3 gap-3">
-                {/* Kategori Field */}
-                <FormField
+                {/* Tanggal Kunjungan */}
+                <DateField
                   control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kategori</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih kategori" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Pelajar">Pelajar</SelectItem>
-                          <SelectItem value="Umum">Umum</SelectItem>
-                          <SelectItem value="Asing">Asing</SelectItem>
-                          <SelectItem value="Khusus">Khusus</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="visitingDate"
+                  label="Tanggal Kunjungan"
+                  placeholder="Pilih tanggal kunjungan"
+                  tooltip="Pilih tanggal kunjungan, tidak bisa memilih sebelum hari ini."
                 />
 
-                {/* Tanggal Reservasi Field */}
-                <FormField
-                  control={form.control}
-                  name="reservationDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tanggal Reservasi</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "border-black rounded-sm pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value instanceof Date &&
-                              !isNaN(field.value.getTime()) ? (
-                                format(field.value, "PPP", { locale: id })
-                              ) : (
-                                <span className="text-muted-foreground">
-                                  Pilih tanggal reservasi
-                                </span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-75" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date() || date < new Date("1900-01-01")
-                            }
-                            captionLayout="dropdown"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Waktu Kunjungan Field */}
-                <FormField
+                {/* Waktu Kunjungan */}
+                <SelectField
                   control={form.control}
                   name="visitingHour"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Waktu Kunjungan</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type="time"
-                            step="-1"
-                            placeholder="Masukan waktu kunjungan"
-                            className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:size-4 [&::-webkit-calendar-picker-indicator]:right-2.5 [&::-webkit-calendar-picker-indicator]:top-1/2 [&::-webkit-calendar-picker-indicator]:-translate-y-1/2 [&::-webkit-calendar-picker-indicator]:appearance-none"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Waktu Kunjungan"
+                  placeholder="Pilih waktu kunjungan"
+                  icon={ClockIcon}
+                  options={[
+                    { value: "WhatsApp", label: "WhatsApp" },
+                    { value: "Google Form", label: "Google Form" },
+                    { value: "lainnya", label: "Lainnya..." },
+                  ]}
+                  tooltip="Tentukan jam kedatangan rombongan sesuai jadwal museum."
+                />
+
+                {/* Mekanisme Reservasi */}
+                <SelectField
+                  control={form.control}
+                  name="reservationMechanism"
+                  label="Mekanisme Reservasi"
+                  placeholder="Pilih mekanisme reservasi"
+                  icon={SquareLibrary}
+                  options={[
+                    { value: "WhatsApp", label: "WhatsApp" },
+                    { value: "Google Form", label: "Google Form" },
+                    { value: "lainnya", label: "Lainnya..." },
+                  ]}
+                  tooltip="Pilih metode reservasi yang digunakan, misalnya WhatsApp atau Google Form."
                 />
               </div>
 
               {/* ROW 2 */}
-              <div className="grid grid-cols-4 gap-3">
-                {/* Nama Pemesan Field */}
-                <FormField
+              <div className="grid gap-3">
+                <SimpleField
                   control={form.control}
-                  name="ordererName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Pemesan</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Masukan nama pemesan"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Nomor Telepon Field */}
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nomor Telepon</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Masukan nomor telepon"
-                          value={field.value}
-                          onChange={(e) => {
-                            const formatted = formatPhoneNumber(e.target.value);
-                            field.onChange(formatted);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Nama Rombongan Field */}
-                <FormField
-                  control={form.control}
-                  name="groupName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Rombongan</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Masukan nama rombongan"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Jumlah Anggota Rombongan Field */}
-                <FormField
-                  control={form.control}
-                  name="groupMemberTotal"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jumlah Anggota Rombongan</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Masukan jumlah anggota rombongan"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="description"
+                  label="Deskripsi"
+                  placeholder="Masukan deskripsi"
+                  component={<Textarea />}
+                  tooltip="Tambahkan keterangan tambahan terkait kunjungan (opsional)."
                 />
               </div>
 
               {/* ROW 3 */}
-              <div className="grid gap-3">
-                <FormField
+              <div className="grid grid-cols-3 gap-3">
+                {/* Nama Pemesan / Nama Travel */}
+                <SimpleField
                   control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Alamat</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Masukan alamat lengkap"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="ordererNameOrTravelName"
+                  label="Nama Pemesan / Travel"
+                  placeholder="Masukan nama pemesan / travel"
+                  tooltip="Isi dengan nama pemesan atau nama biro travel yang mengatur kunjungan."
+                />
+
+                {/* Nomor Telepon */}
+                <SimpleField
+                  control={form.control}
+                  name="phoneNumber"
+                  label="Nomor Telepon"
+                  placeholder="Masukan nomor telepon"
+                  onChangeOverride={(value, field) => {
+                    const formatted = formatPhoneNumber(value);
+                    field.onChange(formatted);
+                  }}
+                  tooltip="Masukkan nomor telepon aktif yang bisa dihubungi."
+                />
+
+                {/* Nama Rombongan */}
+                <SimpleField
+                  control={form.control}
+                  name="groupName"
+                  label="Nama Rombongan"
+                  placeholder="Masukan nama rombongan"
+                  tooltip="Isi dengan nama rombongan atau identitas kelompok pengunjung."
                 />
               </div>
 
               {/* ROW 4 */}
-              <div className="grid grid-cols-4 gap-3">
-                {/* Provinsi Field */}
-                <FormField
+              <div className="grid grid-cols-5 gap-3">
+                {/* Jumlah Anggota Rombongan PELAJAR */}
+                <SimpleField
                   control={form.control}
-                  name="province"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Provinsi</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={!provinces.length}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih provinsi" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {provinces.map((prov) => (
-                            <SelectItem key={prov.code} value={prov.code}>
-                              {prov.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="studentMemberTotal"
+                  label="Jumlah Anggota Pelajar"
+                  type="number"
+                  placeholder="Masukan jumlah angg. pelajar"
+                  tooltip="Jumlah anggota rombongan yang berstatus pelajar (SD, SMP, SMA, Mahasiswa)."
                 />
 
-                {/* Kabupaten/Kota Field */}
-                <FormField
+                {/* Jumlah Anggota Rombongan UMUM */}
+                <SimpleField
                   control={form.control}
-                  name="regencyOrCity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kabupaten/Kota</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={!regencies.length}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih kabupaten/kota" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {regencies.map((reg) => (
-                            <SelectItem key={reg.code} value={reg.code}>
-                              {reg.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="publicMemberTotal"
+                  label="Jumlah Anggota Umum"
+                  type="number"
+                  placeholder="Masukan jumlah angg. umum"
+                  tooltip="Jumlah anggota rombongan kategori umum (di luar pelajar/asing/khusus)."
                 />
 
-                {/* Kecamatan Field */}
-                <FormField
+                {/* Jumlah Anggota Rombongan ASING */}
+                <SimpleField
                   control={form.control}
-                  name="district"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kecamatan</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={!districts.length}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih kecamatan" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {districts.map((dist) => (
-                            <SelectItem key={dist.code} value={dist.code}>
-                              {dist.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="foreignMemberTotal"
+                  label="Jumlah Anggota Asing"
+                  type="number"
+                  placeholder="Masukan jumlah angg. asing"
+                  tooltip="Jumlah anggota rombongan yang merupakan pengunjung dari luar negeri."
                 />
 
-                {/* Kelurahan/Desa Field */}
-                <FormField
+                {/* Jumlah Anggota Rombongan KHUSUS */}
+                <SimpleField
                   control={form.control}
-                  name="village"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kelurahan/Desa</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={!villages.length}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih kelurahan/desa" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {villages.map((vill) => (
-                            <SelectItem key={vill.code} value={vill.code}>
-                              {vill.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="customMemberTotal"
+                  label="Jumlah Anggota Khusus"
+                  type="number"
+                  placeholder="Masukan jumlah angg. Khusus"
+                  tooltip="Jumlah anggota rombongan dengan kategori khusus (misalnya undangan, VIP, dsb)."
+                />
+
+                {/* Jumlah Seluruh Anggota Rombongan (readonly) */}
+                <SimpleField
+                  control={form.control}
+                  name="groupMemberTotal"
+                  label="Jumlah Seluruh Anggota"
+                  type="number"
+                  placeholder="Masukan jumlah seluruh angg."
+                  disabled
+                  tooltip="Jumlah total anggota rombongan. Terhitung otomatis dari semua kategori."
                 />
               </div>
 
               {/* ROW 5 */}
+              <div className="grid gap-3">
+                <SimpleField
+                  control={form.control}
+                  name="address"
+                  label="Alamat"
+                  placeholder="Masukan alamat lengkap"
+                  component={<Textarea />}
+                  tooltip="Masukkan alamat lengkap pemesan atau instansi asal rombongan."
+                />
+              </div>
+
+              {/* ROW 6 */}
               <div className="grid grid-cols-4 gap-3">
-                {/* Total Pembayaran Field */}
-                <FormField
+                {/* Provinsi */}
+                <SelectField
+                  control={form.control}
+                  name="province"
+                  label="Provinsi"
+                  placeholder="Pilih provinsi"
+                  icon={MapPinned}
+                  options={provinces.map(
+                    (prov: { code: string; name: string }) => ({
+                      value: prov.code,
+                      label: prov.name,
+                    })
+                  )}
+                  disabled={!provinces.length}
+                  tooltip="Pilih provinsi asal rombongan."
+                />
+
+                {/* Kabupaten/Kota */}
+                <SelectField
+                  control={form.control}
+                  name="regencyOrCity"
+                  label="Kabupaten/Kota"
+                  placeholder="Pilih kabupaten/kota"
+                  icon={MapPinned}
+                  options={regencies.map(
+                    (reg: { code: string; name: string }) => ({
+                      value: reg.code,
+                      label: reg.name,
+                    })
+                  )}
+                  disabled={!regencies.length}
+                  tooltip="Pilih kabupaten atau kota sesuai alamat asal rombongan."
+                />
+
+                {/* Kecamatan */}
+                <SelectField
+                  control={form.control}
+                  name="district"
+                  label="Kecamatan"
+                  placeholder="Pilih kecamatan"
+                  icon={MapPinned}
+                  options={districts.map(
+                    (dist: { code: string; name: string }) => ({
+                      value: dist.code,
+                      label: dist.name,
+                    })
+                  )}
+                  disabled={!districts.length}
+                  tooltip="Pilih kecamatan sesuai alamat asal rombongan."
+                />
+
+                {/* Kelurahan/Desa */}
+                <SelectField
+                  control={form.control}
+                  name="village"
+                  label="Kelurahan/Desa"
+                  placeholder="Pilih kelurahan/desa"
+                  icon={MapPinned}
+                  options={villages.map(
+                    (vill: { code: string; name: string }) => ({
+                      value: vill.code,
+                      label: vill.name,
+                    })
+                  )}
+                  disabled={!villages.length}
+                  tooltip="Pilih kelurahan atau desa sesuai alamat asal rombongan."
+                />
+              </div>
+
+              {/* ROW 7 */}
+              <div className="grid grid-cols-4 gap-3">
+                {/* Total Pembayaran (readonly) */}
+                <SimpleField
                   control={form.control}
                   name="paymentAmount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Total Pembayaran</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Masukan total pembayaran"
-                          disabled
-                          value={formatRupiah(field.value || 0)}
-                          onChange={() => {}}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Total Pembayaran"
+                  placeholder="Masukan total pembayaran"
+                  disabled
+                  valueFormatter={(val) => formatRupiah(val || 0)}
+                  tooltip="Jumlah total pembayaran yang harus dibayarkan. Dihitung otomatis."
                 />
 
-                {/* Uang Muka Field */}
-                <FormField
+                {/* Uang Muka */}
+                <SimpleField
                   control={form.control}
                   name="downPayment"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Uang Muka</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Masukan uang muka"
-                          value={formatRupiah(field.value || 0)}
-                          onChange={(e) => {
-                            // Ambil hanya angka dari input (hapus Rp dan titik)
-                            const rawValue = e.target.value.replace(
-                              /[^\d]/g,
-                              ""
-                            );
-                            field.onChange(Number(rawValue));
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Uang Muka"
+                  placeholder="Masukan uang muka"
+                  onChangeOverride={(e, field) => {
+                    const rawValue = e.target.value.replace(/[^\d]/g, "");
+                    field.onChange(Number(rawValue));
+                  }}
+                  valueFormatter={(val) => formatRupiah(val || 0)}
+                  tooltip="Masukkan jumlah uang muka minimal 20% dari total pembayaran."
                 />
 
-                {/* Uang Kembalian Field */}
-                <FormField
+                {/* Uang Kembalian (readonly) */}
+                <SimpleField
                   control={form.control}
                   name="changeAmount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Uang Kembalian</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Masukan uang kembalian"
-                          disabled
-                          value={formatRupiah(field.value || 0)}
-                          onChange={() => {}}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Uang Kembalian"
+                  placeholder="Masukan uang kembalian"
+                  disabled
+                  valueFormatter={(val) => formatRupiah(val || 0)}
+                  tooltip="Jumlah uang kembalian jika pembayaran melebihi total yang ditentukan."
                 />
 
-                {/* Status Pembayaran Field */}
-                <FormField
+                {/* Status Pembayaran (readonly) */}
+                <SimpleField
                   control={form.control}
                   name="statusPayment"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status Pembayaran</FormLabel>
-                      <Input
-                        type="text"
-                        disabled
-                        value={
-                          field.value === "Paid"
-                            ? "Lunas"
-                            : field.value === "DP"
-                            ? "DP"
-                            : "Belum Bayar"
-                        }
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Status Pembayaran"
+                  placeholder="Masukan status pembayaran"
+                  disabled
+                  valueFormatter={(val: string) =>
+                    val === "Paid"
+                      ? "Lunas"
+                      : val === "DP"
+                      ? "DP"
+                      : "Belum Bayar"
+                  }
+                  tooltip="Status pembayaran otomatis: Lunas, DP, atau Belum Bayar."
                 />
               </div>
 
               {/* Submit Button */}
-              <Button type="submit" disabled={loading}>
-                {loading ? (
-                  <Loader2 className="animate-spin" />
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    Loading...
+                  </>
                 ) : isEditMode ? (
                   "Update Reservasi"
                 ) : (

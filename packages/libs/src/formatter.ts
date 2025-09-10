@@ -1,4 +1,4 @@
-export function formatRupiah(number) {
+export function formatRupiah(number: number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
@@ -16,17 +16,15 @@ function normalizePhoneNumber(input: string): string {
   return cleaned; // fallback
 }
 
-
 export function formatPhoneNumber(input: string): string {
   const raw = normalizePhoneNumber(input); // ← tambahkan ini
 
   const prefix = "+62";
   const firstGroup = raw.slice(2, 5); // e.g. 812
   const secondGroup = raw.slice(5, 9); // e.g. 3456
-  const thirdGroup = raw.slice(9);     // e.g. 7890
+  const thirdGroup = raw.slice(9); // e.g. 7890
 
-  return `${prefix} ${firstGroup}${secondGroup ? `-${secondGroup}` : ""}${thirdGroup ? `-${thirdGroup}` : ""}`;
+  return `${prefix} ${firstGroup}${secondGroup ? `-${secondGroup}` : ""}${
+    thirdGroup ? `-${thirdGroup}` : ""
+  }`;
 }
-
-
-

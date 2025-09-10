@@ -24,7 +24,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import api from "@/lib/axios";
+import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router";
 import { getInitials } from "@/lib/utils";

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ticketPriceSchema = z.object({
+export const TicketPriceSchema = z.object({
   category: z
     .enum(["Pelajar", "Umum", "Asing", "Khusus"], {
       message: "Invalid category!",
@@ -10,5 +10,4 @@ export const ticketPriceSchema = z.object({
     .number()
     .nonnegative({ message: "Unit price cannot be negative!" }),
 });
-
-export type TicketPriceFormSchema = z.infer<typeof ticketPriceSchema>;
+export type TicketPriceFormSchema = z.infer<typeof TicketPriceSchema>;

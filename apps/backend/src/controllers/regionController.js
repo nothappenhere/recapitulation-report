@@ -1,5 +1,5 @@
-import axios from "axios";
-import { sendError, sendResponse } from "../utils/response.js";
+import { sendResponse } from "../utils/response.js";
+import { Region } from "../models/Region.js";
 
 /**
  * * @desc Mendapatkan daftar seluruh provinsi di Indonesia
@@ -8,16 +8,20 @@ import { sendError, sendResponse } from "../utils/response.js";
  */
 export const getProvinces = async (req, res) => {
   try {
-    const response = await axios.get("https://wilayah.id/api/provinces.json");
+    const provinces = await Region.find({ level: "province" }).sort({
+      name: 1,
+    });
     sendResponse(
       res,
       200,
       true,
       "Berhasil mendapatkan data Provinsi",
-      response.data
+      provinces
     );
   } catch (err) {
-    return sendError(res, err);
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };
 
@@ -29,20 +33,22 @@ export const getProvinces = async (req, res) => {
  */
 export const getRegenciesOrCities = async (req, res) => {
   const { provinceCode } = req.params;
-
   try {
-    const response = await axios.get(
-      `https://wilayah.id/api/regencies/${provinceCode}.json`
-    );
+    const regencies = await Region.find({
+      parentCode: provinceCode,
+      level: "regency",
+    }).sort({ name: 1 });
     sendResponse(
       res,
       200,
       true,
-      "Berhasil mendapatkan data Kabupaten / Kota",
-      response.data
+      "Berhasil mendapatkan data Kabupaten/Kota",
+      regencies
     );
   } catch (err) {
-    return sendError(req, err);
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };
 
@@ -54,22 +60,24 @@ export const getRegenciesOrCities = async (req, res) => {
  * @param regencyCode - Kode dari kabupaten/kota
  */
 export const getDistricts = async (req, res) => {
-  const { provinceCode } = req.params;
-  const { regencyCode } = req.params;
-
+  const { provinceCode, regencyCode } = req.params;
+  const fullCode = `${provinceCode}.${regencyCode}`;
   try {
-    const response = await axios.get(
-      `https://wilayah.id/api/districts/${provinceCode}.${regencyCode}.json`
-    );
+    const districts = await Region.find({
+      parentCode: fullCode,
+      level: "district",
+    }).sort({ name: 1 });
     sendResponse(
       res,
       200,
       true,
       "Berhasil mendapatkan data Kecamatan",
-      response.data
+      districts
     );
   } catch (err) {
-    return sendError(res, err);
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };
 
@@ -82,22 +90,23 @@ export const getDistricts = async (req, res) => {
  * @param districtCode - Kode dari kecamatan
  */
 export const getVillages = async (req, res) => {
-  const { provinceCode } = req.params;
-  const { regencyCode } = req.params;
-  const { districtCode } = req.params;
-
+  const { provinceCode, regencyCode, districtCode } = req.params;
+  const fullCode = `${provinceCode}.${regencyCode}.${districtCode}`;
   try {
-    const response = await axios.get(
-      `https://wilayah.id/api/villages/${provinceCode}.${regencyCode}.${districtCode}.json`
-    );
+    const villages = await Region.find({
+      parentCode: fullCode,
+      level: "village",
+    }).sort({ name: 1 });
     sendResponse(
       res,
       200,
       true,
-      "Berhasil mendapatkan data Kelurahan / Desa",
-      response.data
+      "Berhasil mendapatkan data Desa/Kelurahan",
+      villages
     );
   } catch (err) {
-    return sendError(res, err);
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };

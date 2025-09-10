@@ -22,13 +22,13 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import toast from "react-hot-toast";
-import api from "@/lib/axios";
+import { api } from "@rzkyakbr/libs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
-import { formatRupiah } from "@/lib/formatter";
+import { formatRupiah } from "@rzkyakbr/libs";
 import type { AxiosError } from "axios";
 import {
-  ticketPriceSchema,
+  TicketPriceSchema,
   type TicketPriceFormSchema,
 } from "@rzkyakbr/schemas";
 
@@ -48,7 +48,7 @@ export default function TicketPriceForm({
     formState: { isSubmitting },
     reset,
   } = useForm<TicketPriceFormSchema>({
-    resolver: zodResolver(ticketPriceSchema),
+    resolver: zodResolver(TicketPriceSchema),
     defaultValues: {
       category: undefined,
       unitPrice: 0,
