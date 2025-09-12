@@ -20,9 +20,10 @@ type SelectFieldProps<T extends FieldValues> = {
   label: string;
   placeholder: string;
   icon?: LucideIcon;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; disabled?: boolean }[];
   tooltip?: string | ReactNode;
   disabled?: boolean;
+  countrySelect: boolean;
 };
 
 export function SelectField<T extends FieldValues>({
@@ -34,6 +35,7 @@ export function SelectField<T extends FieldValues>({
   options,
   tooltip,
   disabled,
+  countrySelect,
 }: SelectFieldProps<T>) {
   return (
     <ControlledField
@@ -54,14 +56,24 @@ export function SelectField<T extends FieldValues>({
             </div>
             <SelectValue placeholder={placeholder} className="truncate" />
           </SelectTrigger>
-          <SelectContent className="max-w-[var(--radix-select-trigger-width)]">
+          <SelectContent className="">
             {options.map((opt) => (
               <SelectItem
                 key={opt.value}
                 value={opt.value}
                 className="truncate"
+                disabled={opt.disabled}
               >
-                {opt.label}
+                {countrySelect ? (
+                  <>
+                    <span className="text-base leading-none">{opt.label}</span>
+                    <span className="truncate text-muted-foreground">
+                      {opt.value}
+                    </span>
+                  </>
+                ) : (
+                  opt.label
+                )}
               </SelectItem>
             ))}
           </SelectContent>

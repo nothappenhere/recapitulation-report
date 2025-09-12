@@ -33,12 +33,12 @@ const navConfig = {
   ],
   user: [
     {
-      title: "My Courses",
+      title: "Getting Started",
       url: "#",
       items: [
         { title: "Harga Tiket", url: "ticket-price" },
         { title: "Booking Reservasi", url: "reservation" },
-        { title: "Walk in", url: "walk-in" },
+        { title: "Reservasi & Walk-in", url: "visits" },
       ],
     },
   ],
@@ -60,7 +60,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <img src="/img/logo-mg.png" alt="Logo Museum Geologi" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">EduTrack</span>
+                  <span className="font-medium">Ticketing System</span>
                   <span className="text-xs">
                     {capitalizeFirstLetter(user?.role)}
                   </span>

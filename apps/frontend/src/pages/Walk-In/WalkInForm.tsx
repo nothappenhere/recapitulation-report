@@ -1,19 +1,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import {
-  BookingReservationSchema,
-  defaultBookingReservationFormValues,
-  type TBookingReservation,
+  WalkInSchema,
+  defaultWalkInFormValues,
+  type TWalkIn,
 } from "@rzkyakbr/schemas";
 import {
   Card,
@@ -22,43 +14,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  SquareLibrary,
-  CalendarIcon,
-  ClockIcon,
-  Loader2,
-  MapPinned,
-} from "lucide-react";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
+import { Banknote, ClockIcon, Flag, Loader2, MapPinned } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { AxiosError } from "axios";
-import { formatPhoneNumber, formatRupiah } from "@rzkyakbr/libs";
+import {
+  formatPhoneNumber,
+  formatRupiah,
+  useAutoFinalSerial,
+  useAutoPaymentCalculation,
+} from "@rzkyakbr/libs";
 import { api } from "@rzkyakbr/libs";
 import { useNavigate, useParams } from "react-router";
 import toast from "react-hot-toast";
 import { SimpleField } from "@/components/form/SimpleField";
 import { SelectField } from "@/components/form/SelectField";
 import { DateField } from "@/components/form/DateField";
-import { Label } from "react-aria-components";
+import { RangeField } from "@/components/form/RangeField";
 
-export default function ReservationForm() {
+export default function WalkInForm() {
   const { reservationId } = useParams();
   const [countries, setCountries] = useState([]);
   const [provinces, setProvinces] = useState([]);
@@ -70,9 +45,9 @@ export default function ReservationForm() {
 
   const isEditMode = Boolean(reservationId);
 
-  const form = useForm<TBookingReservation>({
-    resolver: zodResolver(BookingReservationSchema),
-    defaultValues: defaultBookingReservationFormValues,
+  const form = useForm<TWalkIn>({
+    resolver: zodResolver(WalkInSchema),
+    defaultValues: defaultWalkInFormValues,
   });
 
   const provinceCode = form.watch("province");
@@ -177,34 +152,14 @@ export default function ReservationForm() {
     getVillages();
   }, [districtCode, form, provinceCode, regencyCode]);
 
-  // Harga per kategori
-  const pricePerCategory = {
-    Pelajar: 3000,
-    Umum: 5000,
-    Asing: 25000,
-    Khusus: 0,
-  };
+  useAutoPaymentCalculation(form.watch, form.setValue);
 
-  const { watch, setValue, reset } = form;
-  const category = watch("category");
-  const groupMemberTotal = watch("groupMemberTotal");
-  const paymentAmount = watch("paymentAmount");
-  const downPayment = watch("downPayment");
-
-  //* Hitung otomatis total dan status pembayaran
-  useEffect(() => {
-    const price = (pricePerCategory[category] || 0) * (groupMemberTotal || 0);
-    setValue("paymentAmount", price);
-  }, [category, groupMemberTotal]);
-
-  useEffect(() => {
-    const change = Math.max(0, (downPayment || 0) - (paymentAmount || 0));
-    const status: "Paid" | "DP" | "Unpaid" =
-      downPayment >= paymentAmount ? "Paid" : downPayment > 0 ? "DP" : "Unpaid";
-
-    setValue("changeAmount", change);
-    setValue("statusPayment", status);
-  }, [paymentAmount, downPayment]);
+  useAutoFinalSerial(form.watch, form.setValue, {
+    student: true,
+    public: true,
+    foreign: true,
+    custom: true,
+  });
 
   // 🔹 Fetch reservation by ID kalau sedang edit
   useEffect(() => {
@@ -260,7 +215,7 @@ export default function ReservationForm() {
   }, [isEditMode, reservationId]);
 
   //* Submit handler: create atau update
-  const onSubmit = async (values: TBookingReservation): Promise<void> => {
+  const onSubmit = async (values: TWalkIn): Promise<void> => {
     try {
       setLoading(true);
       if (isEditMode) {
@@ -286,12 +241,12 @@ export default function ReservationForm() {
     <Card>
       <CardHeader className="text-center">
         <CardTitle>
-          {isEditMode ? "Edit Reservasi" : "Pendataan Reservasi Baru"}
+          {isEditMode ? "Edit Data Walk-in" : "Pendataan Walk-in Baru"}
         </CardTitle>
         <CardDescription>
           {isEditMode
-            ? `Ubah detail reservasi dengan ID: ${reservationId}`
-            : "Isi formulir di bawah untuk membuat reservasi baru."}
+            ? `Ubah detail kunjungan walk-in dengan ID: ${reservationId}`
+            : "Isi formulir di bawah untuk mencatat kunjungan walk-in."}
         </CardDescription>
       </CardHeader>
       <Separator />
@@ -300,14 +255,15 @@ export default function ReservationForm() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               {/* ROW 1 */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {/* Tanggal Kunjungan */}
                 <DateField
                   control={form.control}
                   name="visitingDate"
                   label="Tanggal Kunjungan"
                   placeholder="Pilih tanggal kunjungan"
-                  tooltip="Pilih tanggal kunjungan, tidak bisa memilih sebelum hari ini."
+                  tooltip="Tanggal kunjungan (hanya bisa memilih hari ini)."
+                  disabledForward
                 />
 
                 {/* Waktu Kunjungan */}
@@ -329,22 +285,7 @@ export default function ReservationForm() {
                     { value: "13:00 - 14:00", label: "13:00 - 14:00" },
                     { value: "14:00 - 15:00", label: "14:00 - 15:00" },
                   ]}
-                  tooltip="Tentukan jam kedatangan rombongan sesuai jadwal museum."
-                />
-
-                {/* Mekanisme Reservasi */}
-                <SelectField
-                  control={form.control}
-                  name="reservationMechanism"
-                  label="Mekanisme Reservasi"
-                  placeholder="Pilih mekanisme reservasi"
-                  icon={SquareLibrary}
-                  options={[
-                    { value: "WhatsApp", label: "WhatsApp" },
-                    { value: "Google Form", label: "Google Form" },
-                    { value: "lainnya", label: "Lainnya..." },
-                  ]}
-                  tooltip="Pilih metode reservasi yang digunakan, misalnya WhatsApp atau Google Form."
+                  tooltip="Tentukan jam kunjungan sesuai jadwal museum."
                 />
               </div>
 
@@ -368,12 +309,13 @@ export default function ReservationForm() {
                   name="ordererNameOrTravelName"
                   label="Nama Pemesan / Travel"
                   placeholder="Masukan nama pemesan / travel"
-                  tooltip="Isi dengan nama pemesan atau nama biro travel yang mengatur kunjungan."
+                  tooltip="Nama pemesan atau biro travel yang berkunjungan."
                 />
 
                 {/* Nomor Telepon */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="phoneNumber"
                   label="Nomor Telepon"
                   placeholder="Masukan nomor telepon"
@@ -381,27 +323,29 @@ export default function ReservationForm() {
                     const formatted = formatPhoneNumber(value);
                     field.onChange(formatted);
                   }}
-                  tooltip="Masukkan nomor telepon aktif yang bisa dihubungi."
+                  tooltip="Nomor telepon aktif pemesan yang bisa dihubungi."
                 />
 
-                {/* Nama Rombongan */}
+                {/* Jumlah Seluruh Anggota Rombongan (readonly) */}
                 <SimpleField
                   control={form.control}
-                  name="groupName"
-                  label="Nama Rombongan"
-                  placeholder="Masukan nama rombongan"
-                  tooltip="Isi dengan nama rombongan atau identitas kelompok pengunjung."
+                  type="number"
+                  name="groupMemberTotal"
+                  label="Jumlah Seluruh Anggota"
+                  placeholder="Masukan jumlah seluruh angg."
+                  disabled
+                  tooltip="Jumlah total anggota rombongan (terisi otomatis dari semua kategori)."
                 />
               </div>
 
               {/* ROW 4 */}
-              <div className="grid grid-cols-5 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {/* Jumlah Anggota Rombongan PELAJAR */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="studentMemberTotal"
                   label="Jumlah Anggota Pelajar"
-                  type="number"
                   placeholder="Masukan jumlah angg. pelajar"
                   tooltip="Jumlah anggota rombongan yang berstatus pelajar (SD, SMP, SMA, Mahasiswa)."
                 />
@@ -409,19 +353,19 @@ export default function ReservationForm() {
                 {/* Jumlah Anggota Rombongan UMUM */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="publicMemberTotal"
                   label="Jumlah Anggota Umum"
-                  type="number"
                   placeholder="Masukan jumlah angg. umum"
-                  tooltip="Jumlah anggota rombongan kategori umum (di luar pelajar/asing/khusus)."
+                  tooltip="Jumlah anggota rombongan kategori umum (di luar Pelajar/Asing/Khusus)."
                 />
 
                 {/* Jumlah Anggota Rombongan ASING */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="foreignMemberTotal"
                   label="Jumlah Anggota Asing"
-                  type="number"
                   placeholder="Masukan jumlah angg. asing"
                   tooltip="Jumlah anggota rombongan yang merupakan pengunjung dari luar negeri."
                 />
@@ -429,22 +373,11 @@ export default function ReservationForm() {
                 {/* Jumlah Anggota Rombongan KHUSUS */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="customMemberTotal"
                   label="Jumlah Anggota Khusus"
-                  type="number"
                   placeholder="Masukan jumlah angg. Khusus"
                   tooltip="Jumlah anggota rombongan dengan kategori khusus (misalnya undangan, VIP, dsb)."
-                />
-
-                {/* Jumlah Seluruh Anggota Rombongan (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  name="groupMemberTotal"
-                  label="Jumlah Seluruh Anggota"
-                  type="number"
-                  placeholder="Masukan jumlah seluruh angg."
-                  disabled
-                  tooltip="Jumlah total anggota rombongan. Terhitung otomatis dari semua kategori."
                 />
               </div>
 
@@ -461,7 +394,7 @@ export default function ReservationForm() {
               </div>
 
               {/* ROW 6 */}
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-5 gap-3">
                 {/* Provinsi */}
                 <SelectField
                   control={form.control}
@@ -475,8 +408,11 @@ export default function ReservationForm() {
                       label: prov.name,
                     })
                   )}
-                  disabled={!provinces.length}
-                  tooltip="Pilih provinsi asal rombongan."
+                  disabled={
+                    !provinces.length ||
+                    Boolean(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih provinsi asal pemesan."
                 />
 
                 {/* Kabupaten/Kota */}
@@ -492,8 +428,11 @@ export default function ReservationForm() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!regencies.length}
-                  tooltip="Pilih kabupaten atau kota sesuai alamat asal rombongan."
+                  disabled={
+                    !regencies.length ||
+                    Boolean(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih kabupaten / kota asal pemesan."
                 />
 
                 {/* Kecamatan */}
@@ -509,8 +448,11 @@ export default function ReservationForm() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!districts.length}
-                  tooltip="Pilih kecamatan sesuai alamat asal rombongan."
+                  disabled={
+                    !districts.length ||
+                    Boolean(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih kecamatan asal pemesan."
                 />
 
                 {/* Kelurahan/Desa */}
@@ -526,13 +468,31 @@ export default function ReservationForm() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!villages.length}
-                  tooltip="Pilih kelurahan atau desa sesuai alamat asal rombongan."
+                  disabled={
+                    !villages.length ||
+                    Boolean(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih kelurahan / desa asal pemesan."
+                />
+
+                {/* Negara */}
+                <SelectField
+                  control={form.control}
+                  name="country"
+                  label="Asal Negara"
+                  placeholder="Pilih asal negara"
+                  icon={Flag}
+                  options={[{ label: "ID", value: "Indonesia" }]}
+                  disabled={
+                    !Number(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih negara asal pemesan (jika ada anggota asing)."
+                  countrySelect
                 />
               </div>
 
               {/* ROW 7 */}
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-5 gap-3">
                 {/* Total Pembayaran (readonly) */}
                 <SimpleField
                   control={form.control}
@@ -541,7 +501,22 @@ export default function ReservationForm() {
                   placeholder="Masukan total pembayaran"
                   disabled
                   valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah total pembayaran yang harus dibayarkan. Dihitung otomatis."
+                  tooltip="Jumlah total pembayaran tiket (terhitung otomatis)."
+                />
+
+                {/* Metode Pembayaran */}
+                <SelectField
+                  control={form.control}
+                  name="paymentMethod"
+                  label="Metode Pembayaran"
+                  placeholder="Pilih metode pembayaran"
+                  icon={Banknote}
+                  options={[
+                    { label: "Tunai", value: "Tunai" },
+                    { label: "Transfer", value: "Transfer" },
+                    { label: "QRIS", value: "QRIS" },
+                  ]}
+                  tooltip="Metode pembayaran tiket."
                 />
 
                 {/* Uang Muka */}
@@ -555,7 +530,7 @@ export default function ReservationForm() {
                     field.onChange(Number(rawValue));
                   }}
                   valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Masukkan jumlah uang muka minimal 20% dari total pembayaran."
+                  tooltip="Jumlah uang muka yang dibayarkan."
                 />
 
                 {/* Uang Kembalian (readonly) */}
@@ -576,14 +551,53 @@ export default function ReservationForm() {
                   label="Status Pembayaran"
                   placeholder="Masukan status pembayaran"
                   disabled
-                  valueFormatter={(val: string) =>
-                    val === "Paid"
-                      ? "Lunas"
-                      : val === "DP"
-                      ? "DP"
-                      : "Belum Bayar"
+                  valueFormatter={(val) =>
+                    val === "Paid" ? "Lunas" : "Belum Bayar"
                   }
-                  tooltip="Status pembayaran otomatis: Lunas, DP, atau Belum Bayar."
+                  tooltip="Status pembayaran terisi otomatis (Lunas atau Belum Bayar)."
+                />
+              </div>
+
+              {/* ROW 8 */}
+              <div className="grid grid-cols-4 gap-3">
+                {/* No. Seri Pelajar */}
+                <RangeField
+                  control={form.control}
+                  minName="initialStudentSerialNumber"
+                  maxName="finalStudentSerialNumber"
+                  label="No. Seri Pelajar"
+                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                />
+
+                {/* No. Seri Umum */}
+                <RangeField
+                  control={form.control}
+                  minName="initialPublicSerialNumber"
+                  maxName="finalPublicSerialNumber"
+                  label="No. Seri Umum"
+                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                />
+
+                {/* No. Seri Asing */}
+                <RangeField
+                  control={form.control}
+                  minName="initialForeignSerialNumber"
+                  maxName="finalForeignSerialNumber"
+                  label="No. Seri Asing"
+                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                />
+
+                {/* No. Seri Khusus */}
+                <RangeField
+                  control={form.control}
+                  minName="initialCustomSerialNumber"
+                  maxName="finalCustomSerialNumber"
+                  label="No. Seri Khusus"
+                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
                 />
               </div>
 
@@ -595,9 +609,9 @@ export default function ReservationForm() {
                     Loading...
                   </>
                 ) : isEditMode ? (
-                  "Update Reservasi"
+                  "Update Walk-in"
                 ) : (
-                  "Tambah Reservasi"
+                  "Tambah Walk-in"
                 )}
               </Button>
             </div>

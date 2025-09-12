@@ -1,5 +1,24 @@
 import { sendResponse } from "../utils/response.js";
 import { Region } from "../models/Region.js";
+import { Country } from "../models/Countries.js";
+
+/**
+ * * @desc Mendapatkan daftar seluruh provinsi di Indonesia
+ * ? Endpoint ini mengambil data dari API eksternal: https://wilayah.id/api/provinces.json
+ * @route GET /api/wilayah/countries
+ */
+export const getCountries = async (req, res) => {
+  try {
+    const countries = await Country.find().sort({
+      countryCode: 1,
+    });
+    sendResponse(res, 200, true, "Berhasil mendapatkan data negara", countries);
+  } catch (err) {
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
+  }
+};
 
 /**
  * * @desc Mendapatkan daftar seluruh provinsi di Indonesia

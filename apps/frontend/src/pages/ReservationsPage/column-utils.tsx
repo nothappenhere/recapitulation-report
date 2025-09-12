@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import type { ReservationFormValues } from "@/schemas/reservationSchema";
+import { type TBookingReservation } from "@rzkyakbr/schemas";
 import { type Column, type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnsActions } from "./column-actions";
@@ -26,7 +26,7 @@ export default function SortableHeader({
 }
 
 // Selection Column
-export const selectColumn: ColumnDef<ReservationFormValues> = {
+export const selectColumn: ColumnDef<TBookingReservation> = {
   id: "select",
   header: ({ table }) => (
     <Checkbox
@@ -71,9 +71,9 @@ export function createColumn<T>(
 
 // Dynamic Actions Column Creator
 export function createActionsColumn(
-  onEdit: (item: ReservationFormValues) => void,
-  onDelete: (item: ReservationFormValues) => void
-): ColumnDef<ReservationFormValues> {
+  onEdit: (item: TBookingReservation) => void,
+  onDelete: (item: TBookingReservation) => void
+): ColumnDef<TBookingReservation> {
   return {
     id: "actions",
     header: "Actions",

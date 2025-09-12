@@ -18,6 +18,8 @@ import WeeklyReportPage from "./pages/WeeklyReportPage";
 
 import ReservationTable from "./pages/ReservationsPage/ReservationTable";
 import ReservationForm from "./pages/ReservationsPage/ReservationForm";
+import VisitTabsForm from "./pages/Visits/VisitTabsForm";
+import VisitTabsTable from "./pages/Visits/VisitTabsTable";
 
 function App() {
   return (
@@ -50,6 +52,12 @@ function App() {
             <Route index element={<ReservationTable />} />
             <Route path="add" element={<ReservationForm />} />
             <Route path=":reservationId" element={<ReservationForm />} />
+          </Route>
+
+          <Route path="visits">
+            <Route index element={<VisitTabsTable />} />
+            <Route path="add" element={<VisitTabsForm />} />
+            <Route path=":reservationId" element={<VisitTabsForm />} />
           </Route>
         </Route>
       </Routes>

@@ -65,6 +65,10 @@ bookingReservationSchema.pre("save", function (next) {
     this.foreignMemberTotal +
     this.customMemberTotal;
 
+  if (this.downPayment >= this.paymentAmount) {
+    this.changeAmount = this.downPayment - this.paymentAmount;
+  }
+
   next();
 });
 

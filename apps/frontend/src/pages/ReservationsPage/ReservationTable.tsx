@@ -21,7 +21,7 @@ function ReservationTable() {
     async function fetchReservations() {
       setLoading(true);
       try {
-        const res = await api.get("/reservations");
+        const res = await api.get("/booking-reservation");
         setData(res.data.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;

@@ -23,6 +23,7 @@ type DateFieldProps<T extends FieldValues> = {
   label: string;
   placeholder?: string;
   tooltip?: string | ReactNode;
+  disabledForward: boolean;
 };
 
 export function DateField<T extends FieldValues>({
@@ -31,6 +32,7 @@ export function DateField<T extends FieldValues>({
   label,
   placeholder,
   tooltip,
+  disabledForward,
 }: DateFieldProps<T>) {
   return (
     <ControlledField
@@ -69,7 +71,19 @@ export function DateField<T extends FieldValues>({
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 const minDate = new Date("1900-01-01");
-                return date < today || date < minDate;
+
+                const isBeforeMinDate = date < minDate;
+                const isFriday = date.getDay() === 5; // 5 = Jumat
+                const isAfterToday = date > today;
+                const isBeforeToday = date < today;
+
+                if (disabledForward) {
+                  return (
+                    isBeforeMinDate || isBeforeToday || isAfterToday || isFriday
+                  );
+                } else {
+                  return isBeforeMinDate || isBeforeToday || isFriday;
+                }
               }}
               captionLayout="dropdown"
             />

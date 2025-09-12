@@ -39,7 +39,7 @@ export function ControlledField<T extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-1">
             <FormLabel>{label}</FormLabel>
             {tooltip && (
               <Tooltip>

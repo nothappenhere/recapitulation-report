@@ -4,6 +4,7 @@ import {
   getRegenciesOrCities,
   getDistricts,
   getVillages,
+  getCountries,
 } from "../controllers/regionController.js";
 
 const router = express.Router();
@@ -19,5 +20,8 @@ router.get("/districts/:provinceCode/:regencyCode", getDistricts);
 
 // Mendapatkan data kelurahan atau desa dari kecamatan.
 router.get("/villages/:provinceCode/:regencyCode/:districtCode", getVillages);
+
+// Mendapatkan data kelurahan negara dunia.
+router.get("/countries", getCountries);
 
 export default router;
