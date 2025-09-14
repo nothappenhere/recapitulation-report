@@ -1,4 +1,4 @@
-import { api } from "@rzkyakbr/libs";
+import { api } from "../../../../../packages/libs";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import TicketStockCard from "./ticket-stock-card";

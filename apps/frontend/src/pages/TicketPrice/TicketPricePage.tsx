@@ -1,4 +1,4 @@
-import { api } from "@rzkyakbr/libs";
+import { api } from "../../../../../packages/libs";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { TicketPriceCard } from "./TicketPriceCard";
@@ -64,8 +64,8 @@ function TicketPricePage() {
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 md:gap-6">
-            <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-              {/* Ticket Price Card for each Category*/}
+            {/* Ticket Price Card for each Category*/}
+            <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-2">
               {ticketPrices.map((ticketPrice) => (
                 <TicketPriceCard
                   key={ticketPrice._id}
@@ -84,7 +84,7 @@ function TicketPricePage() {
                 ticketPrices.length === 4 ? "hidden" : ""
               }`}
             >
-              <Button asChild className="mt-2.5">
+              <Button asChild className="mt-2">
                 <Link to="add">Tambah Harga Tiket</Link>
               </Button>
             </div>

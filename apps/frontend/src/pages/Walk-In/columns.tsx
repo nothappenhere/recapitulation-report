@@ -1,5 +1,5 @@
 import { formatPhoneNumber, formatRupiah } from "@rzkyakbr/libs";
-import { type TBookingReservation } from "@rzkyakbr/schemas";
+import { type TWalkIn } from "@rzkyakbr/schemas";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -11,9 +11,9 @@ import {
 } from "./column-utils";
 import { useNavigate } from "react-router";
 
-export function useReservationColumns(
-  onDelete: (item: TBookingReservation) => void
-): ColumnDef<TBookingReservation>[] {
+export function useWalkInColumns(
+  onDelete: (item: TWalkIn) => void
+): ColumnDef<TWalkIn>[] {
   const navigate = useNavigate();
 
   return [
@@ -23,7 +23,6 @@ export function useReservationColumns(
       cell: ({ row }) => formatPhoneNumber(row.getValue("phoneNumber")),
     }),
 
-    createColumn("groupName", "Nama Rombongan"),
     createColumn("visitingDate", "Tgl. Kunjungan", {
       cell: ({ row }) =>
         format(new Date(row.original.visitingDate), "PPP", { locale: id }),
@@ -88,7 +87,7 @@ export function useReservationColumns(
     }),
 
     createActionsColumn(
-      (r) => navigate(`/dashboard/visits/${r._id}?tab=reservation-booking`),
+      (wi) => navigate(`/dashboard/visits/${wi._id}?tab=walk-in`),
       onDelete
     ),
   ];

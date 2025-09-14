@@ -10,4 +10,9 @@ export const TicketPriceSchema = z.object({
     .number()
     .nonnegative({ message: "Unit price cannot be negative!" }),
 });
-export type TicketPriceFormSchema = z.infer<typeof TicketPriceSchema>;
+export type TTicketPrice = z.infer<typeof TicketPriceSchema>;
+
+export const defaultTicketPriceFormValues: TTicketPrice = {
+  category: undefined,
+  unitPrice: 0,
+};

@@ -19,7 +19,22 @@ import { useUser } from "@/hooks/UserContext";
 import { Link, NavLink } from "react-router";
 import { capitalizeFirstLetter } from "@/lib/utils";
 
-const navConfig = {
+type NavConfig = {
+  [role: string]: NavSection[];
+};
+
+type NavSection = {
+  title: string;
+  url: string;
+  items: NavItem[];
+};
+
+type NavItem = {
+  title: string;
+  url: string;
+};
+
+const navConfig: NavConfig = {
   administrator: [
     {
       title: "Getting Started",
@@ -27,7 +42,6 @@ const navConfig = {
       items: [
         { title: "Harga Tiket", url: "harga-tiket" },
         { title: "Stok Tiket", url: "stok-tiket" },
-        { title: "Course Management", url: "courses" },
       ],
     },
   ],
@@ -37,7 +51,6 @@ const navConfig = {
       url: "#",
       items: [
         { title: "Harga Tiket", url: "ticket-price" },
-        { title: "Booking Reservasi", url: "reservation" },
         { title: "Reservasi & Walk-in", url: "visits" },
       ],
     },
@@ -61,9 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-medium">Ticketing System</span>
-                  <span className="text-xs">
-                    {capitalizeFirstLetter(user?.role)}
-                  </span>
+                  <span className="text-xs">{capitalizeFirstLetter(role)}</span>
                 </div>
               </Link>
             </SidebarMenuButton>

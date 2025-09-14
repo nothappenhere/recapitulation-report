@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import { type TBookingReservation } from "@rzkyakbr/schemas";
+import { type TWalkIn } from "@rzkyakbr/schemas";
 import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
-import { useReservationColumns } from "./columns";
+import { useWalkInColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 
-export default function ReservationTable() {
-  const [data, setData] = useState<TBookingReservation[]>([]);
+export default function WalkInTable() {
+  const [data, setData] = useState<TWalkIn[]>([]);
   const [loading, setLoading] = useState(false);
 
   // * Untuk AlertDelete
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<TBookingReservation | null>(
-    null
-  );
+  const [selectedItem, setSelectedItem] = useState<TWalkIn | null>(null);
 
   // TODO: Ambil data dari API
   useEffect(() => {
@@ -57,13 +55,13 @@ export default function ReservationTable() {
   }, [selectedItem]);
 
   // TODO: Handler ketika klik tombol Delete (tampilkan alert)
-  const handleDeleteClick = useCallback((item: TBookingReservation) => {
+  const handleDeleteClick = useCallback((item: TWalkIn) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);
 
   // TODO: Oper ke kolom
-  const columns = useReservationColumns(handleDeleteClick);
+  const columns = useWalkInColumns(handleDeleteClick);
 
   return (
     <div className="container mx-auto">
@@ -72,9 +70,9 @@ export default function ReservationTable() {
       <DataTable
         columns={columns}
         data={loading ? [] : data}
-        addTitle="Tambah Reservasi"
-        addPath="add?tab=reservation-booking"
-        colSpan={7}
+        addTitle="Tambah Walk-in"
+        addPath="add?tab=walk-in"
+        colSpan={6}
       />
 
       <AlertDelete

@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@rzkyakbr/libs";
+import { api } from "../../../../packages/libs";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";

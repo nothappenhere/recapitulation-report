@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export type ColumnsActionsProps<T> = {
-  item: T; // data (reservation, user, course, dll)
+  item: T; // data (reservation, walk-in, dll)
   getId: (item: T) => string | number; // ambil unique ID
   onEdit?: (item: T) => void; // aksi edit
   onDelete?: (item: T) => void; // aksi delete

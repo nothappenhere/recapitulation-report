@@ -6,6 +6,16 @@ export function formatRupiah(number: number) {
   }).format(number);
 }
 
+export function slugToTitle(str: string) {
+  return str
+    .split(/[-_]/)
+    .map(
+      (word: string) =>
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    )
+    .join(" ");
+}
+
 function normalizePhoneNumber(input: string): string {
   const cleaned = input.replace(/\D/g, "");
 

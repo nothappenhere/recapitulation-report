@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import type { AxiosError } from "axios";
 import { loginSchema, type LoginFormValues } from "@rzkyakbr/schemas";
+import { SimpleField } from "@/components/form/SimpleField";
 
 export default function LoginPage({
   className,
@@ -72,29 +73,17 @@ export default function LoginPage({
                       </p>
                     </div>
 
-                    {/* Username Field */}
+                    {/* Username */}
                     <div className="grid gap-3">
-                      <FormField
+                      <SimpleField
                         control={form.control}
                         name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                required
-                                placeholder="Enter your username"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="Username"
+                        placeholder="Masukan username"
                       />
                     </div>
 
-                    {/* Password Field */}
+                    {/* Password  */}
                     <div className="grid gap-3">
                       <FormField
                         control={form.control}
@@ -108,7 +97,7 @@ export default function LoginPage({
                                 to="/auth/reset-password"
                                 className="ml-auto text-sm text-info underline-offset-2 hover:underline"
                               >
-                                Forgot your password?
+                                Lupa kata sandi?
                               </Link>
                             </div>
                             <FormControl>
@@ -116,7 +105,7 @@ export default function LoginPage({
                                 <Input
                                   type={showPassword ? "text" : "password"}
                                   required
-                                  placeholder="Enter your password"
+                                  placeholder="Masukan password"
                                   {...field}
                                 />
                                 <Button

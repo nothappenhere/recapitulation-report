@@ -22,7 +22,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import toast from "react-hot-toast";
-import { api } from "@rzkyakbr/libs";
+import { api } from "../../../../../packages/libs";
 
 export function AddTicketStock({
   className,

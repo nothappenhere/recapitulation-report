@@ -23,7 +23,7 @@ type SelectFieldProps<T extends FieldValues> = {
   options: { value: string; label: string; disabled?: boolean }[];
   tooltip?: string | ReactNode;
   disabled?: boolean;
-  countrySelect: boolean;
+  countrySelect?: boolean;
 };
 
 export function SelectField<T extends FieldValues>({
@@ -35,7 +35,7 @@ export function SelectField<T extends FieldValues>({
   options,
   tooltip,
   disabled,
-  countrySelect,
+  countrySelect = false,
 }: SelectFieldProps<T>) {
   return (
     <ControlledField

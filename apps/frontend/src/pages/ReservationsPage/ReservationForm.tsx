@@ -1,20 +1,10 @@
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import {
-  BookingReservationSchema,
-  defaultBookingReservationFormValues,
-  type TBookingReservation,
-} from "@rzkyakbr/schemas";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import {
   Card,
   CardContent,
@@ -23,188 +13,69 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  BookingReservationSchema,
+  defaultBookingReservationFormValues,
+  type TBookingReservation,
+} from "@rzkyakbr/schemas";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
+  api,
+  formatPhoneNumber,
+  formatRupiah,
+  useAutoFinalSerial,
+  useAutoPaymentWithAPI,
+  useRegionSelector,
+} from "@rzkyakbr/libs";
 import {
   SquareLibrary,
-  CalendarIcon,
+  Banknote,
   ClockIcon,
+  Flag,
   Loader2,
   MapPinned,
 } from "lucide-react";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
-import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
-import { Separator } from "@/components/ui/separator";
-import { AxiosError } from "axios";
-import { formatPhoneNumber, formatRupiah } from "@rzkyakbr/libs";
-import { api } from "@rzkyakbr/libs";
+import { toast } from "react-hot-toast";
 import { useNavigate, useParams } from "react-router";
-import toast from "react-hot-toast";
 import { SimpleField } from "@/components/form/SimpleField";
 import { SelectField } from "@/components/form/SelectField";
 import { DateField } from "@/components/form/DateField";
-import { Label } from "react-aria-components";
 
 export default function ReservationForm() {
-  const { reservationId } = useParams();
-  const [countries, setCountries] = useState([]);
-  const [provinces, setProvinces] = useState([]);
-  const [regencies, setRegencies] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [villages, setVillages] = useState([]);
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  const isEditMode = Boolean(reservationId);
+  const isEditMode = Boolean(id);
 
   const form = useForm<TBookingReservation>({
     resolver: zodResolver(BookingReservationSchema),
     defaultValues: defaultBookingReservationFormValues,
   });
 
-  const provinceCode = form.watch("province");
-  const regencyCode = form.watch("regencyOrCity");
-  const districtCode = form.watch("district");
+  // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
+  // TODO: Akan otomatis fetch data sesuai hierarki (provinsi -> kabupaten -> kecamatan -> desa)
+  // ? Mengatur ulang field form jika parent berubah (misal ganti provinsi, maka kabupaten/kecamatan/desa direset)
+  // ? Return: daftar negara, provinsi, kabupaten, kecamatan, desa
+  const { countries, provinces, regencies, districts, villages } =
+    useRegionSelector(form);
 
-  //* 1. Fetch data provinsi dan negara saat load:
-  useEffect(() => {
-    const getProvinces = async () => {
-      try {
-        const responseProvinces = await api.get("/region/provinces");
-        setProvinces(responseProvinces.data?.data);
+  //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
+  // TODO: Mengambil harga tiket per kategori dari endpoint API (misal /ticket-price)
+  // ? Mengalikan (harga * jumlah anggota) untuk setiap kategori
+  // ? Menjumlahkan semua kategori agar dapat total pembayaran
+  // ? Menghitung otomatis kembalian dari downPayment (uang muka)
+  // ? Menentukan status pembayaran: "Paid" kalau lunas, "Unpaid" kalau belum lunas
+  useAutoPaymentWithAPI("/ticket-price", form.watch, form.setValue);
 
-        const responseCountries = await api.get("/region/countries");
-        setCountries(responseCountries.data?.data);
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch provinces:", error.message);
-        toast.error("Failed to fetch provinces, please refresh the page.");
-      }
-    };
-
-    getProvinces();
-  }, []);
-
-  //* 2. Fetch kabupaten/kota berdasarkan provinsi:
-  useEffect(() => {
-    if (!provinceCode) return;
-
-    const getRegenciesOrCities = async () => {
-      try {
-        const response = await api.get(`/region/regencies/${provinceCode}`);
-        setRegencies(response.data?.data);
-        setDistricts([]);
-        setVillages([]);
-
-        form.setValue("regencyOrCity", "");
-        form.setValue("district", "");
-        form.setValue("village", "");
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch regencies:", error.message);
-        toast.error("Failed to fetch regencies, please refresh the page.");
-      }
-    };
-
-    getRegenciesOrCities();
-  }, [form, provinceCode]);
-
-  //* 3. Fetch kecamatan berdasarkan kabupaten/kota:
-  useEffect(() => {
-    if (!provinceCode) return;
-    if (!regencyCode) return;
-
-    const getDistricts = async () => {
-      const regencyCodeOnly = regencyCode.split(".")[1];
-
-      try {
-        const response = await api.get(
-          `/region/districts/${provinceCode}/${regencyCodeOnly}`
-        );
-        setDistricts(response.data?.data);
-        setVillages([]);
-
-        form.setValue("district", "");
-        form.setValue("village", "");
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch districts:", error.message);
-        toast.error("Failed to fetch districts, please refresh the page.");
-      }
-    };
-
-    getDistricts();
-  }, [form, provinceCode, regencyCode]);
-
-  //* 4. Fetch desa berdasarkan kecamatan:
-  useEffect(() => {
-    if (!provinceCode) return;
-    if (!regencyCode) return;
-    if (!districtCode) return;
-
-    const parts = districtCode.split(".");
-    const regencyCodeOnly = parts[1];
-    const districtCodeOnly = parts[2];
-
-    const getVillages = async () => {
-      try {
-        const response = await api.get(
-          `/region/villages/${provinceCode}/${regencyCodeOnly}/${districtCodeOnly}`
-        );
-        setVillages(response.data?.data);
-
-        form.setValue("village", "");
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch villages:", error.message);
-        toast.error("Failed to fetch villages, please refresh the page.");
-      }
-    };
-
-    getVillages();
-  }, [districtCode, form, provinceCode, regencyCode]);
-
-  // Harga per kategori
-  const pricePerCategory = {
-    Pelajar: 3000,
-    Umum: 5000,
-    Asing: 25000,
-    Khusus: 0,
-  };
-
-  const { watch, setValue, reset } = form;
-  const category = watch("category");
-  const groupMemberTotal = watch("groupMemberTotal");
-  const paymentAmount = watch("paymentAmount");
-  const downPayment = watch("downPayment");
-
-  //* Hitung otomatis total dan status pembayaran
-  useEffect(() => {
-    const price = (pricePerCategory[category] || 0) * (groupMemberTotal || 0);
-    setValue("paymentAmount", price);
-  }, [category, groupMemberTotal]);
-
-  useEffect(() => {
-    const change = Math.max(0, (downPayment || 0) - (paymentAmount || 0));
-    const status: "Paid" | "DP" | "Unpaid" =
-      downPayment >= paymentAmount ? "Paid" : downPayment > 0 ? "DP" : "Unpaid";
-
-    setValue("changeAmount", change);
-    setValue("statusPayment", status);
-  }, [paymentAmount, downPayment]);
+  //* Hook untuk menghitung otomatis nomor seri akhir tiap kategori
+  // ? Berdasarkan input nomor seri awal + jumlah anggota - 1
+  // TODO: Contoh: nomor awal 100, jumlah 5 → nomor akhir = 104
+  // ? Memastikan format tetap sesuai (misal leading zero tetap ada)
+  // ? Bekerja untuk semua kategori (student, public, foreign, custom)
+  useAutoFinalSerial(form.watch, form.setValue, {
+    student: true,
+    public: true,
+    foreign: true,
+    custom: true,
+  });
 
   // 🔹 Fetch reservation by ID kalau sedang edit
   useEffect(() => {
@@ -215,65 +86,68 @@ export default function ReservationForm() {
         setLoading(true);
 
         // fetch reservation data
-        const res = await api.get(`/reservations/${reservationId}`);
+        const res = await api.get(`/booking-reservation/${id}`);
         const data = res.data.data;
+        console.log(data);
 
-        // fetch provinsi, regencies, districts, villages sesuai data
-        const provincesRes = await api.get("/wilayah/provinces");
-        setProvinces(provincesRes.data?.data?.data);
+        // // fetch provinsi, regencies, districts, villages sesuai data
+        // const provincesRes = await api.get("/wilayah/provinces");
+        // setProvinces(provincesRes.data?.data?.data);
 
-        const regenciesRes = await api.get(
-          `/wilayah/regencies/${data.province}`
-        );
-        setRegencies(regenciesRes.data?.data?.data);
+        // const regenciesRes = await api.get(
+        //   `/wilayah/regencies/${data.province}`
+        // );
+        // setRegencies(regenciesRes.data?.data?.data);
 
-        const regencyCodeOnly = data.regencyOrCity.split(".")[1];
-        const districtsRes = await api.get(
-          `/wilayah/districts/${data.province}/${regencyCodeOnly}`
-        );
-        setDistricts(districtsRes.data?.data?.data);
+        // const regencyCodeOnly = data.regencyOrCity.split(".")[1];
+        // const districtsRes = await api.get(
+        //   `/wilayah/districts/${data.province}/${regencyCodeOnly}`
+        // );
+        // setDistricts(districtsRes.data?.data?.data);
 
-        const districtParts = data.district.split(".");
-        const districtCodeOnly = districtParts[2];
-        const villagesRes = await api.get(
-          `/wilayah/villages/${data.province}/${regencyCodeOnly}/${districtCodeOnly}`
-        );
-        setVillages(villagesRes.data?.data?.data);
+        // const districtParts = data.district.split(".");
+        // const districtCodeOnly = districtParts[2];
+        // const villagesRes = await api.get(
+        //   `/wilayah/villages/${data.province}/${regencyCodeOnly}/${districtCodeOnly}`
+        // );
+        // setVillages(villagesRes.data?.data?.data);
 
-        // reset form setelah semua options terisi
-        form.reset({
-          ...defaultFormValues,
-          ...data,
-          reservationDate: data.reservationDate
-            ? new Date(data.reservationDate)
-            : new Date(),
-        });
+        // // reset form setelah semua options terisi
+        // form.reset({
+        //   ...defaultFormValues,
+        //   ...data,
+        //   reservationDate: data.reservationDate
+        //     ? new Date(data.reservationDate)
+        //     : new Date(),
+        // });
       } catch (err) {
         toast.error("Data reservasi tidak ditemukan!");
-        navigate("/dashboard/reservation");
+        navigate("/dashboard/visits");
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [isEditMode, reservationId]);
+  }, [isEditMode, id]);
 
   //* Submit handler: create atau update
   const onSubmit = async (values: TBookingReservation): Promise<void> => {
     try {
       setLoading(true);
       if (isEditMode) {
-        await api.put(`/reservations/${reservationId}`, values);
+        await api.put(`/reservations/${id}`, values);
         toast.success("Reservasi berhasil diperbarui!");
       } else {
-        const res = await api.post("/reservations", values);
-        toast.success(
-          `Reservasi berhasil ditambahkan: ${res.data.data.reservationNumber}`
-        );
+        console.log(values);
+        alert("test kirim");
+        // const res = await api.post("/reservations", values);
+        // toast.success(
+        //   `Reservasi berhasil ditambahkan: ${res.data.data.reservationNumber}`
+        // );
       }
 
-      navigate("/dashboard/reservation");
+      // navigate("/dashboard/reservation");
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan data!");
@@ -286,11 +160,11 @@ export default function ReservationForm() {
     <Card>
       <CardHeader className="text-center">
         <CardTitle>
-          {isEditMode ? "Edit Reservasi" : "Pendataan Reservasi Baru"}
+          {isEditMode ? "Edit Data Reservasi" : "Pendataan Reservasi Baru"}
         </CardTitle>
         <CardDescription>
           {isEditMode
-            ? `Ubah detail reservasi dengan ID: ${reservationId}`
+            ? `Ubah detail reservasi dengan ID: ${id}`
             : "Isi formulir di bawah untuk membuat reservasi baru."}
         </CardDescription>
       </CardHeader>
@@ -344,7 +218,7 @@ export default function ReservationForm() {
                     { value: "Google Form", label: "Google Form" },
                     { value: "lainnya", label: "Lainnya..." },
                   ]}
-                  tooltip="Pilih metode reservasi yang digunakan, misalnya WhatsApp atau Google Form."
+                  tooltip="Pilih metode reservasi yang digunakan."
                 />
               </div>
 
@@ -377,9 +251,16 @@ export default function ReservationForm() {
                   name="phoneNumber"
                   label="Nomor Telepon"
                   placeholder="Masukan nomor telepon"
-                  onChangeOverride={(value, field) => {
-                    const formatted = formatPhoneNumber(value);
-                    field.onChange(formatted);
+                  // tampilkan pakai formatter
+                  valueFormatter={(value) =>
+                    value ? formatPhoneNumber(String(value)) : ""
+                  }
+                  // konversi kembali ke raw number saat user mengetik
+                  onChangeOverride={(e, field) => {
+                    const raw = e.target.value.replace(/\D/g, ""); // hanya angka
+                    field.onChange(
+                      raw.startsWith("0") ? "62" + raw.slice(1) : raw
+                    );
                   }}
                   tooltip="Masukkan nomor telepon aktif yang bisa dihubungi."
                 />
@@ -399,29 +280,29 @@ export default function ReservationForm() {
                 {/* Jumlah Anggota Rombongan PELAJAR */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="studentMemberTotal"
                   label="Jumlah Anggota Pelajar"
-                  type="number"
                   placeholder="Masukan jumlah angg. pelajar"
-                  tooltip="Jumlah anggota rombongan yang berstatus pelajar (SD, SMP, SMA, Mahasiswa)."
+                  tooltip="Jumlah anggota rombongan yang berstatus pelajar (TK / Paud, SD, SMP, SMA, Mahasiswa)."
                 />
 
                 {/* Jumlah Anggota Rombongan UMUM */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="publicMemberTotal"
                   label="Jumlah Anggota Umum"
-                  type="number"
                   placeholder="Masukan jumlah angg. umum"
-                  tooltip="Jumlah anggota rombongan kategori umum (di luar pelajar/asing/khusus)."
+                  tooltip="Jumlah anggota rombongan kategori umum (di luar Pelajar/Asing/Khusus)."
                 />
 
                 {/* Jumlah Anggota Rombongan ASING */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="foreignMemberTotal"
                   label="Jumlah Anggota Asing"
-                  type="number"
                   placeholder="Masukan jumlah angg. asing"
                   tooltip="Jumlah anggota rombongan yang merupakan pengunjung dari luar negeri."
                 />
@@ -429,9 +310,9 @@ export default function ReservationForm() {
                 {/* Jumlah Anggota Rombongan KHUSUS */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="customMemberTotal"
                   label="Jumlah Anggota Khusus"
-                  type="number"
                   placeholder="Masukan jumlah angg. Khusus"
                   tooltip="Jumlah anggota rombongan dengan kategori khusus (misalnya undangan, VIP, dsb)."
                 />
@@ -439,12 +320,12 @@ export default function ReservationForm() {
                 {/* Jumlah Seluruh Anggota Rombongan (readonly) */}
                 <SimpleField
                   control={form.control}
+                  type="number"
                   name="groupMemberTotal"
                   label="Jumlah Seluruh Anggota"
-                  type="number"
                   placeholder="Masukan jumlah seluruh angg."
                   disabled
-                  tooltip="Jumlah total anggota rombongan. Terhitung otomatis dari semua kategori."
+                  tooltip="Jumlah total anggota rombongan (terisi otomatis dari semua kategori)."
                 />
               </div>
 
@@ -461,7 +342,7 @@ export default function ReservationForm() {
               </div>
 
               {/* ROW 6 */}
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-5 gap-3">
                 {/* Provinsi */}
                 <SelectField
                   control={form.control}
@@ -475,8 +356,11 @@ export default function ReservationForm() {
                       label: prov.name,
                     })
                   )}
-                  disabled={!provinces.length}
-                  tooltip="Pilih provinsi asal rombongan."
+                  disabled={
+                    !provinces.length ||
+                    Boolean(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih provinsi asal ."
                 />
 
                 {/* Kabupaten/Kota */}
@@ -492,8 +376,11 @@ export default function ReservationForm() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!regencies.length}
-                  tooltip="Pilih kabupaten atau kota sesuai alamat asal rombongan."
+                  disabled={
+                    !regencies.length ||
+                    Boolean(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih kabupaten / kota asal pemesan."
                 />
 
                 {/* Kecamatan */}
@@ -509,8 +396,11 @@ export default function ReservationForm() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!districts.length}
-                  tooltip="Pilih kecamatan sesuai alamat asal rombongan."
+                  disabled={
+                    !districts.length ||
+                    Boolean(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih kecamatan asal pemesan."
                 />
 
                 {/* Kelurahan/Desa */}
@@ -526,13 +416,39 @@ export default function ReservationForm() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!villages.length}
-                  tooltip="Pilih kelurahan atau desa sesuai alamat asal rombongan."
+                  disabled={
+                    !villages.length ||
+                    Boolean(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih kelurahan / desa asal pemesan."
+                />
+
+                {/* Negara */}
+                <SelectField
+                  control={form.control}
+                  name="country"
+                  label="Negara Asal "
+                  placeholder="Pilih negara asal "
+                  icon={Flag}
+                  options={countries.map(
+                    (country: {
+                      countryCode: string;
+                      countryName: string;
+                    }) => ({
+                      value: country.countryName,
+                      label: country.countryCode,
+                    })
+                  )}
+                  disabled={
+                    !Number(Number(form.getValues("foreignMemberTotal")))
+                  }
+                  tooltip="Pilih negara asal pemesan (jika ada anggota asing)."
+                  countrySelect
                 />
               </div>
 
               {/* ROW 7 */}
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-5 gap-3">
                 {/* Total Pembayaran (readonly) */}
                 <SimpleField
                   control={form.control}
@@ -541,7 +457,22 @@ export default function ReservationForm() {
                   placeholder="Masukan total pembayaran"
                   disabled
                   valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah total pembayaran yang harus dibayarkan. Dihitung otomatis."
+                  tooltip="Jumlah total pembayaran yang harus dibayarkan  (terhitung otomatis)."
+                />
+
+                {/* Metode Pembayaran */}
+                <SelectField
+                  control={form.control}
+                  name="paymentMethod"
+                  label="Metode Pembayaran"
+                  placeholder="Pilih metode pembayaran"
+                  icon={Banknote}
+                  options={[
+                    { label: "Tunai", value: "Tunai" },
+                    { label: "Transfer", value: "Transfer" },
+                    { label: "QRIS", value: "QRIS" },
+                  ]}
+                  tooltip="Metode pembayaran tiket."
                 />
 
                 {/* Uang Muka */}
@@ -555,7 +486,7 @@ export default function ReservationForm() {
                     field.onChange(Number(rawValue));
                   }}
                   valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Masukkan jumlah uang muka minimal 20% dari total pembayaran."
+                  tooltip="Jumlah uang muka yang dibayarkan."
                 />
 
                 {/* Uang Kembalian (readonly) */}
@@ -576,14 +507,10 @@ export default function ReservationForm() {
                   label="Status Pembayaran"
                   placeholder="Masukan status pembayaran"
                   disabled
-                  valueFormatter={(val: string) =>
-                    val === "Paid"
-                      ? "Lunas"
-                      : val === "DP"
-                      ? "DP"
-                      : "Belum Bayar"
+                  valueFormatter={(val) =>
+                    val === "Paid" ? "Lunas" : "Belum Bayar"
                   }
-                  tooltip="Status pembayaran otomatis: Lunas, DP, atau Belum Bayar."
+                  tooltip="Status pembayaran terisi otomatis (Lunas atau Belum Bayar)."
                 />
               </div>
 

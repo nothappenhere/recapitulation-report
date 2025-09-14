@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { api } from "@rzkyakbr/libs";
+import { api } from "../../../../packages/libs";
 
 export default function WeeklyReportTable({ refreshTrigger }) {
   const [reports, setReports] = useState<any[]>([]);

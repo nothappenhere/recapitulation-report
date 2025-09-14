@@ -48,16 +48,10 @@ function App() {
 
           <Route path="laporan-mingguan" element={<WeeklyReportPage />} />
 
-          <Route path="reservation">
-            <Route index element={<ReservationTable />} />
-            <Route path="add" element={<ReservationForm />} />
-            <Route path=":reservationId" element={<ReservationForm />} />
-          </Route>
-
           <Route path="visits">
             <Route index element={<VisitTabsTable />} />
             <Route path="add" element={<VisitTabsForm />} />
-            <Route path=":reservationId" element={<VisitTabsForm />} />
+            <Route path=":id" element={<VisitTabsForm />} />
           </Route>
         </Route>
       </Routes>

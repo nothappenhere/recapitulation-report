@@ -15,6 +15,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -30,17 +31,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router";
+import { formatRupiah } from "@rzkyakbr/libs";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   addTitle: string;
+  addPath: string;
+  colSpan: number;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   addTitle,
+  addPath,
+  colSpan,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -71,11 +77,11 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      {/* Table Header Control */}
+      {/* Header Control */}
       <div className="flex items-center justify-between py-4">
         {/* Search Filters */}
         <Input
-          placeholder="Search by Reservation Number, Date, Visit Time, or Anything..."
+          placeholder="Cari berdasarkan Nama Pemesan, Tanggal / Waktu Kunjungan, dll..."
           value={globalFilter}
           onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-md"
@@ -84,14 +90,14 @@ export function DataTable<TData, TValue>({
         <div className="flex justify-evenly items-center gap-3">
           {/* Add Button */}
           <Button asChild>
-            <Link to={"add"}>{addTitle}</Link>
+            <Link to={addPath ?? "add"}>{addTitle}</Link>
           </Button>
 
           {/* Dropdown column visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
-                <span>Select Columns</span>
+                <span>Pilih Kolom</span>
                 <ChevronDown className="mt-0.5" />
               </Button>
             </DropdownMenuTrigger>
@@ -163,20 +169,61 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-20 text-center"
                 >
-                  No results.
+                  Tidak ada hasil.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
+
+          <TableFooter>
+            <TableRow>
+              {table.getVisibleLeafColumns().map((column, idx) => {
+                const rows = table.getRowModel().rows;
+
+                // kolom dengan meta.sum = true
+                if (column.columnDef.meta?.sum) {
+                  const total = rows.reduce((acc, row) => {
+                    const value = row.getValue<number>(column.id);
+                    return acc + (typeof value === "number" ? value : 0);
+                  }, 0);
+
+                  return (
+                    <TableCell key={column.id} className="font-bold">
+                      {column.columnDef.meta?.isCurrency
+                        ? formatRupiah(total)
+                        : total}
+                    </TableCell>
+                  );
+                }
+
+                // kolom pertama → label Total
+                if (idx === 0) {
+                  return (
+                    <TableCell
+                      key={column.id}
+                      className="font-bold"
+                      colSpan={colSpan}
+                    >
+                      Total
+                    </TableCell>
+                  );
+                }
+
+                if (idx < colSpan) return null;
+
+                return <TableCell key={column.id}>&ndash;</TableCell>;
+              })}
+            </TableRow>
+          </TableFooter>
         </Table>
       </div>
 
-      {/* Table Footer Controls */}
+      {/* Footer Controls */}
       <div className="flex justify-between space-x-2 py-4 px-2">
         {/* Selection Control */}
         <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredSelectedRowModel().rows.length} dari{" "}
+          {table.getFilteredRowModel().rows.length} baris yang dipilih.
         </div>
 
         {/* Pagination Control */}
@@ -188,15 +235,15 @@ export function DataTable<TData, TValue>({
             disabled={!table.getCanPreviousPage()}
           >
             <ChevronLeft className="mt-0.5" />
-            Previous
+            Sebelumnya
           </Button>
           <div>
             <span className="inline-flex items-center space-x-1 rounded-md bg-white px-4 py-2 text-muted-foreground text-sm">
-              Page{" "}
+              Halaman{" "}
               <b className="mx-1">
                 {table.getState().pagination.pageIndex + 1}
               </b>{" "}
-              of <b className="ml-1">{table.getPageCount()}</b>
+              dari <b className="ml-1">{table.getPageCount()}</b>
             </span>
           </div>
           <Button
@@ -205,7 +252,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            Berikutnya
             <ChevronRight className="mt-0.5" />
           </Button>
         </div>

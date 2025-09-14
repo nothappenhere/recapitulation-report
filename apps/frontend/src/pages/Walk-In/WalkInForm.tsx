@@ -1,12 +1,10 @@
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import {
-  WalkInSchema,
-  defaultWalkInFormValues,
-  type TWalkIn,
-} from "@rzkyakbr/schemas";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import {
   Card,
   CardContent,
@@ -14,146 +12,58 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Banknote, ClockIcon, Flag, Loader2, MapPinned } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
-import { Separator } from "@/components/ui/separator";
-import { AxiosError } from "axios";
 import {
+  WalkInSchema,
+  defaultWalkInFormValues,
+  type TWalkIn,
+} from "@rzkyakbr/schemas";
+import {
+  api,
   formatPhoneNumber,
   formatRupiah,
   useAutoFinalSerial,
-  useAutoPaymentCalculation,
+  useAutoPaymentWithAPI,
+  useRegionSelector,
 } from "@rzkyakbr/libs";
-import { api } from "@rzkyakbr/libs";
+import { Banknote, ClockIcon, Flag, Loader2, MapPinned } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { useNavigate, useParams } from "react-router";
-import toast from "react-hot-toast";
 import { SimpleField } from "@/components/form/SimpleField";
 import { SelectField } from "@/components/form/SelectField";
 import { DateField } from "@/components/form/DateField";
 import { RangeField } from "@/components/form/RangeField";
 
 export default function WalkInForm() {
-  const { reservationId } = useParams();
-  const [countries, setCountries] = useState([]);
-  const [provinces, setProvinces] = useState([]);
-  const [regencies, setRegencies] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [villages, setVillages] = useState([]);
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  const isEditMode = Boolean(reservationId);
+  const isEditMode = Boolean(id);
 
   const form = useForm<TWalkIn>({
     resolver: zodResolver(WalkInSchema),
     defaultValues: defaultWalkInFormValues,
   });
 
-  const provinceCode = form.watch("province");
-  const regencyCode = form.watch("regencyOrCity");
-  const districtCode = form.watch("district");
+  // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
+  // TODO: Akan otomatis fetch data sesuai hierarki (provinsi -> kabupaten -> kecamatan -> desa)
+  // ? Mengatur ulang field form jika parent berubah (misal ganti provinsi, maka kabupaten/kecamatan/desa direset)
+  // ? Return: daftar negara, provinsi, kabupaten, kecamatan, desa
+  const { countries, provinces, regencies, districts, villages } =
+    useRegionSelector(form);
 
-  //* 1. Fetch data provinsi dan negara saat load:
-  useEffect(() => {
-    const getProvinces = async () => {
-      try {
-        const responseProvinces = await api.get("/region/provinces");
-        setProvinces(responseProvinces.data?.data);
+  //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
+  // TODO: Mengambil harga tiket per kategori dari endpoint API (misal /ticket-price)
+  // ? Mengalikan (harga * jumlah anggota) untuk setiap kategori
+  // ? Menjumlahkan semua kategori agar dapat total pembayaran
+  // ? Menghitung otomatis kembalian dari downPayment (uang muka)
+  // ? Menentukan status pembayaran: "Paid" kalau lunas, "Unpaid" kalau belum lunas
+  useAutoPaymentWithAPI("/ticket-price", form.watch, form.setValue);
 
-        const responseCountries = await api.get("/region/countries");
-        setCountries(responseCountries.data?.data);
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch provinces:", error.message);
-        toast.error("Failed to fetch provinces, please refresh the page.");
-      }
-    };
-
-    getProvinces();
-  }, []);
-
-  //* 2. Fetch kabupaten/kota berdasarkan provinsi:
-  useEffect(() => {
-    if (!provinceCode) return;
-
-    const getRegenciesOrCities = async () => {
-      try {
-        const response = await api.get(`/region/regencies/${provinceCode}`);
-        setRegencies(response.data?.data);
-        setDistricts([]);
-        setVillages([]);
-
-        form.setValue("regencyOrCity", "");
-        form.setValue("district", "");
-        form.setValue("village", "");
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch regencies:", error.message);
-        toast.error("Failed to fetch regencies, please refresh the page.");
-      }
-    };
-
-    getRegenciesOrCities();
-  }, [form, provinceCode]);
-
-  //* 3. Fetch kecamatan berdasarkan kabupaten/kota:
-  useEffect(() => {
-    if (!provinceCode) return;
-    if (!regencyCode) return;
-
-    const getDistricts = async () => {
-      const regencyCodeOnly = regencyCode.split(".")[1];
-
-      try {
-        const response = await api.get(
-          `/region/districts/${provinceCode}/${regencyCodeOnly}`
-        );
-        setDistricts(response.data?.data);
-        setVillages([]);
-
-        form.setValue("district", "");
-        form.setValue("village", "");
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch districts:", error.message);
-        toast.error("Failed to fetch districts, please refresh the page.");
-      }
-    };
-
-    getDistricts();
-  }, [form, provinceCode, regencyCode]);
-
-  //* 4. Fetch desa berdasarkan kecamatan:
-  useEffect(() => {
-    if (!provinceCode) return;
-    if (!regencyCode) return;
-    if (!districtCode) return;
-
-    const parts = districtCode.split(".");
-    const regencyCodeOnly = parts[1];
-    const districtCodeOnly = parts[2];
-
-    const getVillages = async () => {
-      try {
-        const response = await api.get(
-          `/region/villages/${provinceCode}/${regencyCodeOnly}/${districtCodeOnly}`
-        );
-        setVillages(response.data?.data);
-
-        form.setValue("village", "");
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch villages:", error.message);
-        toast.error("Failed to fetch villages, please refresh the page.");
-      }
-    };
-
-    getVillages();
-  }, [districtCode, form, provinceCode, regencyCode]);
-
-  useAutoPaymentCalculation(form.watch, form.setValue);
-
+  //* Hook untuk menghitung otomatis nomor seri akhir tiap kategori
+  // ? Berdasarkan input nomor seri awal + jumlah anggota - 1
+  // TODO: Contoh: nomor awal 100, jumlah 5 → nomor akhir = 104
+  // ? Memastikan format tetap sesuai (misal leading zero tetap ada)
+  // ? Bekerja untuk semua kategori (student, public, foreign, custom)
   useAutoFinalSerial(form.watch, form.setValue, {
     student: true,
     public: true,
@@ -170,70 +80,70 @@ export default function WalkInForm() {
         setLoading(true);
 
         // fetch reservation data
-        const res = await api.get(`/reservations/${reservationId}`);
+        const res = await api.get(`/booking-reservation/${id}`);
         const data = res.data.data;
+        console.log(data);
 
-        // fetch provinsi, regencies, districts, villages sesuai data
-        const provincesRes = await api.get("/wilayah/provinces");
-        setProvinces(provincesRes.data?.data?.data);
+        // // fetch provinsi, regencies, districts, villages sesuai data
+        // const provincesRes = await api.get("/wilayah/provinces");
+        // setProvinces(provincesRes.data?.data?.data);
 
-        const regenciesRes = await api.get(
-          `/wilayah/regencies/${data.province}`
-        );
-        setRegencies(regenciesRes.data?.data?.data);
+        // const regenciesRes = await api.get(
+        //   `/wilayah/regencies/${data.province}`
+        // );
+        // setRegencies(regenciesRes.data?.data?.data);
 
-        const regencyCodeOnly = data.regencyOrCity.split(".")[1];
-        const districtsRes = await api.get(
-          `/wilayah/districts/${data.province}/${regencyCodeOnly}`
-        );
-        setDistricts(districtsRes.data?.data?.data);
+        // const regencyCodeOnly = data.regencyOrCity.split(".")[1];
+        // const districtsRes = await api.get(
+        //   `/wilayah/districts/${data.province}/${regencyCodeOnly}`
+        // );
+        // setDistricts(districtsRes.data?.data?.data);
 
-        const districtParts = data.district.split(".");
-        const districtCodeOnly = districtParts[2];
-        const villagesRes = await api.get(
-          `/wilayah/villages/${data.province}/${regencyCodeOnly}/${districtCodeOnly}`
-        );
-        setVillages(villagesRes.data?.data?.data);
+        // const districtParts = data.district.split(".");
+        // const districtCodeOnly = districtParts[2];
+        // const villagesRes = await api.get(
+        //   `/wilayah/villages/${data.province}/${regencyCodeOnly}/${districtCodeOnly}`
+        // );
+        // setVillages(villagesRes.data?.data?.data);
 
-        // reset form setelah semua options terisi
-        form.reset({
-          ...defaultFormValues,
-          ...data,
-          reservationDate: data.reservationDate
-            ? new Date(data.reservationDate)
-            : new Date(),
-        });
+        // // reset form setelah semua options terisi
+        // form.reset({
+        //   ...defaultFormValues,
+        //   ...data,
+        //   reservationDate: data.reservationDate
+        //     ? new Date(data.reservationDate)
+        //     : new Date(),
+        // });
       } catch (err) {
         toast.error("Data reservasi tidak ditemukan!");
-        navigate("/dashboard/reservation");
+        navigate("/dashboard/visits");
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [isEditMode, reservationId]);
+  }, [isEditMode, id]);
 
   //* Submit handler: create atau update
   const onSubmit = async (values: TWalkIn): Promise<void> => {
     try {
-      setLoading(true);
       if (isEditMode) {
-        await api.put(`/reservations/${reservationId}`, values);
+        await api.put(`/reservations/${id}`, values);
         toast.success("Reservasi berhasil diperbarui!");
       } else {
-        const res = await api.post("/reservations", values);
-        toast.success(
-          `Reservasi berhasil ditambahkan: ${res.data.data.reservationNumber}`
-        );
+        console.log(values);
+        alert("test kirim");
+        // const res = await api.post("/reservations", values);
+        // toast.success(
+        //   `Reservasi berhasil ditambahkan: ${res.data.data.reservationNumber}`
+        // );
       }
 
-      navigate("/dashboard/reservation");
+      // navigate("/dashboard/reservation");
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan data!");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -245,7 +155,7 @@ export default function WalkInForm() {
         </CardTitle>
         <CardDescription>
           {isEditMode
-            ? `Ubah detail kunjungan walk-in dengan ID: ${reservationId}`
+            ? `Ubah detail kunjungan walk-in dengan ID: ${id}`
             : "Isi formulir di bawah untuk mencatat kunjungan walk-in."}
         </CardDescription>
       </CardHeader>
@@ -315,13 +225,19 @@ export default function WalkInForm() {
                 {/* Nomor Telepon */}
                 <SimpleField
                   control={form.control}
-                  type="number"
                   name="phoneNumber"
                   label="Nomor Telepon"
                   placeholder="Masukan nomor telepon"
-                  onChangeOverride={(value, field) => {
-                    const formatted = formatPhoneNumber(value);
-                    field.onChange(formatted);
+                  // tampilkan pakai formatter
+                  valueFormatter={(value) =>
+                    value ? formatPhoneNumber(String(value)) : ""
+                  }
+                  // konversi kembali ke raw number saat user mengetik
+                  onChangeOverride={(e, field) => {
+                    const raw = e.target.value.replace(/\D/g, ""); // hanya angka
+                    field.onChange(
+                      raw.startsWith("0") ? "62" + raw.slice(1) : raw
+                    );
                   }}
                   tooltip="Nomor telepon aktif pemesan yang bisa dihubungi."
                 />
@@ -347,7 +263,7 @@ export default function WalkInForm() {
                   name="studentMemberTotal"
                   label="Jumlah Anggota Pelajar"
                   placeholder="Masukan jumlah angg. pelajar"
-                  tooltip="Jumlah anggota rombongan yang berstatus pelajar (SD, SMP, SMA, Mahasiswa)."
+                  tooltip="Jumlah anggota rombongan yang berstatus pelajar (TK / Paud, SD, SMP, SMA, Mahasiswa)."
                 />
 
                 {/* Jumlah Anggota Rombongan UMUM */}
@@ -479,10 +395,18 @@ export default function WalkInForm() {
                 <SelectField
                   control={form.control}
                   name="country"
-                  label="Asal Negara"
-                  placeholder="Pilih asal negara"
+                  label="Negara Asal "
+                  placeholder="Pilih negara asal "
                   icon={Flag}
-                  options={[{ label: "ID", value: "Indonesia" }]}
+                  options={countries.map(
+                    (country: {
+                      countryCode: string;
+                      countryName: string;
+                    }) => ({
+                      value: country.countryName,
+                      label: country.countryCode,
+                    })
+                  )}
                   disabled={
                     !Number(Number(form.getValues("foreignMemberTotal")))
                   }

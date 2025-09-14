@@ -1,5 +1,10 @@
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -9,50 +14,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
-import toast from "react-hot-toast";
-import { api } from "@rzkyakbr/libs";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
-import { formatRupiah } from "@rzkyakbr/libs";
-import type { AxiosError } from "axios";
-import {
+  defaultTicketPriceFormValues,
   TicketPriceSchema,
-  type TicketPriceFormSchema,
+  type TTicketPrice,
 } from "@rzkyakbr/schemas";
+import { api, formatRupiah } from "@rzkyakbr/libs";
+import { Link, useNavigate, useParams } from "react-router";
+import { ArrowLeft, List, Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
+import type { AxiosError } from "axios";
+import { SelectField } from "@/components/form/SelectField";
+import { SimpleField } from "@/components/form/SimpleField";
 
-export default function TicketPriceForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export default function TicketPriceForm() {
   const { ticketId } = useParams();
-  const navigate = useNavigate();
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
-  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const isEditMode = Boolean(ticketId);
 
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    formState: { isSubmitting },
-    reset,
-  } = useForm<TicketPriceFormSchema>({
+  const form = useForm<TTicketPrice>({
     resolver: zodResolver(TicketPriceSchema),
-    defaultValues: {
-      category: undefined,
-      unitPrice: 0,
-    },
+    defaultValues: defaultTicketPriceFormValues,
   });
 
   // 🔹 Fetch jika sedang edit
@@ -63,9 +45,8 @@ export default function TicketPriceForm({
       try {
         const res = await api.get(`/ticket-price/${ticketId}`);
         const { category, unitPrice } = res.data.data;
-        setValue("category", category);
-        setValue("unitPrice", unitPrice);
-        setIsEdit(true);
+        form.setValue("category", category);
+        form.setValue("unitPrice", unitPrice);
       } catch (err) {
         toast.error("Data tidak ditemukan.");
         navigate("/dashboard/ticket-price");
@@ -96,17 +77,19 @@ export default function TicketPriceForm({
     fetchCategories();
   }, []);
 
-  const onSubmit = async (data: TicketPriceFormSchema) => {
+  const onSubmit = async (values: TTicketPrice) => {
     try {
-      if (isEdit && ticketId) {
-        await api.put(`/ticket-price/${ticketId}`, data);
+      if (isEditMode && ticketId) {
+        await api.put(`/ticket-price/${ticketId}`, values);
         toast.success("Harga tiket berhasil diperbarui.");
       } else {
-        await api.post(`/ticket-price`, data);
-        toast.success("Harga tiket berhasil ditambahkan.");
+        console.log(values);
+        alert("test kirim");
+        // await api.post(`/ticket-price`, values);
+        // toast.success("Harga tiket berhasil ditambahkan.");
       }
 
-      navigate("/dashboard/ticket-price");
+      // navigate("/dashboard/ticket-price");
     } catch (err) {
       console.error(err);
       toast.error("Terjadi kesalahan saat menyimpan data.");
@@ -119,12 +102,12 @@ export default function TicketPriceForm({
         <Card>
           <CardHeader>
             <CardTitle>
-              {isEdit ? "Edit Harga Tiket" : "Tambah Harga Tiket"}
+              {isEditMode ? "Edit Data Harga Tiket" : "Pendataan Harga Tiket"}
             </CardTitle>
             <CardDescription>
-              {isEdit
-                ? "Perbarui informasi harga tiket di bawah ini."
-                : "Masukkan informasi harga tiket di bawah ini."}
+              {isEditMode
+                ? `Ubah detail harga tiket dengan ID: ${ticketId}`
+                : "Isi formulir di bawah untuk membuat harga tiket baru."}
             </CardDescription>
 
             <CardAction>
@@ -134,88 +117,95 @@ export default function TicketPriceForm({
                 className="py-1.5 hover:cursor-pointer"
               >
                 <Link to="/dashboard/ticket-price">
-                  <ArrowLeft className="mr-1" />
+                  <ArrowLeft className="mr-0.5" />
                   Kembali
                 </Link>
               </Badge>
             </CardAction>
           </CardHeader>
-
+          <Separator />
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Golongan Field */}
-              <div className="grid gap-4">
-                <Label htmlFor="category">Golongan</Label>
-                <Controller
-                  control={control}
-                  name="category"
-                  render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      value={field.value}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Pilih golongan" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {["Pelajar", "Umum", "Asing", "Khusus"].map((item) => (
-                          <SelectItem
-                            key={item}
-                            value={item}
-                            disabled={
-                              !isEdit && existingCategories.includes(item)
-                            }
-                          >
-                            {item}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <div className="flex flex-col gap-6">
+                  {/* Kategori */}
+                  <div className="grid gap-3">
+                    <SelectField
+                      control={form.control}
+                      name="category"
+                      label="Kategori"
+                      placeholder="Pilih Kategori"
+                      icon={List}
+                      options={[
+                        {
+                          value: "Pelajar",
+                          label: "Pelajar",
+                          disabled:
+                            !isEditMode &&
+                            existingCategories.includes("Pelajar"),
+                        },
+                        {
+                          value: "Umum",
+                          label: "Umum",
+                          disabled:
+                            !isEditMode && existingCategories.includes("Umum"),
+                        },
+                        {
+                          value: "Asing",
+                          label: "Asing",
+                          disabled:
+                            !isEditMode && existingCategories.includes("Asing"),
+                        },
+                        {
+                          value: "Khusus",
+                          label: "Khusus",
+                          disabled:
+                            !isEditMode &&
+                            existingCategories.includes("Khusus"),
+                        },
+                      ]}
+                      tooltip="Pilih kategori/golongan untuk tiket ini."
+                    />
+                  </div>
 
-              {/* Harga Satuan Field */}
-              <div className="grid gap-4">
-                <Label htmlFor="unitPrice">Harga Satuan</Label>
-                <Controller
-                  control={control}
-                  name="unitPrice"
-                  render={({ field }) => (
-                    <Input
-                      id="unitPrice"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="Masukkan harga satuan"
-                      value={
-                        isNaN(field.value) || field.value === 0
+                  {/* Harga Satuan */}
+                  <div className="grid gap-3">
+                    <SimpleField
+                      control={form.control}
+                      name="unitPrice"
+                      label="Harga Satuan"
+                      placeholder="Masukan harga satuan"
+                      tooltip="Masukan harga dalam rupiah (contoh: 25.000)"
+                      // tampilkan dalam format rupiah
+                      valueFormatter={(value) =>
+                        isNaN(value) || value === 0
                           ? ""
-                          : formatRupiah(Number(field.value))
+                          : formatRupiah(Number(value))
                       }
-                      onChange={(e) => {
-                        const rawValue = e.target.value.replace(/[^0-9]/g, ""); // buang selain angka
-                        field.onChange(rawValue ? Number(rawValue) : 0);
+                      // parsing balik ke number saat ketik
+                      onChangeOverride={(e, field) => {
+                        const raw = e.target.value.replace(/[^0-9]/g, ""); // hanya angka
+                        field.onChange(raw ? Number(raw) : 0);
                       }}
                     />
-                  )}
-                />
-              </div>
+                  </div>
 
-              {/* Submit Button */}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    Loading
-                  </>
-                ) : isEdit ? (
-                  "Perbarui"
-                ) : (
-                  "Simpan"
-                )}
-              </Button>
-            </form>
+                  {/* Submit Button */}
+                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        Loading...
+                      </>
+                    ) : isEditMode ? (
+                      "Update Harga Tiket"
+                    ) : (
+                      "Tambah Harga Tiket"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       </div>

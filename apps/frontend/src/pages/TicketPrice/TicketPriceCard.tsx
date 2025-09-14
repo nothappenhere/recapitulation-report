@@ -7,8 +7,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatRupiah } from "@rzkyakbr/libs";
-import { ColumnsActions } from "../ReservationsPage/column-actions";
+import { formatRupiah } from "../../../../../packages/libs";
+import { ColumnsActions } from "../../components/table/column-actions";
 import { useNavigate } from "react-router";
 
 export function TicketPriceCard({ ticketPrice, onDelete }) {
@@ -40,7 +40,11 @@ export function TicketPriceCard({ ticketPrice, onDelete }) {
         <div className="font-medium after:content-['*'] after:text-red-500">
           Harga berlaku setiap kunjungan
         </div>
-        <div className="text-muted-foreground">Berdasarkan PP ...</div>
+        <div className="text-muted-foreground">
+          Berdasarkan Peraturan Pemerintah No. 19 Tahun 2025 tentang Jenis Tarif
+          Atas Penerimaan Negara Bukan Pajak yang berlaku pada Kementerian
+          Energi dan Sumber Daya Mineral.
+        </div>
       </CardFooter>
     </Card>
   );

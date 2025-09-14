@@ -14,7 +14,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { UserProvider } from "@/hooks/UserContext";
-import { slugToTitle } from "@rzkyakbr/libs";
+import { slugToTitle } from "../../../../packages/libs";
 import React from "react";
 import { Link, Outlet, useLocation } from "react-router";
 
