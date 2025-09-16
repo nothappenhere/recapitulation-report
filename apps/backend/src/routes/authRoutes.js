@@ -7,57 +7,57 @@ import {
   logout,
   resetPassword,
   register,
-  verifyAccount,
+  verifyUsername,
 } from "../controllers/authController.js";
-import { validateSchema } from "../middlewares/validateSchema.js";
+import { validateSchema } from "../utils/validateSchema.js";
 import {
-  loginSchema,
-  registerSchema,
-  resetPasswordSchema,
-  verifyUsernameSchema,
+  LoginSchema,
+  RegisterSchema,
+  ResetPasswordSchema,
+  VerifyUsernameSchema,
 } from "@rzkyakbr/schemas";
-import { validateToken } from "../middlewares/validateToken.js";
+import { validateToken } from "../utils/validateToken.js";
 
 /**
- * @desc Login user dengan validasi skema
+ * * @desc Login user
  * @route POST /api/auth/login
  */
-router.post("/login", validateSchema(loginSchema), login);
+router.post("/login", validateSchema(LoginSchema), login);
 
 /**
- * @desc Registrasi user baru dengan validasi skema
+ * * @desc Registrasi user
  * @route POST /api/auth/register
  */
-router.post("/register", validateSchema(registerSchema), register);
+router.post("/register", validateSchema(RegisterSchema), register);
 
 /**
- * @desc Verifikasi akun dengan validasi skema
- * @route POST /api/auth/verify-account
+ * * @desc Verifikasi akun dengan username
+ * @route POST /api/auth/verify-username
  */
 router.post(
-  "/verify-account",
-  validateSchema(verifyUsernameSchema),
-  verifyAccount
+  "/verify-username",
+  validateSchema(VerifyUsernameSchema),
+  verifyUsername
 );
 
 /**
- * @desc Reset password user dengan validasi skema
+ * * @desc Reset password user
  * @route PUT /api/auth/reset-password
  */
 router.put(
   "/reset-password",
-  validateSchema(resetPasswordSchema),
+  validateSchema(ResetPasswordSchema),
   resetPassword
 );
 
 /**
- * @desc Cek apakah token autentikasi valid dan dapat digunakan (status login)
+ * * @desc Cek apakah token autentikasi valid dan dapat digunakan (status login)
  * @route GET /api/auth/check-auth
  */
 router.get("/check-auth", validateToken, checkAuth);
 
 /**
- * @desc Logout user dari sistem
+ * * @desc Logout user
  * @route POST /api/auth/logout
  */
 router.post("/logout", logout);

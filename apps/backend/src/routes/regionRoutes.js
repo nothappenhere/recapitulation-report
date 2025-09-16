@@ -9,19 +9,40 @@ import {
 
 const router = express.Router();
 
-// Mendapatkan data semua provinsi yang ada di Indonesia.
+/**
+ * * @desc Mendapatkan seluruh data provinsi yang ada di Indonesia
+ * @route GET /api/region/provinces
+ */
 router.get("/provinces", getProvinces);
 
-// Mendapatkan data kabupaten atau kota dari provinsi.
+/**
+ * * @desc Mendapatkan data kabupaten atau kota dari provinsi
+ * @route GET /api/region/regencies/:provinceCode
+ * @param provinceCode - Kode Provinsi yang dicari
+ */
 router.get("/regencies/:provinceCode", getRegenciesOrCities);
 
-// Mendapatkan data kecamatan dari kabupaten atau kota.
+/**
+ * * @desc Mendapatkan data kecamatan dari kabupaten atau kota
+ * @route GET /api/region/districts/:provinceCode/:regencyCode
+ * @param provinceCode - Kode Provinsi yang dicari
+ * @param regencyCode - Kode Kabupaten/kota yang dicari
+ */
 router.get("/districts/:provinceCode/:regencyCode", getDistricts);
 
-// Mendapatkan data kelurahan atau desa dari kecamatan.
+/**
+ * * @desc Mendapatkan data kelurahan atau desa dari kecamatan
+ * @route GET /api/region/villages/:provinceCode/:regencyCode/:districtCode
+ * @param provinceCode - Kode Provinsi yang dicari
+ * @param regencyCode - Kode Kabupaten/kota yang dicari
+ * @param districtCode - Kode Kecamatan yang dicari
+ */
 router.get("/villages/:provinceCode/:regencyCode/:districtCode", getVillages);
 
-// Mendapatkan data kelurahan negara dunia.
+/**
+ * * @desc Mendapatkan seluruh data negara yang ada di dunia
+ * @route GET /api/region/countries
+ */
 router.get("/countries", getCountries);
 
 export default router;

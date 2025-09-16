@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
-import { number } from "zod";
 
-//* Creata a Schema
 const userSchema = new mongoose.Schema(
   {
     NIP: {
@@ -36,8 +34,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
     },
   },
-  { timestamps: true } // createdAt & updatedAt
+  { timestamps: true }
 );
 
-//* Create a Model based on the Schema
 export const User = mongoose.model("User", userSchema);

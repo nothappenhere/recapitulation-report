@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { type TBookingReservation } from "@rzkyakbr/schemas";
+import { type TReservation } from "@rzkyakbr/schemas";
 import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { useReservationColumns } from "./columns";
@@ -8,14 +8,12 @@ import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 
 export default function ReservationTable() {
-  const [data, setData] = useState<TBookingReservation[]>([]);
+  const [data, setData] = useState<TReservation[]>([]);
   const [loading, setLoading] = useState(false);
 
   // * Untuk AlertDelete
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<TBookingReservation | null>(
-    null
-  );
+  const [selectedItem, setSelectedItem] = useState<TReservation | null>(null);
 
   // TODO: Ambil data dari API
   useEffect(() => {
@@ -57,7 +55,7 @@ export default function ReservationTable() {
   }, [selectedItem]);
 
   // TODO: Handler ketika klik tombol Delete (tampilkan alert)
-  const handleDeleteClick = useCallback((item: TBookingReservation) => {
+  const handleDeleteClick = useCallback((item: TReservation) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);

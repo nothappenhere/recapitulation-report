@@ -1,14 +1,12 @@
 import mongoose from "mongoose";
-import { BookingReservation } from "./BookingReservation.js"; // sesuaikan path
-import { User } from "./user.model.js";
-import { VisitingHour } from "./VisitingHour.js";
+import { Reservation } from "../models/Reservation.js";
+import { User } from "../models/User.js";
+import { VisitingHour } from "../models/VisitingHour.js";
 
-const MONGO_URI = "mongodb://127.0.0.1:27017/ticketing";
-
-const seedBookingReservations = async () => {
+const seedReservations = async () => {
   try {
-    await mongoose.connect(MONGO_URI);
-    console.log("✅ Connected to MongoDB");
+    await mongoose.connect("mongodb://127.0.0.1:27017/ticketing");
+    console.log("Connected to MongoDB!");
 
     // ambil user pertama (anggap sudah ada user login)
     const user = await User.findOne();
@@ -25,8 +23,8 @@ const seedBookingReservations = async () => {
     }
 
     // hapus data lama
-    await BookingReservation.deleteMany({});
-    console.log("🗑️ Old booking reservations cleared");
+    await Reservation.deleteMany({});
+    console.log("Old reservations cleared!");
 
     // buat 3 booking contoh
     const data = [
@@ -80,24 +78,24 @@ const seedBookingReservations = async () => {
       },
     ];
 
-    // const inserted = await BookingReservation.insertMany(data);
+    // masukkan ke database
     const inserted = [];
     for (const item of data) {
-      const doc = new BookingReservation(item);
-      await doc.save(); // biar bookingNumber auto-generate
+      const doc = new Reservation(item);
+      await doc.save();
       inserted.push(doc);
     }
 
-    console.log("✅ Booking reservations seeded:");
+    console.log("Reservations seeded:");
     inserted.forEach((doc) => {
       console.log(`- ${doc.bookingNumber}: ${doc.ordererNameOrTravelName}`);
     });
 
-    process.exit(0);
+    mongoose.connection.close();
   } catch (err) {
-    console.error("❌ Error seeding booking reservations:", err.message);
-    process.exit(1);
+    console.error("Error seeding reservations:", err.message);
+    mongoose.connection.close();
   }
 };
 
-seedBookingReservations();
+seedReservations();

@@ -18,7 +18,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import type { AxiosError } from "axios";
-import { loginSchema, type LoginFormValues } from "@rzkyakbr/schemas";
+import {
+  defaultLoginFormValues,
+  LoginSchema,
+  type TLogin,
+} from "@rzkyakbr/schemas";
 import { SimpleField } from "@/components/form/SimpleField";
 
 export default function LoginPage({
@@ -28,15 +32,12 @@ export default function LoginPage({
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-    },
+  const form = useForm<TLogin>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: defaultLoginFormValues,
   });
 
-  const onSubmit = async (values: LoginFormValues): Promise<void> => {
+  const onSubmit = async (values: TLogin): Promise<void> => {
     try {
       const response = await api.post("/auth/login", values);
       const { user } = response.data.data;
@@ -67,9 +68,11 @@ export default function LoginPage({
                   <div className="flex flex-col gap-8">
                     {/* Header */}
                     <div className="flex flex-col items-center text-center">
-                      <h1 className="text-2xl font-bold">Welcome back</h1>
+                      <h1 className="text-2xl font-bold">
+                        Selamat datang kembali
+                      </h1>
                       <p className="text-muted-foreground text-balance">
-                        Login to your account
+                        Masuk ke akun Anda
                       </p>
                     </div>
 
@@ -147,13 +150,13 @@ export default function LoginPage({
 
                     <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
                       <span className="bg-card text-muted-foreground relative z-10 px-2">
-                        Or
+                        Atau
                       </span>
                     </div>
 
                     {/* Register Navigate */}
                     <div className="text-center text-sm">
-                      Don&apos;t have an account?{" "}
+                      Belum memiliki akun?{" "}
                       <Link
                         to="/auth/register"
                         className="underline underline-offset-4"

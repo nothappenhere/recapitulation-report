@@ -6,46 +6,41 @@ import {
   updateTicketPriceById,
   deleteTicketPriceById,
 } from "../controllers/ticketPriceController.js";
-import { validateSchema } from "../middlewares/validateSchema.js";
-import { ticketPriceSchema } from "../schemas/ticket-price.schema.js";
+import { validateSchema } from "../utils/validateSchema.js";
+import { TicketPriceSchema } from "@rzkyakbr/schemas";
 
 const router = express.Router();
 
 /**
  * * @desc Mendapatkan seluruh data harga tiket
  * @route GET /api/ticket-price
- * @access Public
  */
 router.get("/", getTicketPrices);
 
 /**
  * * @desc Mendapatkan satu data harga tiket berdasarkan ID
  * @route GET /api/ticket-price/:id
- * @param id - ID dari reservasi yang dicari
- * @access Public
+ * @param id - ID dari harga tiket yang dicari
  */
-router.get("/:id", validateSchema(ticketPriceSchema), getTicketPriceById);
+router.get("/:id", getTicketPriceById);
 
 /**
- * * @desc Membuat harga tiket baru
+ * * @desc Membuat data harga tiket baru
  * @route POST /api/ticket-price
- * @access Public
  */
-router.post("/", createTicketPrice);
+router.post("/", validateSchema(TicketPriceSchema), createTicketPrice);
 
 /**
  * * @desc Memperbarui data harga tiket berdasarkan ID
  * @route PUT /api/ticket-price/:id
- * @param id - ID dari reservasi yang akan diperbarui
- * @access Public
+ * @param id - ID dari harga tiket yang akan diperbarui
  */
-router.put("/:id", updateTicketPriceById);
+router.put("/:id", validateSchema(TicketPriceSchema), updateTicketPriceById);
 
 /**
- * * @desc Menghapus harga tiket berdasarkan ID
- * @route DELETE /api/reservations/:id
- * @param id - ID dari reservasi yang akan dihapus
- * @access Public
+ * * @desc Menghapus data harga tiket berdasarkan ID
+ * @route DELETE /api/ticket-price/:id
+ * @param id - ID dari harga tiket yang akan dihapus
  */
 router.delete("/:id", deleteTicketPriceById);
 

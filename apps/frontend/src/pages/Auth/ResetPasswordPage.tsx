@@ -26,10 +26,12 @@ import {
 } from "@/components/ui/form";
 import type { AxiosError } from "axios";
 import {
-  resetPasswordSchema,
-  type ResetPasswordFormValues,
-  type VerifyUsernameFormValues,
+  defaultResetPasswordFormValues,
+  ResetPasswordSchema,
+  type TResetPassword,
+  type TVerifyUsername,
 } from "@rzkyakbr/schemas";
+import { SimpleField } from "@/components/form/SimpleField";
 
 export default function ResetPasswordPage({
   className,
@@ -39,17 +41,14 @@ export default function ResetPasswordPage({
   const [accountExist, setAccountExist] = useState(false);
   const navigate = useNavigate();
 
-  const form = useForm<ResetPasswordFormValues>({
-    resolver: zodResolver(resetPasswordSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-    },
+  const form = useForm<TResetPassword>({
+    resolver: zodResolver(ResetPasswordSchema),
+    defaultValues: defaultResetPasswordFormValues
   });
 
   const handleVerifyUsername = async (
     e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>,
-    values: VerifyUsernameFormValues
+    values: TVerifyUsername
   ): Promise<void> => {
     e.preventDefault();
 
@@ -73,7 +72,7 @@ export default function ResetPasswordPage({
     }
   };
 
-  const onSubmit = async (values: ResetPasswordFormValues): Promise<void> => {
+  const onSubmit = async (values: TResetPassword): Promise<void> => {
     try {
       await api.put("/auth/reset-password", values);
 
@@ -105,10 +104,10 @@ export default function ResetPasswordPage({
         <div className={cn("flex flex-col gap-6", className)} {...props}>
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-xl">Reset password</CardTitle>
+              <CardTitle className="text-xl">Reset kata sandi</CardTitle>
               <CardDescription>
-                Enter the username you used when registering to reset your
-                password.
+                Masukkan nama pengguna yang Anda gunakan saat mendaftar untuk
+                mereset kata sandi.
               </CardDescription>
             </CardHeader>
 
@@ -117,28 +116,17 @@ export default function ResetPasswordPage({
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                   <div className="grid gap-6">
                     <div className="grid gap-6">
-                      {/* Username Field */}
+                      {/* Username */}
                       <div className="grid gap-3">
-                        <FormField
+                        <SimpleField
                           control={form.control}
                           name="username"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Username</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="text"
-                                  placeholder="Enter your username"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                          label="Username"
+                          placeholder="Masukan username"
                         />
                       </div>
 
-                      {/* Password Field */}
+                      {/* Password */}
                       <div
                         className={`grid gap-3 relative ${
                           accountExist ? "" : "hidden"
@@ -150,12 +138,12 @@ export default function ResetPasswordPage({
                             name="password"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>New Password</FormLabel>
+                                <FormLabel>Password Baru</FormLabel>
                                 <FormControl>
                                   <div className="relative">
                                     <Input
                                       type={showPassword ? "text" : "password"}
-                                      placeholder="Enter your new password"
+                                      placeholder="Masukan password baru"
                                       {...field}
                                     />
                                     <Button
@@ -213,7 +201,7 @@ export default function ResetPasswordPage({
                               Loading
                             </>
                           ) : (
-                            "Verify account"
+                            "Verifikasi akun"
                           )}
                         </Button>
                       )}
@@ -221,7 +209,7 @@ export default function ResetPasswordPage({
 
                     {/* Login Navigate */}
                     <div className="text-center text-sm">
-                      Have you remembered your password again?{" "}
+                      Apakah Anda sudah mengingat kata sandi Anda lagi?{" "}
                       <Link
                         to="/auth/login"
                         className="underline underline-offset-4"

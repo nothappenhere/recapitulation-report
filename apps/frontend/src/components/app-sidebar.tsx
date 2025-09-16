@@ -52,6 +52,7 @@ const navConfig: NavConfig = {
       items: [
         { title: "Harga Tiket", url: "ticket-price" },
         { title: "Reservasi & Walk-in", url: "visits" },
+        { title: "Target Tahunan", url: "targets" },
       ],
     },
   ],

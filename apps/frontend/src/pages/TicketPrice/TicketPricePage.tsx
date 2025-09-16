@@ -6,12 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
-import type { TicketPriceFormSchema } from "@rzkyakbr/schemas";
+import { type TTicketPrice } from "@rzkyakbr/schemas";
 
 function TicketPricePage() {
   const [ticketPrices, setTicketPrices] = useState([]);
-  const [selectedItem, setSelectedItem] =
-    useState<TicketPriceFormSchema | null>(null);
+  const [selectedItem, setSelectedItem] = useState<TTicketPrice | null>(null);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 

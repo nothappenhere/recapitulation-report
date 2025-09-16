@@ -1,63 +1,92 @@
 import { Reservation } from "../models/Reservation.js";
-import { sendError, sendResponse } from "../utils/response.js";
+import { sendResponse } from "../utils/sendResponse.js";
 
 /**
- * * @desc Mengambil semua data reservasi
- * ? Mengembalikan seluruh data reservasi yang ada di database, diurutkan berdasarkan waktu pembuatan terbaru
- * @route GET /api/reservations
+ * * @desc Mendapatkan seluruh data reservasi
+ * @route GET /api/reservation
  */
 export const getReservations = async (req, res) => {
   try {
-    const allReservations = await Reservation.find().sort({ createdAt: -1 });
+    const allReservations = await Reservation.find()
+      .populate("reservationAgent", "fullName username")
+      .populate("visitingHour", "timeRange")
+      .sort({ createdAt: -1 });
 
     sendResponse(
       res,
       200,
       true,
-      "Berhasil mendapatkan data semua reservasi",
+      "Berhasil mendapatkan semua data reservasi",
       allReservations
     );
   } catch (err) {
-    return sendError(res, err);
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };
 
 /**
- * * @desc Mengambil satu data reservasi berdasarkan ID
- * ? ID diambil dari parameter URL dan digunakan untuk pencarian menggunakan method findById()
- * ! Jika data tidak ditemukan, akan mengembalikan status 404
- * @route GET /api/reservations/:id
- * @param id - ID unik dari reservasi yang ingin diambil
+ * * @desc Mendapatkan satu data reservasi berdasarkan ID
+ * @route GET /api/reservation/:id
+ * @param id - ID dari reservasi yang dicari
  */
 export const getReservationById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const reservationById = await Reservation.findById(id);
-    if (!reservationById)
-      return sendResponse(res, 404, false, "Data reservasi tidak ditemukan");
+    const reservation = await Reservation.findById(id)
+      .populate("reservationAgent", "fullName username")
+      .populate("visitingHour", "timeRange");
+
+    if (!reservation) {
+      return sendResponse(
+        res,
+        404,
+        false,
+        `Data reservasi dengan ID ${id} tidak ditemukan`
+      );
+    }
 
     sendResponse(
       res,
       200,
       true,
-      `Berhasil mendapatkan data reservasi untuk ID ${id}`,
-      reservationById
+      `Berhasil mendapatkan data reservasi dengan ID ${id}`,
+      reservation
     );
   } catch (err) {
-    return sendError(res, err); // ! Error karena format ID tidak valid (e.g., bukan ObjectId)
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };
 
 /**
- * * @desc Membuat reservasi baru
- * ? Menyimpan data reservasi dari request body ke database MongoDB
- * ! Pastikan struktur data sesuai dengan schema Reservation agar tidak terjadi validasi error
- * @route POST /api/reservations
+ * * @desc Membuat data reservasi baru
+ * @route POST /api/reservation
  */
 export const createReservation = async (req, res) => {
   try {
-    const newReservation = new Reservation(req.body);
+    const { visitingDate, visitingHour } = req.validatedData;
+
+    // Cek apakah slot waktu sudah dipakai di tanggal itu
+    const slotTaken = await Reservation.findOne({
+      visitingDate,
+      visitingHour,
+    });
+
+    if (slotTaken) {
+      return sendResponse(
+        res,
+        400,
+        false,
+        `Slot waktu ini (${visitingHour}) sudah dipesan di tanggal tersebut (${visitingDate})`
+      );
+    }
+
+    // Buat reservasi baru
+    const newReservation = new Reservation({ ...req.validatedData });
     await newReservation.save();
 
     sendResponse(
@@ -68,66 +97,78 @@ export const createReservation = async (req, res) => {
       newReservation
     );
   } catch (err) {
-    return sendError(res, err); // ! Tangani error validasi atau kesalahan penyimpanan
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };
 
 /**
  * * @desc Memperbarui data reservasi berdasarkan ID
- * ? Mengupdate dokumen reservasi menggunakan data dari request body
- * ! Jalankan validasi schema dengan opsi runValidators: true
- * @route PUT /api/reservations/:id
- * @param id - ID unik dari reservasi yang ingin diperbarui
+ * @route PUT /api/reservation/:id
+ * @param id - ID dari reservasi yang akan diperbarui
  */
 export const updateReservationById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const updatedReservation = await Reservation.findByIdAndUpdate(
-      id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    if (!updatedReservation)
-      return sendResponse(res, 404, false, "Data reservasi tidak ditemukan");
+    const updated = await Reservation.findByIdAndUpdate(id, req.validatedData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updated) {
+      return sendResponse(
+        res,
+        404,
+        false,
+        `Data reservasi dengan ID ${id} tidak ditemukan`
+      );
+    }
 
     sendResponse(
       res,
       200,
       true,
-      `Berhasil memperbarui data reservasi untuk ID ${id}`,
-      updatedReservation
+      `Berhasil memperbarui data reservasi dengan ID ${id}`,
+      updated
     );
   } catch (err) {
-    return sendError(res, err); // ! Tangani error validasi atau ID tidak valid
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };
 
 /**
  * * @desc Menghapus data reservasi berdasarkan ID
- * ? Menghapus dokumen reservasi dari database jika ditemukan
- * ! Jika ID tidak ditemukan, akan mengembalikan response 404
- * @route DELETE /api/reservations/:id
- * @param id - ID unik dari reservasi yang ingin dihapus
+ * @route DELETE /api/reservation/:
+ * @param id - ID dari reservasi yang akan dihapus
  */
 export const deleteReservationById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedReservation = await Reservation.findByIdAndDelete(id);
-    if (!deletedReservation)
-      return sendResponse(res, 404, false, "Data reservasi tidak ditemukan");
+    const deleted = await Reservation.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return sendResponse(
+        res,
+        404,
+        false,
+        `Data reservasi dengan ID ${id} tidak ditemukan`
+      );
+    }
 
     sendResponse(
       res,
       200,
       true,
-      `Berhasil menghapus data reservasi untuk ID ${id}`
+      `Berhasil menghapus data reservasi dengan ID${id}`
     );
   } catch (err) {
-    return sendError(res, err); // ! Error umum saat delete, seperti ID salah format
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };

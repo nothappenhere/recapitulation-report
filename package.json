@@ -5,6 +5,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "dayjs": "^1.11.18",
     "turbo-windows-64": "^2.5.6"
   },
   "scripts": {

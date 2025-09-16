@@ -18,6 +18,7 @@ export function useReservationColumns(
 
   return [
     selectColumn,
+    createColumn("bookingNumber", "No. Booking"),
     createColumn("ordererNameOrTravelName", "Nama Pemesan / Travel"),
     createColumn("phoneNumber", "No. telepon", {
       cell: ({ row }) => formatPhoneNumber(row.getValue("phoneNumber")),

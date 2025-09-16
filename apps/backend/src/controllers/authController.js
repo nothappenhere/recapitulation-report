@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
-import { User } from "../models/user.model.js";
-import { sendResponse } from "../utils/response.js";
+import { User } from "../models/User.js";
+import { sendResponse } from "../utils/sendResponse.js";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 
 /**
- * @desc Login user menggunakan username dan password → generate JWT token & simpan di cookie
+ * * @desc Login user
  * @route POST /api/auth/login
  */
 export const login = async (req, res) => {
@@ -13,12 +13,12 @@ export const login = async (req, res) => {
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      return sendResponse(res, 400, false, "Invalid credentials");
+      return sendResponse(res, 400, false, "kredensial tidak valid");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return sendResponse(res, 400, false, "Invalid credentials");
+      return sendResponse(res, 400, false, "kredensial tidak valid");
     }
 
     generateTokenAndSetCookie(res, user._id);
@@ -26,7 +26,7 @@ export const login = async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
 
-    return sendResponse(res, 200, true, "Logged in successfully", {
+    sendResponse(res, 200, true, "Logged in berhasil", {
       user: {
         ...user._doc,
         password: undefined,
@@ -40,7 +40,7 @@ export const login = async (req, res) => {
 };
 
 /**
- * @desc Registrasi user baru (dengan role: administrator atau user)
+ * * @desc Registrasi user
  * @route POST /api/auth/register
  */
 export const register = async (req, res) => {
@@ -52,7 +52,7 @@ export const register = async (req, res) => {
       $or: [{ username }, { NIP }],
     });
     if (userExist) {
-      return sendResponse(res, 409, false, "User already exist");
+      return sendResponse(res, 409, false, "Pengguna telah terdaftar");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -65,7 +65,7 @@ export const register = async (req, res) => {
       role,
     });
 
-    return sendResponse(res, 201, true, "User created successfully", {
+    sendResponse(res, 201, true, "Pengguna telah berhasil dibuat", {
       user: {
         ...newUser._doc,
         password: undefined,
@@ -79,21 +79,21 @@ export const register = async (req, res) => {
 };
 
 /**
- * @desc Cek apakah username sudah terdaftar di database
- * @route POST /api/auth/verify-account
+ * * @desc Verifikasi akun dengan username
+ * @route POST /api/auth/verify-username
  */
-export const verifyAccount = async (req, res) => {
+export const verifyUsername = async (req, res) => {
   const { username } = req.validatedData;
 
   try {
     const userExist = await User.findOne({ username });
     if (!userExist) {
-      return sendResponse(res, 409, false, "Invalid credentials", {
+      return sendResponse(res, 409, false, "kredensial tidak valid", {
         exist: false,
       });
     }
 
-    return sendResponse(res, 200, true, "Registered user", { exist: true });
+    sendResponse(res, 200, true, "Pengguna terdaftar", { exist: true });
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
       detail: err.message,
@@ -102,7 +102,7 @@ export const verifyAccount = async (req, res) => {
 };
 
 /**
- * @desc Reset password user berdasarkan username
+ * * @desc Reset password user
  * @route PUT /api/auth/reset-password
  */
 export const resetPassword = async (req, res) => {
@@ -111,7 +111,7 @@ export const resetPassword = async (req, res) => {
   try {
     const userExist = await User.findOne({ username });
     if (!userExist) {
-      return sendResponse(res, 409, false, "Invalid credentials", {
+      return sendResponse(res, 409, false, "kredensial tidak valid", {
         exist: false,
       });
     }
@@ -125,7 +125,7 @@ export const resetPassword = async (req, res) => {
       { $set: { password: newHashedPassword } }
     );
 
-    return sendResponse(res, 200, true, "Password reset successful");
+    sendResponse(res, 200, true, "Reset kata sandi berhasil");
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
       detail: err.message,
@@ -134,17 +134,17 @@ export const resetPassword = async (req, res) => {
 };
 
 /**
- * @desc Mengecek apakah user yang sedang login valid berdasarkan JWT token
+ * * @desc Cek apakah token autentikasi valid dan dapat digunakan (status login)
  * @route GET /api/auth/check-auth
  */
 export const checkAuth = async (req, res) => {
   try {
     const userExist = await User.findById(req.userId).select("-password");
     if (!userExist) {
-      return sendResponse(res, 404, false, "User not found");
+      return sendResponse(res, 404, false, "Pengguna tidak ditemukan");
     }
 
-    return sendResponse(res, 200, true, "Check auth successful", {
+    sendResponse(res, 200, true, "Verifikasi otentikasi berhasil", {
       user: userExist,
     });
   } catch (err) {
@@ -155,13 +155,13 @@ export const checkAuth = async (req, res) => {
 };
 
 /**
- * @desc Logout user → menghapus token dari cookie
+ * * @desc Logout user
  * @route POST /api/auth/logout
  */
 export const logout = async (req, res) => {
   try {
     res.clearCookie("token");
-    return sendResponse(res, 200, true, "Logged out successfully");
+    sendResponse(res, 200, true, "Logged out berhasil");
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
       detail: err.message,

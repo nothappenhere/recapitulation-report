@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import { CounterReservation } from "./CounterReservation.js";
+import { CounterWalkIn } from "./CounterWalkIn.js";
 
-const reservationSchema = new mongoose.Schema(
+const walkInSchema = new mongoose.Schema(
   {
-    bookingNumber: { type: String, unique: true },
+    walkInNumber: { type: String, unique: true },
 
     reservationAgent: {
       type: mongoose.Schema.Types.ObjectId,
@@ -17,12 +17,10 @@ const reservationSchema = new mongoose.Schema(
       ref: "VisitingHour",
       required: true,
     },
-    reservationMechanism: { type: String, required: true },
     description: { type: String, default: "-" },
 
     ordererNameOrTravelName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
-    groupName: { type: String, required: true },
 
     studentMemberTotal: { type: Number, default: 0, required: true },
     publicMemberTotal: { type: Number, default: 0, required: true },
@@ -46,12 +44,21 @@ const reservationSchema = new mongoose.Schema(
       enum: ["Paid", "Unpaid"],
       default: "Unpaid",
     },
+
+    initialStudentSerialNumber: { type: Number, default: 0 },
+    finalStudentSerialNumber: { type: Number, default: 0 },
+    initialPublicSerialNumber: { type: Number, default: 0 },
+    finalPublicSerialNumber: { type: Number, default: 0 },
+    initialForeignSerialNumber: { type: Number, default: 0 },
+    finalForeignSerialNumber: { type: Number, default: 0 },
+    initialCustomSerialNumber: { type: Number, default: 0 },
+    finalCustomSerialNumber: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
-// Middleware pertama
-reservationSchema.pre("save", function (next) {
+// Middleware untuk auto-calculation
+walkInSchema.pre("save", function (next) {
   // Mengatur status pembayaran
   if (this.downPayment >= this.paymentAmount) {
     this.statusPayment = "Paid";
@@ -74,19 +81,19 @@ reservationSchema.pre("save", function (next) {
   next();
 });
 
-// Middleware untuk generate bookingNumber berurutan
-reservationSchema.pre("save", async function (next) {
-  if (!this.bookingNumber) {
+// Middleware untuk generate walkInNumber berurutan
+walkInSchema.pre("save", async function (next) {
+  if (!this.walkInNumber) {
     try {
-      const counter = await CounterReservation.findOneAndUpdate(
-        { name: "bookingNumber" },
+      const counter = await CounterWalkIn.findOneAndUpdate(
+        { name: "walkInNumber" },
         { $inc: { seq: 1 } },
         { new: true, upsert: true }
       );
 
       // Format 6 digit dengan leading zero
       const formattedSeq = counter.seq.toString().padStart(6, "0");
-      this.bookingNumber = `MGR-${formattedSeq}`;
+      this.walkInNumber = `WI-${formattedSeq}`;
     } catch (err) {
       return next(err);
     }
@@ -94,4 +101,4 @@ reservationSchema.pre("save", async function (next) {
   next();
 });
 
-export const Reservation = mongoose.model("Reservation", reservationSchema);
+export const WalkIn = mongoose.model("WalkIn", walkInSchema);

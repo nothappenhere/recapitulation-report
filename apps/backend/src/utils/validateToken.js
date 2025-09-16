@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { sendResponse } from "../utils/response.js";
+import { sendResponse } from "./sendResponse.js";
 
 export const validateToken = (req, res, next) => {
   const token = req.cookies.token;

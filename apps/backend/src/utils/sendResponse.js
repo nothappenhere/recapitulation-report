@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 export const sendResponse = (
   res,
   statusCode,
@@ -13,7 +15,7 @@ export const sendResponse = (
     data,
     errors,
     path: res.req.originalUrl,
-    timestamp: new Date().toISOString(),
+    timestamp: dayjs().format("DD-MM-YYYY, HH:mm:ss"),
   });
 };
 

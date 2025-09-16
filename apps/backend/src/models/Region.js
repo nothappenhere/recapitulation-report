@@ -14,8 +14,8 @@ const regionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ tambahkan index agar query lebih cepat
+// menambahkan index agar query lebih cepat
 regionSchema.index({ level: 1 });
 regionSchema.index({ parentCode: 1 });
 
-export const Region = mongoose.model("Regions", regionSchema);
+export const Region = mongoose.model("Region", regionSchema);

@@ -7,7 +7,8 @@ import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import ticketPriceRoutes from "./routes/ticketPriceRoutes.js";
 import regionRoutes from "./routes/regionRoutes.js";
-import bookingReservationRoutes from "./routes/bookingReservationRoutes.js";
+import reservationRoutes from "./routes/reservationRoutes.js";
+import walkInRoutes from "./routes/walkInRoutes.js";
 
 // import stokTiketRoutes from "./routes/stokTiketRoutes.js";
 // import kodeTiketRoutes from "./routes/kodeTiketRoutes.js";
@@ -18,7 +19,6 @@ import bookingReservationRoutes from "./routes/bookingReservationRoutes.js";
 
 //* Load environment variables
 dotenv.config();
-
 const app = express();
 
 //* Middleware global
@@ -36,7 +36,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api/auth", authRoutes);
 app.use("/api/ticket-price", ticketPriceRoutes);
 app.use("/api/region", regionRoutes);
-app.use("/api/booking-reservation", bookingReservationRoutes);
+app.use("/api/reservation", reservationRoutes);
+app.use("/api/walk-in", walkInRoutes);
 
 // app.use("/api/stok-tiket", stokTiketRoutes);
 // app.use("/api/kode-tiket", kodeTiketRoutes);

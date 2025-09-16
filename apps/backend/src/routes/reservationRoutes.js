@@ -6,44 +6,41 @@ import {
   updateReservationById,
   deleteReservationById,
 } from "../controllers/reservationController.js";
+import { validateSchema } from "../utils/validateSchema.js";
+import { ReservationSchema } from "@rzkyakbr/schemas";
 
 const router = express.Router();
 
 /**
  * * @desc Mendapatkan seluruh data reservasi
- * @route GET /api/reservations
- * @access Public
+ * @route GET /api/reservation
  */
 router.get("/", getReservations);
 
 /**
  * * @desc Mendapatkan satu data reservasi berdasarkan ID
- * @route GET /api/reservations/:id
+ * @route GET /api/reservation/:id
  * @param id - ID dari reservasi yang dicari
- * @access Public
  */
 router.get("/:id", getReservationById);
 
 /**
- * * @desc Membuat reservasi baru
- * @route POST /api/reservations
- * @access Public
+ * * @desc Membuat data reservasi baru
+ * @route POST /api/reservation
  */
-router.post("/", createReservation);
+router.post("/", validateSchema(ReservationSchema), createReservation);
 
 /**
  * * @desc Memperbarui data reservasi berdasarkan ID
- * @route PUT /api/reservations/:id
+ * @route PUT /api/reservation/:id
  * @param id - ID dari reservasi yang akan diperbarui
- * @access Public
  */
-router.put("/:id", updateReservationById);
+router.put("/:id", validateSchema(ReservationSchema), updateReservationById);
 
 /**
- * * @desc Menghapus reservasi berdasarkan ID
- * @route DELETE /api/reservations/:id
+ * * @desc Menghapus data reservasi berdasarkan ID
+ * @route DELETE /api/reservation/:
  * @param id - ID dari reservasi yang akan dihapus
- * @access Public
  */
 router.delete("/:id", deleteReservationById);
 

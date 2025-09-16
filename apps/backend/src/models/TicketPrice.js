@@ -12,7 +12,7 @@ const ticketPriceSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true } // createdAt & updatedAt
+  { timestamps: true }
 );
 
 export const TicketPrice = mongoose.model("TicketPrice", ticketPriceSchema);

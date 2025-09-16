@@ -13,9 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  BookingReservationSchema,
-  defaultBookingReservationFormValues,
-  type TBookingReservation,
+  ReservationSchema,
+  defaultReservationFormValues,
+  type TReservation,
 } from "@rzkyakbr/schemas";
 import {
   api,
@@ -45,9 +45,9 @@ export default function ReservationForm() {
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
 
-  const form = useForm<TBookingReservation>({
-    resolver: zodResolver(BookingReservationSchema),
-    defaultValues: defaultBookingReservationFormValues,
+  const form = useForm<TReservation>({
+    resolver: zodResolver(ReservationSchema),
+    defaultValues: defaultReservationFormValues,
   });
 
   // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
@@ -132,7 +132,7 @@ export default function ReservationForm() {
   }, [isEditMode, id]);
 
   //* Submit handler: create atau update
-  const onSubmit = async (values: TBookingReservation): Promise<void> => {
+  const onSubmit = async (values: TReservation): Promise<void> => {
     try {
       setLoading(true);
       if (isEditMode) {

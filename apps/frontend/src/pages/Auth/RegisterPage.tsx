@@ -18,7 +18,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import type { AxiosError } from "axios";
-import { registerSchema, type RegisterFormValues } from "@rzkyakbr/schemas";
+import {
+  defaultRegisterFormValues,
+  RegisterSchema,
+  type TRegister,
+} from "@rzkyakbr/schemas";
+import { SimpleField } from "@/components/form/SimpleField";
 
 export default function RegisterPage({
   className,
@@ -27,19 +32,12 @@ export default function RegisterPage({
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      NIP: "",
-      position: "",
-      fullName: "",
-      username: "",
-      password: "",
-      role: "user",
-    },
+  const form = useForm<TRegister>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: defaultRegisterFormValues,
   });
 
-  const onSubmit = async (values: RegisterFormValues): Promise<void> => {
+  const onSubmit = async (values: TRegister): Promise<void> => {
     try {
       await api.post("/auth/register", {
         ...values,
@@ -81,95 +79,52 @@ export default function RegisterPage({
                   <div className="flex flex-col gap-6">
                     {/* Header */}
                     <div className="flex flex-col items-center text-center">
-                      <h1 className="text-2xl font-bold">Create account</h1>
+                      <h1 className="text-2xl font-bold">Buat akun</h1>
                       <p className="text-muted-foreground text-balance">
-                        Enter your personal information to create an account.
+                        Masukkan informasi Anda untuk membuat akun.
                       </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      {/* NIP Field */}
-                      <FormField
+                      {/* NIP */}
+                      <SimpleField
                         control={form.control}
+                        type="number"
                         name="NIP"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>NIP</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder="Enter your NIP"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="NIP"
+                        placeholder="Masukan NIP"
                       />
 
-                      {/* Position Field */}
-                      <FormField
+                      {/* Position */}
+                      <SimpleField
                         control={form.control}
                         name="position"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Position</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                placeholder="Enter your position"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="Jabatan"
+                        placeholder="Masukan jabatan"
                       />
                     </div>
 
-                    {/* Full Name Field */}
+                    {/* Full Name */}
                     <div className="grid gap-3">
-                      <FormField
+                      <SimpleField
                         control={form.control}
                         name="fullName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                placeholder="Enter your full name"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="Nama Lengkap"
+                        placeholder="Masukan nama lengkap"
                       />
                     </div>
 
-                    {/* Username Field */}
+                    {/* Username */}
                     <div className="grid gap-3">
-                      <FormField
+                      <SimpleField
                         control={form.control}
                         name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                placeholder="Enter your username"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="Username"
+                        placeholder="Masukan username"
                       />
                     </div>
 
-                    {/* Password Field */}
+                    {/* Password  */}
                     <div className="grid gap-3">
                       <FormField
                         control={form.control}
@@ -181,7 +136,8 @@ export default function RegisterPage({
                               <div className="relative">
                                 <Input
                                   type={showPassword ? "text" : "password"}
-                                  placeholder="Enter your password"
+                                  required
+                                  placeholder="Masukan password"
                                   {...field}
                                 />
                                 <Button
@@ -217,19 +173,19 @@ export default function RegisterPage({
                           Loading
                         </>
                       ) : (
-                        "Create account"
+                        "Buat akun"
                       )}
                     </Button>
 
                     <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
                       <span className="bg-card text-muted-foreground relative z-10 px-2">
-                        Or
+                        Atau
                       </span>
                     </div>
 
                     {/* Login Navigate */}
                     <div className="text-center text-sm">
-                      Already have an account?{" "}
+                      Sudah memiliki akun?{" "}
                       <Link
                         to="/auth/login"
                         className="underline underline-offset-4"
