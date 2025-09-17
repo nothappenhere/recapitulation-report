@@ -1,4 +1,4 @@
-import { api } from "../../../../../packages/libs";
+import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { TicketPriceCard } from "./TicketPriceCard";
@@ -23,10 +23,10 @@ function TicketPricePage() {
         setTicketPrices(res.data.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
-        const message = "Gagal mengambil data harga tiket";
-
-        console.error(`${message}: ${error.message}`);
-        toast.error(`${message}.`);
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Gagal mengambil data harga tiket, silakan coba lagi.";
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -39,17 +39,18 @@ function TicketPricePage() {
     if (!selectedItem) return;
 
     try {
-      await api.delete(`/ticket-price/${selectedItem._id}`);
+      const res = await api.delete(`/ticket-price/${selectedItem._id}`);
       setTicketPrices((prev) =>
         prev.filter((tp) => tp._id !== selectedItem._id)
       );
-      toast.success("Harga tiket berhasil dihapus");
+
+      toast.success(`${res.data.message}.`);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
-      const message = "Gagal menghapus harga tiket";
-
-      console.error(`${message}: ${error.message}`);
-      toast.error(`${message}.`);
+      const message = error.response?.data?.message
+        ? `${error.response.data.message}!`
+        : "Gagal menghapus data harga tiket, silakan coba lagi.";
+      toast.error(message);
     } finally {
       setSelectedItem(null);
       setDeleteOpen(false);
@@ -83,7 +84,7 @@ function TicketPricePage() {
                 ticketPrices.length === 4 ? "hidden" : ""
               }`}
             >
-              <Button asChild className="mt-2">
+              <Button asChild className="my-1.5">
                 <Link to="add">Tambah Harga Tiket</Link>
               </Button>
             </div>

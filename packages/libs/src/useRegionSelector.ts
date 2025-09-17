@@ -30,8 +30,10 @@ export function useRegionSelector<TForm extends UseFormReturn<any>>(
         setCountries(resCountries.data?.data || []);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch provinces/countries:", error.message);
-        toast.error("Gagal memuat provinsi/negara. Coba refresh halaman.");
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data provinsi/negara, silakan coba lagi.";
+        toast.error(message);
       }
     };
 
@@ -54,8 +56,10 @@ export function useRegionSelector<TForm extends UseFormReturn<any>>(
         form.setValue("village", "");
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch regencies:", error.message);
-        toast.error("Gagal memuat kabupaten/kota. Coba refresh halaman.");
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data kabupaten/kota, silakan coba lagi.";
+        toast.error(message);
       }
     };
 
@@ -80,8 +84,10 @@ export function useRegionSelector<TForm extends UseFormReturn<any>>(
         form.setValue("village", "");
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch districts:", error.message);
-        toast.error("Gagal memuat kecamatan. Coba refresh halaman.");
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data kecamatan, silakan coba lagi.";
+        toast.error(message);
       }
     };
 
@@ -103,8 +109,10 @@ export function useRegionSelector<TForm extends UseFormReturn<any>>(
         form.setValue("village", "");
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
-        console.error("Failed to fetch villages:", error.message);
-        toast.error("Gagal memuat kelurahan/desa. Coba refresh halaman.");
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data kelurahan/desa, silakan coba lagi.";
+        toast.error(message);
       }
     };
 

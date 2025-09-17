@@ -5,7 +5,7 @@ import { VisitingHour } from "../models/VisitingHour.js";
 
 const seedReservations = async () => {
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/ticketing");
+    await mongoose.connect("mongodb://127.0.0.1:27017/ticketing-system");
     console.log("Connected to MongoDB!");
 
     // ambil user pertama (anggap sudah ada user login)

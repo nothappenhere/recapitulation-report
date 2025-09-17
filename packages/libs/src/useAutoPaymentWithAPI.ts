@@ -46,7 +46,9 @@ export function useAutoPaymentWithAPI(
         setPrices(mappedPrices);
         setError(null);
       } catch (err: any) {
-        setError(err.message || "Gagal mengambil harga tiket");
+        setError(
+          err.message || "Gagal mengambil data harga tiket, silakan coba lagi"
+        );
       } finally {
         setLoading(false);
       }
@@ -93,6 +95,4 @@ export function useAutoPaymentWithAPI(
     error,
     setValue,
   ]);
-
-  // return { prices, loading, error };
 }

@@ -1,8 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { type TWalkIn } from "@rzkyakbr/schemas";
+import { type TReservation } from "@rzkyakbr/schemas";
 import { type Column, type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ColumnsActions } from "@/components/table/column-actions";
+import { ColumnsActions } from "@/components/table/ColumnsActions";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 
@@ -26,7 +26,7 @@ export default function SortableHeader({
 }
 
 // Selection Column
-export const selectColumn: ColumnDef<TWalkIn> = {
+export const selectColumn: ColumnDef<TReservation> = {
   id: "select",
   header: ({ table }) => (
     <Checkbox
@@ -71,9 +71,9 @@ export function createColumn<T>(
 
 // Dynamic Actions Column Creator
 export function createActionsColumn(
-  onEdit: (item: TWalkIn) => void,
-  onDelete: (item: TWalkIn) => void
-): ColumnDef<TWalkIn> {
+  onEdit: (item: TReservation) => void,
+  onDelete: (item: TReservation) => void
+): ColumnDef<TReservation> {
   return {
     id: "actions",
     header: "Actions",
@@ -83,7 +83,7 @@ export function createActionsColumn(
       return (
         <ColumnsActions
           item={reservation}
-          getId={(wi) => wi._id || ""}
+          getId={(r) => r._id || ""}
           onEdit={onEdit}
           onDelete={onDelete}
         />

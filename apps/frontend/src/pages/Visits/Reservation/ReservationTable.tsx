@@ -20,12 +20,14 @@ export default function ReservationTable() {
     async function fetchReservations() {
       setLoading(true);
       try {
-        const res = await api.get("/booking-reservation");
+        const res = await api.get("/reservation");
         setData(res.data.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
-        console.error("Gagal mengambil data:", error.message);
-        toast.error("Gagal mengambil data reservasi.");
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -40,13 +42,15 @@ export default function ReservationTable() {
     setLoading(true);
 
     try {
-      await api.delete(`/booking-reservation/${selectedItem._id}`);
+      const res = await api.delete(`/reservation/${selectedItem._id}`);
+      toast.success(`${res.data.message}`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
-      toast.success("Reservasi berhasil dihapus");
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
-      console.error("Gagal menghapus data:", error.message);
-      toast.error("Gagal menghapus data reservasi");
+      const message = error.response?.data?.message
+        ? `${error.response.data.message}!`
+        : "Terjadi kesalahan saat menghapus data, silakan coba lagi.";
+      toast.error(message);
     } finally {
       setSelectedItem(null);
       setDeleteOpen(false);
@@ -71,7 +75,7 @@ export default function ReservationTable() {
         columns={columns}
         data={loading ? [] : data}
         addTitle="Tambah Reservasi"
-        addPath="add?tab=reservation-booking"
+        addPath="add?tab=reservation"
         colSpan={7}
       />
 

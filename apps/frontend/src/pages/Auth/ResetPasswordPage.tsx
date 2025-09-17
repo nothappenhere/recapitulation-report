@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { api } from "../../../../../packages/libs";
+import { api } from "@rzkyakbr/libs";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,7 +43,7 @@ export default function ResetPasswordPage({
 
   const form = useForm<TResetPassword>({
     resolver: zodResolver(ResetPasswordSchema),
-    defaultValues: defaultResetPasswordFormValues
+    defaultValues: defaultResetPasswordFormValues,
   });
 
   const handleVerifyUsername = async (
@@ -53,36 +53,37 @@ export default function ResetPasswordPage({
     e.preventDefault();
 
     if (!form.getValues("username")) {
-      toast.error("Field cannot be empty!");
+      toast.error("Kolom input tidak boleh kosong!");
       return;
     }
 
     try {
-      const response = await api.post("/auth/verify-account", values);
-      const { exist } = response.data.data;
+      const res = await api.post("/auth/verify-username", values);
+      const { exist } = res.data.data;
+      form.reset();
 
       setAccountExist(exist);
-      toast.success("Please enter new password.");
+      toast.success(`${res.data.message}.`);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
         ? `${error.response.data.message}!`
-        : "Verify account failed, please try again.";
+        : "Verifikasi akun gagal, silakan coba lagi.";
       toast.error(message);
     }
   };
 
   const onSubmit = async (values: TResetPassword): Promise<void> => {
     try {
-      await api.put("/auth/reset-password", values);
+      const res = await api.put("/auth/reset-password", values);
 
-      toast.success("Password reset successful.");
+      toast.success(`${res.data.message}.`);
       navigate("/auth/login");
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
         ? `${error.response.data.message}!`
-        : "Reset password failed, please try again.";
+        : "Reset kata sandi gagal, silakan coba lagi.";
       toast.error(message);
     }
   };

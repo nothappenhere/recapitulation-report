@@ -17,21 +17,23 @@ export default function WalkInTable() {
 
   // TODO: Ambil data dari API
   useEffect(() => {
-    async function fetchReservations() {
+    async function fetchWalkIns() {
       setLoading(true);
       try {
-        const res = await api.get("/booking-reservation");
+        const res = await api.get("/walk-in");
         setData(res.data.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
-        console.error("Gagal mengambil data:", error.message);
-        toast.error("Gagal mengambil data reservasi.");
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
+        toast.error(message);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchReservations();
+    fetchWalkIns();
   }, []);
 
   // TODO: Handler delete setelah dikonfirmasi
@@ -40,13 +42,15 @@ export default function WalkInTable() {
     setLoading(true);
 
     try {
-      await api.delete(`/booking-reservation/${selectedItem._id}`);
+      const res = await api.delete(`/walk-in/${selectedItem._id}`);
+      toast.success(`${res.data.message}`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
-      toast.success("Reservasi berhasil dihapus");
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
-      console.error("Gagal menghapus data:", error.message);
-      toast.error("Gagal menghapus data reservasi");
+      const message = error.response?.data?.message
+        ? `${error.response.data.message}!`
+        : "Terjadi kesalahan saat menghapus data, silakan coba lagi.";
+      toast.error(message);
     } finally {
       setSelectedItem(null);
       setDeleteOpen(false);

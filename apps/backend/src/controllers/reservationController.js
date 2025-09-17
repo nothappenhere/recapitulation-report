@@ -68,6 +68,7 @@ export const getReservationById = async (req, res) => {
  */
 export const createReservation = async (req, res) => {
   try {
+    const { reservationAgent } = req.body;
     const { visitingDate, visitingHour } = req.validatedData;
 
     // Cek apakah slot waktu sudah dipakai di tanggal itu
@@ -86,7 +87,10 @@ export const createReservation = async (req, res) => {
     }
 
     // Buat reservasi baru
-    const newReservation = new Reservation({ ...req.validatedData });
+    const newReservation = new Reservation({
+      ...req.validatedData,
+      reservationAgent,
+    });
     await newReservation.save();
 
     sendResponse(
@@ -164,7 +168,7 @@ export const deleteReservationById = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil menghapus data reservasi dengan ID${id}`
+      `Berhasil menghapus data reservasi dengan ID ${id}`
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

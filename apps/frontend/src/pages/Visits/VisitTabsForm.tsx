@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClipboardListIcon, FootprintsIcon } from "lucide-react";
-import ReservationForm from "../ReservationsPage/ReservationForm";
-import WalkInForm from "../Walk-In/WalkInForm";
+import WalkInForm from "./Walk-In/WalkInForm";
+import ReservationForm from "./Reservation/ReservationForm";
 import { useSearchParams } from "react-router";
 
 export default function VisitTabsForm() {
@@ -19,7 +19,7 @@ export default function VisitTabsForm() {
           />
           Langsung (Walk-in)
         </TabsTrigger>
-        <TabsTrigger value="reservation-booking">
+        <TabsTrigger value="reservation">
           <ClipboardListIcon
             className="mx-0.5 opacity-60"
             size={16}
@@ -32,7 +32,7 @@ export default function VisitTabsForm() {
       <TabsContent value="walk-in">
         <WalkInForm />
       </TabsContent>
-      <TabsContent value="reservation-booking">
+      <TabsContent value="reservation">
         <ReservationForm />
       </TabsContent>
     </Tabs>

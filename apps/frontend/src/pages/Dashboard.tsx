@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,8 +14,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { UserProvider } from "@/hooks/UserContext";
-import { slugToTitle } from "../../../../packages/libs";
-import React from "react";
+import { slugToTitle } from "@rzkyakbr/libs";
 import { Link, Outlet, useLocation } from "react-router";
 
 export function DashboardPage() {

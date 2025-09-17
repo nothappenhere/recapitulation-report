@@ -122,7 +122,7 @@ export const getVillages = async (req, res) => {
 export const getCountries = async (req, res) => {
   try {
     const countries = await Country.find().sort({
-      code: 1,
+      name: 1,
     });
 
     sendResponse(

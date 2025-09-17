@@ -43,13 +43,13 @@ export default function LoginPage({
       const { user } = response.data.data;
       form.reset();
 
-      toast.success(`Welcome, ${user.fullName}.`);
+      toast.success(`Selamat datang, ${user.fullName}.`);
       navigate("/dashboard");
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
         ? `${error.response.data.message}!`
-        : "Login failed, please try again.";
+        : "Logged in gagal, silakan coba lagi.";
       toast.error(message);
     }
   };

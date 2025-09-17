@@ -4,7 +4,7 @@ import { Country } from "../models/Country.js";
 
 async function seedCountries() {
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/ticketing");
+    await mongoose.connect("mongodb://127.0.0.1:27017/ticketing-system");
     console.log("Connected to MongoDB!");
 
     // baca file JSON

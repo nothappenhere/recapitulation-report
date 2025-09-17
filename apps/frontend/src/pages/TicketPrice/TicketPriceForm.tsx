@@ -27,34 +27,40 @@ import { SelectField } from "@/components/form/SelectField";
 import { SimpleField } from "@/components/form/SimpleField";
 
 export default function TicketPriceForm() {
-  const { ticketId } = useParams();
+  const { id } = useParams();
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const navigate = useNavigate();
-  const isEditMode = Boolean(ticketId);
+  const isEditMode = Boolean(id);
 
   const form = useForm<TTicketPrice>({
     resolver: zodResolver(TicketPriceSchema),
     defaultValues: defaultTicketPriceFormValues,
   });
 
-  // 🔹 Fetch jika sedang edit
+  //* Fetch jika sedang edit
   useEffect(() => {
-    if (!ticketId) return;
+    if (!id) return;
 
     const fetchTicketPrice = async () => {
       try {
-        const res = await api.get(`/ticket-price/${ticketId}`);
+        const res = await api.get(`/ticket-price/${id}`);
         const { category, unitPrice } = res.data.data;
+
         form.setValue("category", category);
         form.setValue("unitPrice", unitPrice);
       } catch (err) {
-        toast.error("Data tidak ditemukan.");
+        const error = err as AxiosError<{ message?: string }>;
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
+        toast.error(message);
+
         navigate("/dashboard/ticket-price");
       }
     };
 
     fetchTicketPrice();
-  }, [ticketId]);
+  }, [form, navigate, id]);
 
   //* Fetch kategori (untuk disabled select)
   useEffect(() => {
@@ -68,9 +74,11 @@ export default function TicketPriceForm() {
         );
         setExistingCategories(categories);
       } catch (err) {
-        const error = err as AxiosError<{ message: string }>;
-        console.log(`Gagal memuat data kategori: ${error}`);
-        toast.error("Gagal memuat data kategori yang tersedia.");
+        const error = err as AxiosError<{ message?: string }>;
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
+        toast.error(message);
       }
     };
 
@@ -79,20 +87,22 @@ export default function TicketPriceForm() {
 
   const onSubmit = async (values: TTicketPrice) => {
     try {
-      if (isEditMode && ticketId) {
-        await api.put(`/ticket-price/${ticketId}`, values);
-        toast.success("Harga tiket berhasil diperbarui.");
+      if (isEditMode && id) {
+        const res = await api.put(`/ticket-price/${id}`, values);
+        toast.success(`${res.data.message}.`);
       } else {
-        console.log(values);
-        alert("test kirim");
-        // await api.post(`/ticket-price`, values);
-        // toast.success("Harga tiket berhasil ditambahkan.");
+        const res = await api.post(`/ticket-price`, values);
+        toast.success(`${res.data.message}.`);
       }
 
-      // navigate("/dashboard/ticket-price");
+      form.reset();
+      navigate("/dashboard/ticket-price");
     } catch (err) {
-      console.error(err);
-      toast.error("Terjadi kesalahan saat menyimpan data.");
+      const error = err as AxiosError<{ message?: string }>;
+      const message = error.response?.data?.message
+        ? `${error.response.data.message}!`
+        : "Terjadi kesalahan saat menyimpan data, silakan coba lagi.";
+      toast.error(message);
     }
   };
 
@@ -106,7 +116,7 @@ export default function TicketPriceForm() {
             </CardTitle>
             <CardDescription>
               {isEditMode
-                ? `Ubah detail harga tiket dengan ID: ${ticketId}`
+                ? `Ubah detail harga tiket dengan ID: ${id}`
                 : "Isi formulir di bawah untuk membuat harga tiket baru."}
             </CardDescription>
 
@@ -198,7 +208,7 @@ export default function TicketPriceForm() {
                         Loading...
                       </>
                     ) : isEditMode ? (
-                      "Update Harga Tiket"
+                      "Perbarui Harga Tiket"
                     ) : (
                       "Tambah Harga Tiket"
                     )}

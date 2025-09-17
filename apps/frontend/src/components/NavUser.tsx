@@ -1,13 +1,4 @@
-"use client";
-
-import {
-  Bell,
-  ChevronsUpDown,
-  CircleUserRound,
-  LogOut,
-  UserCircle,
-} from "lucide-react";
-
+import { Bell, ChevronsUpDown, CircleUserRound, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -24,36 +15,40 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { api } from "../../../../packages/libs";
+import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router";
 import { getInitials } from "@/lib/utils";
+import type { AxiosError } from "axios";
 
 export function NavUser({
   user,
 }: {
   user: {
     _id: string;
+    position: string;
     fullName: string;
     username: string;
     role: string;
-    avatar: string;
+    avatar?: string;
   };
 }) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
 
-  async function handleLogout() {
+  const handleLogout = async () => {
     try {
       const res = await api.post("/auth/logout");
-      toast.success(res.data.message);
+      toast.success(`${res.data.message}.`);
       navigate("/auth/login");
     } catch (err) {
-      const message =
-        err.response?.data?.message || "Failed to logout, please try again.";
+      const error = err as AxiosError<{ message?: string }>;
+      const message = error.response?.data?.message
+        ? `${error.response?.data?.message}!`
+        : "Logged out gagal, silakan coba lagi.";
       toast.error(message);
     }
-  }
+  };
 
   return (
     <SidebarMenu>

@@ -3,7 +3,7 @@ import { VisitingHour } from "../models/VisitingHour.js";
 
 const seedVisitingHours = async () => {
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/ticketing");
+    await mongoose.connect("mongodb://127.0.0.1:27017/ticketing-system");
     console.log("Connected to MongoDB!");
 
     const timeSlots = [

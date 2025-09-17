@@ -1,12 +1,15 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "../../../../packages/libs";
+import { api } from "@rzkyakbr/libs";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+import type { AxiosError } from "axios";
 
 type User = {
   _id: string;
-  name: string;
+  position: string;
+  fullName: string;
   username: string;
   role: string;
   avatar?: string;
@@ -30,21 +33,23 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         const res = await api.get("/auth/check-auth");
         setUser(res.data?.data?.user);
       } catch (err) {
-        const message = err.response?.data?.message
-          ? `${err.response?.data?.message}!`
+        const error = err as AxiosError<{ message?: string }>;
+        const message = error.response?.data?.message
+          ? `${error.response?.data?.message}!`
           : "";
-        toast.error(`${message}\nPlease login first.`, {
+        toast.error(`${message}\nSilakan login terlebih dahulu.`, {
           duration: 5000,
         });
-        setUser(null);
+
         navigate("/auth/login");
+        setUser(null);
       } finally {
         setLoading(false);
       }
     }
 
     fetchUser();
-  }, []);
+  }, [navigate]);
 
   return (
     <>
@@ -52,11 +57,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         <>
           <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
             <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-              <Skeleton className="bg-gray-100 aspect-video rounded-xl" />
-              <Skeleton className="bg-gray-100 aspect-video rounded-xl" />
-              <Skeleton className="bg-gray-100 aspect-video rounded-xl" />
+              <Skeleton className="bg-neutral-100 aspect-video rounded-xl" />
+              <Skeleton className="bg-neutral-100 aspect-video rounded-xl" />
+              <Skeleton className="bg-neutral-100 aspect-video rounded-xl" />
             </div>
-            <Skeleton className="bg-gray-100 aspect-video rounded-xl" />
+            <Skeleton className="bg-neutral-100 aspect-video rounded-xl" />
           </div>
         </>
       ) : (

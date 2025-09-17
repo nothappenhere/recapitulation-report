@@ -1,9 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClipboardListIcon, FootprintsIcon } from "lucide-react";
-import WalkInTable from "../Walk-In/WalkInTable";
-import ReservationTable from "../ReservationsPage/ReservationTable";
+import WalkInTable from "./Walk-In/WalkInTable";
+import ReservationTable from "./Reservation/ReservationTable";
 
-export default function VisitTabsTable() {
+export default function VisitTabsPage() {
   return (
     <Tabs defaultValue="walk-in" className="mx-auto">
       <TabsList className="gap-1">
@@ -15,7 +15,7 @@ export default function VisitTabsTable() {
           />
           Langsung (Walk-in)
         </TabsTrigger>
-        <TabsTrigger value="reservation-booking">
+        <TabsTrigger value="reservation">
           <ClipboardListIcon
             className="mx-0.5 opacity-60"
             size={16}
@@ -28,7 +28,7 @@ export default function VisitTabsTable() {
       <TabsContent value="walk-in">
         <WalkInTable />
       </TabsContent>
-      <TabsContent value="reservation-booking">
+      <TabsContent value="reservation">
         <ReservationTable />
       </TabsContent>
     </Tabs>

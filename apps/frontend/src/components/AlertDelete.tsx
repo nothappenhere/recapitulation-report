@@ -9,7 +9,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-function AlertDelete({ open, setOpen, onDelete }) {
+type AlertDeleteProps = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onDelete: () => void;
+};
+
+function AlertDelete({ open, setOpen, onDelete }: AlertDeleteProps) {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>

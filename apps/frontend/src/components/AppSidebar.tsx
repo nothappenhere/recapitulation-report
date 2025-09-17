@@ -14,7 +14,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { NavUser } from "./nav-user";
+import { NavUser } from "./NavUser";
 import { useUser } from "@/hooks/UserContext";
 import { Link, NavLink } from "react-router";
 import { capitalizeFirstLetter } from "@/lib/utils";
@@ -75,7 +75,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-medium">Ticketing System</span>
-                  <span className="text-xs">{capitalizeFirstLetter(role)}</span>
+                  <span className="text-xs">
+                    {capitalizeFirstLetter(user?.position || "Guest")}
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -120,9 +122,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           user={
             user || {
               _id: "12345",
+              position: "Guest",
               fullName: "Guest",
               username: "guest123",
-              role: "guest role",
+              role: "Guest",
               avatar: "/avatars/default.jpg",
             }
           }

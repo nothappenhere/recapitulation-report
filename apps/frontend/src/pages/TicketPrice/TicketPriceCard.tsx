@@ -7,11 +7,26 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatRupiah } from "../../../../../packages/libs";
-import { ColumnsActions } from "../../components/table/column-actions";
+import { formatRupiah } from "@rzkyakbr/libs";
+import { ColumnsActions } from "@/components/table/ColumnsActions";
 import { useNavigate } from "react-router";
 
-export function TicketPriceCard({ ticketPrice, onDelete }) {
+type TicketPrice = {
+  _id: string;
+  category: string;
+  unitPrice: number;
+};
+
+type TicketPriceCardProps = {
+  ticketPrice: TicketPrice;
+  onEdit: (ticketPrice: TicketPrice) => void;
+  onDelete: () => void;
+};
+
+export function TicketPriceCard({
+  ticketPrice,
+  onDelete,
+}: TicketPriceCardProps) {
   const navigate = useNavigate();
 
   return (
@@ -29,8 +44,8 @@ export function TicketPriceCard({ ticketPrice, onDelete }) {
         <CardAction className="border rounded-sm">
           <ColumnsActions
             item={ticketPrice}
-            getId={(tp) => tp._id}
-            onEdit={(tp) => navigate(tp._id)}
+            getId={(tp: TicketPrice) => tp._id}
+            onEdit={(tp: TicketPrice) => navigate(tp._id)}
             onDelete={onDelete}
           />
         </CardAction>

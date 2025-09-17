@@ -1,4 +1,4 @@
-import { WalkIn } from "../models/walk-in.js";
+import { WalkIn } from "../models/walkIn.js";
 import { sendResponse } from "../utils/sendResponse.js";
 
 /**
@@ -67,8 +67,10 @@ export const getWalkInById = async (req, res) => {
  * @route POST /api/walk-in
  */
 export const createWalkIn = async (req, res) => {
+  const { reservationAgent } = req.body;
+
   try {
-    const newWalkIn = new WalkIn({ ...req.validatedData });
+    const newWalkIn = new WalkIn({ ...req.validatedData, reservationAgent });
     await newWalkIn.save();
 
     sendResponse(

@@ -39,19 +39,19 @@ export default function RegisterPage({
 
   const onSubmit = async (values: TRegister): Promise<void> => {
     try {
-      await api.post("/auth/register", {
+      const res = await api.post("/auth/register", {
         ...values,
         role: "user",
       });
+      form.reset();
 
-      toast.success("User created successfully.");
+      toast.success(`${res.data.message}.`);
       navigate("/auth/login");
     } catch (err) {
-      console.log(err);
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
         ? `${error.response.data.message}!`
-        : "Register failed, please try again.";
+        : "Registrasi gagal, silakan coba lagi.";
       toast.error(message);
     }
   };

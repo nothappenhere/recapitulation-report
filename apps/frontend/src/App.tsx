@@ -16,10 +16,10 @@ import TransaksiForm from "./pages/TransaksiForm";
 // import WeeklyReport from "./pages/WeeklyReport";
 import WeeklyReportPage from "./pages/WeeklyReportPage";
 
-import ReservationTable from "./pages/ReservationsPage/ReservationTable";
-import ReservationForm from "./pages/ReservationsPage/ReservationForm";
+// import ReservationTable from "./pages/Visits/Reservation/ReservationTable";
+// import ReservationForm from "./pages/Visits/Reservation/ReservationForm";
+import VisitTabsPage from "./pages/Visits/VisitTabsPage";
 import VisitTabsForm from "./pages/Visits/VisitTabsForm";
-import VisitTabsTable from "./pages/Visits/VisitTabsTable";
 
 function App() {
   return (
@@ -38,7 +38,7 @@ function App() {
           <Route path="ticket-price">
             <Route index element={<TicketPricePage />} />
             <Route path="add" element={<TicketPriceForm />} />
-            <Route path=":ticketId" element={<TicketPriceForm />} />
+            <Route path=":id" element={<TicketPriceForm />} />
           </Route>
 
           <Route path="stok-tiket" element={<TicketStockSection />} />
@@ -49,7 +49,7 @@ function App() {
           <Route path="laporan-mingguan" element={<WeeklyReportPage />} />
 
           <Route path="visits">
-            <Route index element={<VisitTabsTable />} />
+            <Route index element={<VisitTabsPage />} />
             <Route path="add" element={<VisitTabsForm />} />
             <Route path=":id" element={<VisitTabsForm />} />
           </Route>
