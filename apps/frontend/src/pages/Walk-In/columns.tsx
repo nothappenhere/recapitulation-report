@@ -1,14 +1,14 @@
-import { formatPhoneNumber, formatRupiah } from "@rzkyakbr/libs";
 import { type TWalkIn } from "@rzkyakbr/schemas";
 import { type ColumnDef } from "@tanstack/react-table";
+import { formatPhoneNumber, formatRupiah } from "@rzkyakbr/libs";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import {
   createColumn,
   createActionsColumn,
-  selectColumn,
-} from "./column-utils";
+  createSelectColumn,
+} from "@/components/table/column-factory";
 import { useNavigate } from "react-router";
 
 export function useWalkInColumns(
@@ -17,7 +17,9 @@ export function useWalkInColumns(
   const navigate = useNavigate();
 
   return [
-    selectColumn,
+    createSelectColumn<TWalkIn>(),
+
+    createColumn("walkInNumber", "No. Walk-in"),
     createColumn("ordererNameOrTravelName", "Nama Pemesan / Travel"),
     createColumn("phoneNumber", "No. telepon", {
       cell: ({ row }) => formatPhoneNumber(row.getValue("phoneNumber")),
@@ -35,8 +37,16 @@ export function useWalkInColumns(
         return <span>{visitingHour?.timeRange ?? "-"} WIB</span>;
       },
     }),
-
     createColumn("address", "Alamat"),
+    createColumn("description", "Deskripsi"),
+    createColumn("reservationAgent", "Petugas", {
+      cell: ({ row }) => {
+        const agent = row.original.reservationAgent as unknown as {
+          fullName: string;
+        } | null;
+        return <span>{agent?.fullName ?? "-"}</span>;
+      },
+    }),
 
     createColumn("studentMemberTotal", "Jumlah Pelajar", {
       meta: { sum: true, label: "Jumlah Pelajar" },
@@ -67,7 +77,7 @@ export function useWalkInColumns(
       cell: ({ row }) => formatRupiah(row.getValue("changeAmount")),
     }),
     createColumn("paymentMethod", "Metode Pembayaran"),
-    createColumn("statusPayment", "Status", {
+    createColumn("statusPayment", "Status Pembayaran", {
       cell: ({ row }) => {
         const status = row.getValue("statusPayment");
         return (
@@ -80,14 +90,14 @@ export function useWalkInColumns(
                 : "destructive"
             }
           >
-            {row.getValue("statusPayment")}
+            {row.getValue("statusPayment") === "Paid" ? "Lunas" : "Belum Bayar"}
           </Badge>
         );
       },
     }),
 
-    createActionsColumn(
-      (wi) => navigate(`/dashboard/visits/${wi._id}?tab=walk-in`),
+    createActionsColumn<TWalkIn>(
+      (item) => navigate(`/dashboard/walk-in/edit/${item._id}`),
       onDelete
     ),
   ];

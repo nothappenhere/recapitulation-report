@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const TicketPriceSchema = z.object({
   category: z.enum(
-    ["Pelajar", "Umum", "Asing", "Khusus", ""],
+    ["Pelajar", "Umum", "Asing", "Khusus"],
     "Kategori tidak boleh kosong!"
   ),
   unitPrice: z.coerce
@@ -13,6 +13,6 @@ export const TicketPriceSchema = z.object({
 export type TTicketPrice = z.infer<typeof TicketPriceSchema>;
 
 export const defaultTicketPriceFormValues: TTicketPrice = {
-  category: "",
+  category: "Pelajar",
   unitPrice: 0,
 };

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 import { NavUser } from "./NavUser";
 import { useUser } from "@/hooks/UserContext";
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useLocation } from "react-router";
 import { capitalizeFirstLetter } from "@/lib/utils";
 
 type NavConfig = {
@@ -40,8 +40,11 @@ const navConfig: NavConfig = {
       title: "Getting Started",
       url: "#",
       items: [
-        { title: "Harga Tiket", url: "harga-tiket" },
-        { title: "Stok Tiket", url: "stok-tiket" },
+        { title: "Pengelolaan Pengguna", url: "user-management" },
+        { title: "Harga Tiket", url: "ticket-price" },
+        { title: "Reservasi", url: "reservation" },
+        { title: "Walk-in", url: "walk-in" },
+        { title: "Kalender", url: "calendar" },
       ],
     },
   ],
@@ -51,8 +54,10 @@ const navConfig: NavConfig = {
       url: "#",
       items: [
         { title: "Harga Tiket", url: "ticket-price" },
-        { title: "Reservasi & Walk-in", url: "visits" },
-        { title: "Target Tahunan", url: "targets" },
+        { title: "Reservasi", url: "reservation" },
+        { title: "Walk-in", url: "walk-in" },
+        { title: "Kalender", url: "calendar" },
+        // { title: "Target Tahunan", url: "annual-target" },
       ],
     },
   ],
@@ -62,6 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
   const role = user?.role || "guest";
   const menuData = navConfig[role] || [];
+  const location = useLocation();
 
   return (
     <Sidebar {...props}>
@@ -98,17 +104,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
                 {item.items?.length ? (
                   <SidebarMenuSub>
-                    {item.items.map((sub) => (
-                      <SidebarMenuSubItem key={sub.title}>
-                        <NavLink to={sub.url} end>
-                          {({ isActive }) => (
+                    {item.items.map((sub) => {
+                      // buat path absolut agar match dengan location.pathname
+                      const fullPath = `/dashboard/${sub.url}`;
+                      const isActive = location.pathname.startsWith(fullPath);
+
+                      return (
+                        <SidebarMenuSubItem key={sub.title}>
+                          <NavLink to={fullPath} end>
                             <SidebarMenuSubButton asChild isActive={isActive}>
                               <span>{sub.title}</span>
                             </SidebarMenuSubButton>
-                          )}
-                        </NavLink>
-                      </SidebarMenuSubItem>
-                    ))}
+                          </NavLink>
+                        </SidebarMenuSubItem>
+                      );
+                    })}
                   </SidebarMenuSub>
                 ) : null}
               </SidebarMenuItem>

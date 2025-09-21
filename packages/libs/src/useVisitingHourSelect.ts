@@ -25,7 +25,7 @@ export function useVisitingHourSelect<TForm extends UseFormReturn<any>>(
     };
 
     getVisitingHours();
-  }, [visitHours, form]);
+  }, []);
 
   return {
     visitHours,

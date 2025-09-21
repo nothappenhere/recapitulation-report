@@ -69,22 +69,22 @@ export const getReservationById = async (req, res) => {
 export const createReservation = async (req, res) => {
   try {
     const { reservationAgent } = req.body;
-    const { visitingDate, visitingHour } = req.validatedData;
+    // const { visitingDate, visitingHour } = req.validatedData;
 
     // Cek apakah slot waktu sudah dipakai di tanggal itu
-    const slotTaken = await Reservation.findOne({
-      visitingDate,
-      visitingHour,
-    });
+    // const slotTaken = await Reservation.findOne({
+    //   visitingDate,
+    //   visitingHour,
+    // });
 
-    if (slotTaken) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        `Slot waktu ini (${visitingHour}) sudah dipesan di tanggal tersebut (${visitingDate})`
-      );
-    }
+    // if (slotTaken) {
+    //   return sendResponse(
+    //     res,
+    //     400,
+    //     false,
+    //     `Slot waktu kunjungan saat ini sudah dipesan di tanggal tersebut`
+    //   );
+    // }
 
     // Buat reservasi baru
     const newReservation = new Reservation({

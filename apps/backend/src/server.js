@@ -10,12 +10,13 @@ import visitHourRoutes from "./routes/visitHourRoutes.js";
 import regionRoutes from "./routes/regionRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import walkInRoutes from "./routes/walkInRoutes.js";
+import calendarEventRoutes from "./routes/calendarEventRoutes.js";
 
 // import stokTiketRoutes from "./routes/stokTiketRoutes.js";
 // import kodeTiketRoutes from "./routes/kodeTiketRoutes.js";
 // import penjualanTiketRoutes from "./routes/penjualanTiketRoutes.js";
 // import transaksiRoutes from "./routes/transaksiRoutes.js";
-// import WeeklyReportRoutes from "./routes/WeeklyReportRoutes.js";
+// import WeeklyReportRoutes from "./routes/weeklyReportRoutes.js";
 // import reservationRoutes from "./routes/reservationRoutes.js";
 
 //* Load environment variables
@@ -40,6 +41,7 @@ app.use("/api/region", regionRoutes);
 app.use("/api/visit-hour", visitHourRoutes);
 app.use("/api/reservation", reservationRoutes);
 app.use("/api/walk-in", walkInRoutes);
+app.use("/api/calendar-event", calendarEventRoutes);
 
 // app.use("/api/stok-tiket", stokTiketRoutes);
 // app.use("/api/kode-tiket", kodeTiketRoutes);

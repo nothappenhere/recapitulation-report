@@ -19,11 +19,11 @@ export default function WeeklyReportTable({ refreshTrigger }) {
   // Ambil harga tiket
   const fetchTicketPrices = async () => {
     try {
-      const res = await api.get("/harga-tiket");
+      const res = await api.get("/ticket-price");
       if (res.data.success) {
         const prices: Record<string, number> = {};
         res.data.data.ticketPrice.forEach((p: any) => {
-          prices[p.group] = p.unitPrice;
+          prices[p.category] = p.unitPrice;
         });
         setTicketPrices(prices);
       }

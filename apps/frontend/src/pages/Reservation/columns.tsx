@@ -1,23 +1,24 @@
-import { formatPhoneNumber, formatRupiah } from "@rzkyakbr/libs";
-import { type TBookingReservation } from "@rzkyakbr/schemas";
+import { type TReservation } from "@rzkyakbr/schemas";
 import { type ColumnDef } from "@tanstack/react-table";
+import { formatPhoneNumber, formatRupiah } from "@rzkyakbr/libs";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import {
   createColumn,
   createActionsColumn,
-  selectColumn,
-} from "./column-utils";
+  createSelectColumn,
+} from "@/components/table/column-factory";
 import { useNavigate } from "react-router";
 
 export function useReservationColumns(
-  onDelete: (item: TBookingReservation) => void
-): ColumnDef<TBookingReservation>[] {
+  onDelete: (item: TReservation) => void
+): ColumnDef<TReservation>[] {
   const navigate = useNavigate();
 
   return [
-    selectColumn,
+    createSelectColumn<TReservation>(),
+
     createColumn("bookingNumber", "No. Booking"),
     createColumn("ordererNameOrTravelName", "Nama Pemesan / Travel"),
     createColumn("phoneNumber", "No. telepon", {
@@ -37,8 +38,18 @@ export function useReservationColumns(
         return <span>{visitingHour?.timeRange ?? "-"} WIB</span>;
       },
     }),
-
     createColumn("address", "Alamat"),
+    createColumn("reservationMechanism", "Mekanisme Reservasi"),
+    createColumn("description", "Deskripsi"),
+    createColumn("reservationStatus", "Status Reservasi"),
+    createColumn("reservationAgent", "Petugas", {
+      cell: ({ row }) => {
+        const agent = row.original.reservationAgent as unknown as {
+          fullName: string;
+        } | null;
+        return <span>{agent?.fullName ?? "-"}</span>;
+      },
+    }),
 
     createColumn("studentMemberTotal", "Jumlah Pelajar", {
       meta: { sum: true, label: "Jumlah Pelajar" },
@@ -55,6 +66,9 @@ export function useReservationColumns(
     createColumn("groupMemberTotal", "Jumlah Keseluruhan", {
       meta: { sum: true, label: "Jumlah Keseluruhan" },
     }),
+    createColumn("actualMemberTotal", "Jumlah Kedatangan", {
+      meta: { sum: true, label: "Jumlah Kedatangan" },
+    }),
 
     createColumn("paymentAmount", "Total Pembayaran", {
       meta: { sum: true, isCurrency: true, label: "Total Pembayaran" },
@@ -69,7 +83,7 @@ export function useReservationColumns(
       cell: ({ row }) => formatRupiah(row.getValue("changeAmount")),
     }),
     createColumn("paymentMethod", "Metode Pembayaran"),
-    createColumn("statusPayment", "Status", {
+    createColumn("statusPayment", "Status Pembayaran", {
       cell: ({ row }) => {
         const status = row.getValue("statusPayment");
         return (
@@ -82,14 +96,14 @@ export function useReservationColumns(
                 : "destructive"
             }
           >
-            {row.getValue("statusPayment")}
+            {row.getValue("statusPayment") === "Paid" ? "Lunas" : "Belum Bayar"}
           </Badge>
         );
       },
     }),
 
-    createActionsColumn(
-      (r) => navigate(`/dashboard/visits/${r._id}?tab=reservation-booking`),
+    createActionsColumn<TReservation>(
+      (item) => navigate(`/dashboard/reservation/edit/${item._id}`),
       onDelete
     ),
   ];

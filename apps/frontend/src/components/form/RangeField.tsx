@@ -3,7 +3,7 @@ import type { Control, FieldValues, Path } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Input } from "../ui/input";
 
-type SelectFieldProps<T extends FieldValues> = {
+type RangeFieldProps<T extends FieldValues> = {
   control: Control<T>;
   minName: Path<T>;
   maxName: Path<T>;
@@ -23,7 +23,7 @@ export function RangeField<T extends FieldValues>({
   placeholder,
   type = "number",
   tooltip,
-}: SelectFieldProps<T>) {
+}: RangeFieldProps<T>) {
   return (
     <ControlledField
       control={control}

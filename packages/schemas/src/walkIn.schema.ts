@@ -5,7 +5,7 @@ export const WalkInSchema = z.object({
     message: "Tanggal kunjungan tidak boleh kosong / invalid!",
   }),
   visitingHour: z.string().nonempty("Waktu Kunjungan tidak boleh kosong!"),
-  description: z.string().optional(),
+  description: z.string().optional().default("-"),
 
   ordererNameOrTravelName: z
     .string()
@@ -27,11 +27,11 @@ export const WalkInSchema = z.object({
   groupMemberTotal: z.coerce.number().optional(),
 
   address: z.string().nonempty("Alamat tidak boleh kosong!"),
-  province: z.string().optional(),
-  regencyOrCity: z.string().optional(),
-  district: z.string().optional(),
-  village: z.string().optional(),
-  country: z.string().optional(),
+  province: z.string().optional().default("-"),
+  regencyOrCity: z.string().optional().default("-"),
+  district: z.string().optional().default("-"),
+  village: z.string().optional().default("-"),
+  country: z.string().optional().default("-"),
 
   paymentAmount: z.coerce.number().optional(),
   paymentMethod: z.string().nonempty("Metode pembayaran tidak boleh kosong!"),

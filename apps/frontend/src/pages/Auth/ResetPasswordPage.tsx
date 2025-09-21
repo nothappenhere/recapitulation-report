@@ -144,6 +144,7 @@ export default function ResetPasswordPage({
                                   <div className="relative">
                                     <Input
                                       type={showPassword ? "text" : "password"}
+                                      required
                                       placeholder="Masukan password baru"
                                       {...field}
                                     />

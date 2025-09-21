@@ -4,7 +4,7 @@ import { sendResponse } from "./sendResponse.js";
 export const validateToken = (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
-    return sendResponse(res, 401, false, "Unauthorized - no token provided");
+    return sendResponse(res, 401, false, "Unauthorized - No token provided");
   }
 
   try {
@@ -14,7 +14,7 @@ export const validateToken = (req, res, next) => {
         res,
         401,
         false,
-        "Unauthorized - invalid or expired token"
+        "Unauthorized - Invalid or expired token"
       );
     }
 

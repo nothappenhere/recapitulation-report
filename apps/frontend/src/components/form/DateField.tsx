@@ -86,6 +86,7 @@ export function DateField<T extends FieldValues>({
                 }
               }}
               captionLayout="dropdown"
+              locale={id}
             />
           </PopoverContent>
         </Popover>

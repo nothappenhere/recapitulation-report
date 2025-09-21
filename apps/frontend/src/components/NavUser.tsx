@@ -99,14 +99,10 @@ export function NavUser({
 
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link to={`profile?id=${user._id}`}>
+                <Link to={`profile/${user._id}`}>
                   <CircleUserRound />
                   Account
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

@@ -7,19 +7,25 @@ import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
 
 import { DashboardPage } from "./pages/Dashboard";
 
-import TicketPricePage from "./pages/TicketPrice/TicketPricePage";
-import TicketPriceForm from "./pages/TicketPrice/TicketPriceForm";
-
-import TicketStockSection from "./pages/Stok-Tiket/ticket-stock-section";
-import { AddTicketStock } from "./pages/Stok-Tiket/ticket-stock-form";
-import TransaksiForm from "./pages/TransaksiForm";
+// import TicketStockSection from "./pages/Stok-Tiket/ticket-stock-section";
+// import { AddTicketStock } from "./pages/Stok-Tiket/ticket-stock-form";
+// import TransaksiForm from "./pages/TransaksiForm";
 // import WeeklyReport from "./pages/WeeklyReport";
-import WeeklyReportPage from "./pages/WeeklyReportPage";
+// import WeeklyReportPage from "./pages/WeeklyReportPage";
 
-// import ReservationTable from "./pages/Visits/Reservation/ReservationTable";
-// import ReservationForm from "./pages/Visits/Reservation/ReservationForm";
-import VisitTabsPage from "./pages/Visits/VisitTabsPage";
-import VisitTabsForm from "./pages/Visits/VisitTabsForm";
+// Ticket Price
+import TicketPricePage from "./pages/TicketPrice/TicketPricePage";
+import CreateTicketPrice from "./pages/TicketPrice/CreateTicketPrice";
+import DetailTicketPrice from "./pages/TicketPrice/DetailTicketPrice";
+// Reservation
+import ReservationTable from "./pages/Reservation/ReservationTable";
+import CreateReservation from "./pages/Reservation/CreateReservation";
+import DetailReservation from "./pages/Reservation/DetailReservation";
+// Walk-in
+import WalkinTable from "./pages/Walk-In/WalkinTable";
+import CreateWalkin from "./pages/Walk-In/CreateWalkin";
+import DetailWalkin from "./pages/Walk-In/DetailWalkin";
+import CalendarEventPage from "./pages/CalendarEventPage";
 
 function App() {
   return (
@@ -33,26 +39,46 @@ function App() {
         </Route>
 
         <Route path="/dashboard" element={<DashboardPage />}>
-          {/* <Route index element={<Navigate to="harga-tiket" />} /> */}
+          <Route index element={<Navigate to="calendar" replace />} />
 
           <Route path="ticket-price">
             <Route index element={<TicketPricePage />} />
-            <Route path="add" element={<TicketPriceForm />} />
-            <Route path=":id" element={<TicketPriceForm />} />
+            <Route path="add" element={<CreateTicketPrice />} />
+            <Route
+              path="edit"
+              element={<Navigate to="/dashboard/ticket-price" replace />}
+            />
+            <Route path="edit/:id" element={<DetailTicketPrice />} />
           </Route>
 
-          <Route path="stok-tiket" element={<TicketStockSection />} />
+          <Route path="reservation">
+            <Route index element={<ReservationTable />} />
+            <Route path="add" element={<CreateReservation />} />
+            <Route
+              path="edit"
+              element={<Navigate to="/dashboard/reservation" replace />}
+            />
+            <Route path="edit/:id" element={<DetailReservation />} />
+          </Route>
+
+          <Route path="walk-in">
+            <Route index element={<WalkinTable />} />
+            <Route path="add" element={<CreateWalkin />} />
+            <Route
+              path="edit"
+              element={<Navigate to="/dashboard/walk-in" replace />}
+            />
+            <Route path="edit/:id" element={<DetailWalkin />} />
+          </Route>
+
+          <Route path="calendar" element={<CalendarEventPage />} />
+
+          {/* <Route path="stok-tiket" element={<TicketStockSection />} />
           <Route path="stok-tiket/add" element={<AddTicketStock />} />
 
           <Route path="transaksi" element={<TransaksiForm />} />
 
-          <Route path="laporan-mingguan" element={<WeeklyReportPage />} />
-
-          <Route path="visits">
-            <Route index element={<VisitTabsPage />} />
-            <Route path="add" element={<VisitTabsForm />} />
-            <Route path=":id" element={<VisitTabsForm />} />
-          </Route>
+          <Route path="laporan-mingguan" element={<WeeklyReportPage />} /> */}
         </Route>
       </Routes>
     </BrowserRouter>

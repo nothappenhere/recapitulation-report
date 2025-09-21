@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatRupiah } from "@rzkyakbr/libs";
-import { ColumnsActions } from "@/components/table/ColumnsActions";
+import { ColumnsActions } from "@/components/table/column-actions";
 import { useNavigate } from "react-router";
 
 type TicketPrice = {
@@ -44,8 +44,10 @@ export function TicketPriceCard({
         <CardAction className="border rounded-sm">
           <ColumnsActions
             item={ticketPrice}
-            getId={(tp: TicketPrice) => tp._id}
-            onEdit={(tp: TicketPrice) => navigate(tp._id)}
+            getId={(item: TicketPrice) => item._id}
+            onEdit={(item: TicketPrice) =>
+              navigate(`/dashboard/ticket-price/edit/${item._id}`)
+            }
             onDelete={onDelete}
           />
         </CardAction>

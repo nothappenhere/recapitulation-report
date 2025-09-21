@@ -30,12 +30,15 @@ const reservationSchema = new mongoose.Schema(
     customMemberTotal: { type: Number, default: 0, required: true },
     groupMemberTotal: { type: Number, default: 0 },
 
+    actualMemberTotal: { type: Number, default: 0 },
+    reservationStatus: { type: String, default: "-" },
+
     address: { type: String, required: true },
-    province: { type: String },
-    regencyOrCity: { type: String },
-    district: { type: String },
-    village: { type: String },
-    country: { type: String },
+    province: { type: String, default: "-" },
+    regencyOrCity: { type: String, default: "-" },
+    district: { type: String, default: "-" },
+    village: { type: String, default: "-" },
+    country: { type: String, default: "-" },
 
     paymentAmount: { type: Number, default: 0 },
     paymentMethod: { type: String, required: true },
@@ -50,7 +53,7 @@ const reservationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Middleware pertama
+// Middleware untuk auto-calculation
 reservationSchema.pre("save", function (next) {
   // Mengatur status pembayaran
   if (this.downPayment >= this.paymentAmount) {
@@ -70,6 +73,28 @@ reservationSchema.pre("save", function (next) {
     this.publicMemberTotal +
     this.foreignMemberTotal +
     this.customMemberTotal;
+
+  next();
+});
+
+// Middleware untuk menerapkan default value
+reservationSchema.pre("save", function (next) {
+  // Ganti semua string kosong dengan default jika ada
+  const fieldsWithDefault = [
+    "province",
+    "regencyOrCity",
+    "district",
+    "village",
+    "country",
+    "description",
+    "reservationStatus",
+  ];
+
+  fieldsWithDefault.forEach((field) => {
+    if (this[field] === "") {
+      this[field] = "-";
+    }
+  });
 
   next();
 });

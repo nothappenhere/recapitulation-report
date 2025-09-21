@@ -30,14 +30,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { formatRupiah } from "@rzkyakbr/libs";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   addTitle: string;
-  addPath: string;
   colSpan: number;
 }
 
@@ -45,7 +44,6 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   addTitle,
-  addPath,
   colSpan,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -53,6 +51,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
+  const navigate = useNavigate();
 
   const table = useReactTable({
     data,
@@ -90,7 +89,7 @@ export function DataTable<TData, TValue>({
         <div className="flex justify-evenly items-center gap-3">
           {/* Add Button */}
           <Button asChild>
-            <Link to={addPath ?? "add"}>{addTitle}</Link>
+            <Link to="add">{addTitle}</Link>
           </Button>
 
           {/* Dropdown column visibility */}
@@ -148,21 +147,55 @@ export function DataTable<TData, TValue>({
 
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const status = row.original.reservationStatus; // ambil dari data
+                let statusClass = "";
+
+                switch (status) {
+                  case "Batal":
+                    statusClass = "bg-red-300";
+                    break;
+                  case "Reschedule":
+                    statusClass = "bg-yellow-200";
+                    break;
+                  case "Lainnya":
+                    statusClass = "bg-blue-200";
+                    break;
+                  default:
+                    statusClass = "";
+                    break;
+                }
+
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={`cursor-pointer data-[state=selected]:bg-stone-300 ${statusClass}`}
+                    onClick={() => navigate(`edit/${row.original._id}`)} // klik baris → navigate
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className="max-w-[300px] overflow-hidden text-ellipsis"
+                        onClick={(e) => {
+                          // Cegah navigate jika klik checkbox atau kolom actions
+                          if (
+                            cell.column.id === "select" ||
+                            cell.column.id === "actions"
+                          ) {
+                            e.stopPropagation();
+                          }
+                        }}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell

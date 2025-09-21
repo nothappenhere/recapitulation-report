@@ -8,7 +8,7 @@ export const ReservationSchema = z.object({
   reservationMechanism: z
     .string()
     .nonempty("Mekanisme reservasi tidak boleh kosong!"),
-  description: z.string().optional(),
+  description: z.string().optional().default("-"),
 
   ordererNameOrTravelName: z
     .string()
@@ -30,12 +30,15 @@ export const ReservationSchema = z.object({
     .nonnegative("Total anggota khusus tidak boleh kosong / negative!"),
   groupMemberTotal: z.coerce.number().optional(),
 
+  actualMemberTotal: z.coerce.number().optional(),
+  reservationStatus: z.string().optional().default("-"),
+
   address: z.string().nonempty("Alamat tidak boleh kosong!"),
-  province: z.string().optional(),
-  regencyOrCity: z.string().optional(),
-  district: z.string().optional(),
-  village: z.string().optional(),
-  country: z.string().optional(),
+  province: z.string().optional().default("-"),
+  regencyOrCity: z.string().optional().default("-"),
+  district: z.string().optional().default("-"),
+  village: z.string().optional().default("-"),
+  country: z.string().optional().default("-"),
 
   paymentAmount: z.coerce.number().optional(),
   paymentMethod: z.string().nonempty("Metode pembayaran tidak boleh kosong!"),
@@ -64,6 +67,8 @@ export const defaultReservationFormValues: TReservation = {
   foreignMemberTotal: 0,
   customMemberTotal: 0,
   groupMemberTotal: 0,
+  actualMemberTotal: 0,
+  reservationStatus: "",
   address: "",
   province: "",
   regencyOrCity: "",

@@ -9,7 +9,7 @@ const UserSchema = z.object({
     .min(3, "Nama lengkap harus minimal 3 karakter!"),
   username: z
     .string()
-    .nonempty(" tidak boleh kosong!")
+    .nonempty("Username tidak boleh kosong!")
     .transform((val) => val.toLowerCase()),
   password: z
     .string()

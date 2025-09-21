@@ -57,6 +57,6 @@ export function useAutoFinalSerial(
       );
 
       setValue(final, paddedFinal);
-    }, [initialValue, totalValue, setValue, final]);
+    }, [initialValue, totalValue]);
   });
 }

@@ -1,17 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
-import { type TWalkIn } from "@rzkyakbr/schemas";
 import { type Column, type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ColumnsActions } from "@/components/table/ColumnsActions";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
+import { ColumnsActions } from "@/components/table/column-actions";
 
-// Sortable Header
-export default function SortableHeader({
+// Reusable Sortable Header
+export function SortableHeader({
   column,
   title,
 }: {
-  column: Column<string, unknown>;
+  column: Column<any, any>;
   title: string;
 }) {
   return (
@@ -25,33 +24,35 @@ export default function SortableHeader({
   );
 }
 
-// Selection Column
-export const selectColumn: ColumnDef<TWalkIn> = {
-  id: "select",
-  header: ({ table }) => (
-    <Checkbox
-      className="me-2"
-      checked={
-        table.getIsAllPageRowsSelected() ||
-        (table.getIsSomePageRowsSelected() && "indeterminate")
-      }
-      onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-      aria-label="Select all"
-    />
-  ),
-  cell: ({ row }) => (
-    <Checkbox
-      className="me-2"
-      checked={row.getIsSelected()}
-      onCheckedChange={(value) => row.toggleSelected(!!value)}
-      aria-label="Select row"
-    />
-  ),
-  enableSorting: false,
-  enableHiding: false,
-};
+// Reusable Select Column
+export function createSelectColumn<T>(): ColumnDef<T> {
+  return {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        className="me-2"
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Pilih semua"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        className="me-2"
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Pilih baris"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  };
+}
 
-// Generic Column Creator
+// Reusable Column Generator
 export function createColumn<T>(
   accessorKey: keyof T,
   title: string,
@@ -69,21 +70,20 @@ export function createColumn<T>(
   };
 }
 
-// Dynamic Actions Column Creator
-export function createActionsColumn(
-  onEdit: (item: TWalkIn) => void,
-  onDelete: (item: TWalkIn) => void
-): ColumnDef<TWalkIn> {
+// Reusable Actions Column
+export function createActionsColumn<T extends { _id?: string }>(
+  onEdit: (item: T) => void,
+  onDelete: (item: T) => void
+): ColumnDef<T> {
   return {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const reservation = row.original;
-
+      const data = row.original;
       return (
         <ColumnsActions
-          item={reservation}
-          getId={(wi) => wi._id || ""}
+          item={data}
+          getId={(item) => item._id || ""}
           onEdit={onEdit}
           onDelete={onDelete}
         />

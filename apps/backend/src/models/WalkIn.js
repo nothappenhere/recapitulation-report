@@ -29,11 +29,11 @@ const walkInSchema = new mongoose.Schema(
     groupMemberTotal: { type: Number, default: 0 },
 
     address: { type: String, required: true },
-    province: { type: String },
-    regencyOrCity: { type: String },
-    district: { type: String },
-    village: { type: String },
-    country: { type: String },
+    province: { type: String, default: "-" },
+    regencyOrCity: { type: String, default: "-" },
+    district: { type: String, default: "-" },
+    village: { type: String, default: "-" },
+    country: { type: String, default: "-" },
 
     paymentAmount: { type: Number, default: 0 },
     paymentMethod: { type: String, required: true },
@@ -77,6 +77,27 @@ walkInSchema.pre("save", function (next) {
     this.publicMemberTotal +
     this.foreignMemberTotal +
     this.customMemberTotal;
+
+  next();
+});
+
+// Middleware untuk menerapkan default value
+walkInSchema.pre("save", function (next) {
+  // Ganti semua string kosong dengan default jika ada
+  const fieldsWithDefault = [
+    "province",
+    "regencyOrCity",
+    "district",
+    "village",
+    "country",
+    "description",
+  ];
+
+  fieldsWithDefault.forEach((field) => {
+    if (this[field] === "") {
+      this[field] = "-";
+    }
+  });
 
   next();
 });

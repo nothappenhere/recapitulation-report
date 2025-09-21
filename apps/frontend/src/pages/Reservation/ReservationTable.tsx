@@ -1,26 +1,27 @@
 import { useCallback, useEffect, useState } from "react";
-import { type TWalkIn } from "@rzkyakbr/schemas";
+import { type TReservation } from "@rzkyakbr/schemas";
 import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
-import { useWalkInColumns } from "./columns";
+import { useReservationColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
+import TableSkeleton from "@/components/skeleton/TableSkeleton";
 
-export default function WalkInTable() {
-  const [data, setData] = useState<TWalkIn[]>([]);
+export default function ReservationTable() {
+  const [data, setData] = useState<TReservation[]>([]);
   const [loading, setLoading] = useState(false);
 
   // * Untuk AlertDelete
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<TWalkIn | null>(null);
+  const [selectedItem, setSelectedItem] = useState<TReservation | null>(null);
 
   // TODO: Ambil data dari API
   useEffect(() => {
-    async function fetchWalkIns() {
+    async function fetchReservations() {
       setLoading(true);
       try {
-        const res = await api.get("/walk-in");
+        const res = await api.get("/reservation");
         setData(res.data.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
@@ -33,7 +34,7 @@ export default function WalkInTable() {
       }
     }
 
-    fetchWalkIns();
+    fetchReservations();
   }, []);
 
   // TODO: Handler delete setelah dikonfirmasi
@@ -42,7 +43,7 @@ export default function WalkInTable() {
     setLoading(true);
 
     try {
-      const res = await api.delete(`/walk-in/${selectedItem._id}`);
+      const res = await api.delete(`/reservation/${selectedItem._id}`);
       toast.success(`${res.data.message}`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
     } catch (err) {
@@ -59,31 +60,34 @@ export default function WalkInTable() {
   }, [selectedItem]);
 
   // TODO: Handler ketika klik tombol Delete (tampilkan alert)
-  const handleDeleteClick = useCallback((item: TWalkIn) => {
+  const handleDeleteClick = useCallback((item: TReservation) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);
 
   // TODO: Oper ke kolom
-  const columns = useWalkInColumns(handleDeleteClick);
+  const columns = useReservationColumns(handleDeleteClick);
 
   return (
     <div className="container mx-auto">
-      {loading && <p className="text-center">Loading data...</p>}
+      {loading ? (
+        <TableSkeleton />
+      ) : (
+        <>
+          <DataTable
+            columns={columns}
+            data={loading ? [] : data}
+            addTitle="Tambah Reservasi"
+            colSpan={12}
+          />
 
-      <DataTable
-        columns={columns}
-        data={loading ? [] : data}
-        addTitle="Tambah Walk-in"
-        addPath="add?tab=walk-in"
-        colSpan={6}
-      />
-
-      <AlertDelete
-        open={isDeleteOpen}
-        setOpen={setDeleteOpen}
-        onDelete={confirmDelete}
-      />
+          <AlertDelete
+            open={isDeleteOpen}
+            setOpen={setDeleteOpen}
+            onDelete={confirmDelete}
+          />
+        </>
+      )}
     </div>
   );
 }

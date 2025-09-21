@@ -64,7 +64,7 @@ export function useRegionSelector<TForm extends UseFormReturn<any>>(
     };
 
     getRegencies();
-  }, [provinceCode, form]);
+  }, [provinceCode]);
 
   // 3. Fetch district
   useEffect(() => {
@@ -92,7 +92,7 @@ export function useRegionSelector<TForm extends UseFormReturn<any>>(
     };
 
     getDistricts();
-  }, [provinceCode, regencyCode, form]);
+  }, [regencyCode]);
 
   // 4. Fetch village
   useEffect(() => {
@@ -117,7 +117,7 @@ export function useRegionSelector<TForm extends UseFormReturn<any>>(
     };
 
     getVillages();
-  }, [provinceCode, regencyCode, districtCode, form]);
+  }, [districtCode]);
 
   return {
     countries,

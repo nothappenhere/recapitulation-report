@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -7,15 +6,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ReservationSchema,
-  defaultReservationFormValues,
-  type TReservation,
+  WalkInSchema,
+  defaultWalkInFormValues,
+  type TWalkIn,
 } from "@rzkyakbr/schemas";
 import {
   api,
@@ -27,7 +27,7 @@ import {
   useVisitingHourSelect,
 } from "@rzkyakbr/libs";
 import {
-  SquareLibrary,
+  ArrowLeft,
   Banknote,
   ClockIcon,
   Flag,
@@ -35,25 +35,22 @@ import {
   MapPinned,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { SimpleField } from "@/components/form/SimpleField";
 import { SelectField } from "@/components/form/SelectField";
 import { DateField } from "@/components/form/DateField";
+import { RangeField } from "@/components/form/RangeField";
 import type { AxiosError } from "axios";
 import { useUser } from "@/hooks/UserContext";
 
-export default function ReservationForm() {
-  const { id } = useParams();
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const isEditMode = Boolean(id);
-
+export default function CreateWalkin() {
   const { user } = useUser();
   const reservationAgent = user?._id || null;
+  const navigate = useNavigate();
 
-  const form = useForm<TReservation>({
-    resolver: zodResolver(ReservationSchema),
-    defaultValues: defaultReservationFormValues,
+  const form = useForm<TWalkIn>({
+    resolver: zodResolver(WalkInSchema),
+    defaultValues: defaultWalkInFormValues,
   });
 
   // * Hook untuk mengambil seluruh data waktu kunjungan museum
@@ -68,7 +65,7 @@ export default function ReservationForm() {
     useRegionSelector(form);
 
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
-  // TODO: Mengambil harga tiket per kategori dari endpoint API (misal /ticket-price)
+  // TODO: Mengambil harga tiket per kategori dari endpoint API (/ticket-price)
   // ? Mengalikan (harga * jumlah anggota) untuk setiap kategori
   // ? Menjumlahkan semua kategori agar dapat total pembayaran
   // ? Menghitung otomatis kembalian dari downPayment (uang muka)
@@ -87,51 +84,42 @@ export default function ReservationForm() {
     custom: true,
   });
 
-  //* Fetch jika sedang edit
-  useEffect(() => {
-    if (!isEditMode) return;
+  //* Submit handler: create
+  const onSubmit = async (values: TWalkIn): Promise<void> => {
+    if (values.downPayment < values.paymentAmount) {
+      toast.error("Uang muka tidak boleh kurang dari total pembayaran!");
+      return;
+    }
 
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        const res = await api.get(`/reservation/${id}`);
-        const data = res.data.data;
-        console.log(data);
-
-        form.reset(data);
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        const message = error.response?.data?.message
-          ? `${error.response.data.message}!`
-          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
-        toast.error(message);
-
-        navigate("/dashboard/visits");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [isEditMode, id, navigate]);
-
-  //* Submit handler: create atau update
-  const onSubmit = async (values: TReservation): Promise<void> => {
     try {
-      if (isEditMode) {
-        const res = await api.put(`/reservation/${id}`, values);
-        toast.success(`${res.data.message}`);
-      } else {
-        const res = await api.post("/reservation", {
-          ...values,
-          reservationAgent,
-        });
-        toast.success(`${res.data.message}.`);
-      }
+      // cari nama berdasarkan kode
+      const provinceName =
+        provinces.find((p) => p.code === values.province)?.name || "";
+      const regencyName =
+        regencies.find((r) => r.code === values.regencyOrCity)?.name || "";
+      const districtName =
+        districts.find((d) => d.code === values.district)?.name || "";
+      const villageName =
+        villages.find((v) => v.code === values.village)?.name || "";
+      const countryName =
+        countries.find((c) => c.code === values.country)?.name ||
+        values.country;
+
+      const payload = {
+        ...values,
+        province: provinceName,
+        regencyOrCity: regencyName,
+        district: districtName,
+        village: villageName,
+        country: countryName,
+        reservationAgent,
+      };
+
+      const res = await api.post("/walk-in", payload);
+      toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate("/dashboard/visits");
+      navigate("/dashboard/walk-in", { replace: true });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -144,14 +132,19 @@ export default function ReservationForm() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle>
-          {isEditMode ? "Edit Data Reservasi" : "Pendataan Reservasi Baru"}
-        </CardTitle>
+        <CardTitle>Pendataan Walk-in Baru</CardTitle>
         <CardDescription>
-          {isEditMode
-            ? `Ubah detail reservasi dengan ID: ${id}`
-            : "Isi formulir di bawah untuk membuat reservasi baru."}
+          Isi formulir di bawah untuk mencatat kunjungan walk-in.
         </CardDescription>
+
+        <CardAction>
+          <Button asChild>
+            <Link to="/dashboard/walk-in">
+              <ArrowLeft />
+              Kembali
+            </Link>
+          </Button>
+        </CardAction>
       </CardHeader>
       <Separator />
       <CardContent>
@@ -159,14 +152,15 @@ export default function ReservationForm() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               {/* ROW 1 */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {/* Tanggal Kunjungan */}
                 <DateField
                   control={form.control}
                   name="visitingDate"
                   label="Tanggal Kunjungan"
                   placeholder="Pilih tanggal kunjungan"
-                  tooltip="Pilih tanggal kunjungan, tidak bisa memilih sebelum hari ini."
+                  tooltip="Tanggal kunjungan (hanya bisa memilih hari ini)."
+                  disabledForward
                 />
 
                 {/* Waktu Kunjungan */}
@@ -180,24 +174,10 @@ export default function ReservationForm() {
                     (vh: { _id: string; timeRange: string }) => ({
                       value: vh._id,
                       label: vh.timeRange,
+                      disabled: vh.timeRange.includes("Istirahat"),
                     })
                   )}
                   tooltip="Tentukan jam kunjungan sesuai jadwal museum."
-                />
-
-                {/* Mekanisme Reservasi */}
-                <SelectField
-                  control={form.control}
-                  name="reservationMechanism"
-                  label="Mekanisme Reservasi"
-                  placeholder="Pilih mekanisme reservasi"
-                  icon={SquareLibrary}
-                  options={[
-                    { value: "WhatsApp", label: "WhatsApp" },
-                    { value: "Google Form", label: "Google Form" },
-                    { value: "lainnya", label: "Lainnya..." },
-                  ]}
-                  tooltip="Pilih metode reservasi yang digunakan."
                 />
               </div>
 
@@ -221,7 +201,7 @@ export default function ReservationForm() {
                   name="ordererNameOrTravelName"
                   label="Nama Pemesan / Travel"
                   placeholder="Masukan nama pemesan / travel"
-                  tooltip="Isi dengan nama pemesan atau nama biro travel yang mengatur kunjungan."
+                  tooltip="Nama pemesan atau biro travel yang berkunjungan."
                 />
 
                 {/* Nomor Telepon */}
@@ -241,21 +221,23 @@ export default function ReservationForm() {
                       raw.startsWith("0") ? "62" + raw.slice(1) : raw
                     );
                   }}
-                  tooltip="Masukkan nomor telepon aktif yang bisa dihubungi."
+                  tooltip="Nomor telepon aktif pemesan yang bisa dihubungi."
                 />
 
-                {/* Nama Rombongan */}
+                {/* Jumlah Seluruh Anggota Rombongan (readonly) */}
                 <SimpleField
                   control={form.control}
-                  name="groupName"
-                  label="Nama Rombongan"
-                  placeholder="Masukan nama rombongan"
-                  tooltip="Isi dengan nama rombongan atau identitas kelompok pengunjung."
+                  type="number"
+                  name="groupMemberTotal"
+                  label="Jumlah Seluruh Anggota"
+                  placeholder="Masukan jumlah seluruh angg."
+                  disabled
+                  tooltip="Jumlah total anggota rombongan (terisi otomatis dari semua kategori)."
                 />
               </div>
 
               {/* ROW 4 */}
-              <div className="grid grid-cols-5 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {/* Jumlah Anggota Rombongan PELAJAR */}
                 <SimpleField
                   control={form.control}
@@ -295,17 +277,6 @@ export default function ReservationForm() {
                   placeholder="Masukan jumlah angg. Khusus"
                   tooltip="Jumlah anggota rombongan dengan kategori khusus (misalnya undangan, VIP, dsb)."
                 />
-
-                {/* Jumlah Seluruh Anggota Rombongan (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  type="number"
-                  name="groupMemberTotal"
-                  label="Jumlah Seluruh Anggota"
-                  placeholder="Masukan jumlah seluruh angg."
-                  disabled
-                  tooltip="Jumlah total anggota rombongan (terisi otomatis dari semua kategori)."
-                />
               </div>
 
               {/* ROW 5 */}
@@ -335,7 +306,7 @@ export default function ReservationForm() {
                       label: prov.name,
                     })
                   )}
-                  disabled={!isEditMode || !provinces.length}
+                  disabled={!provinces.length}
                   tooltip="Pilih provinsi asal ."
                 />
 
@@ -352,7 +323,7 @@ export default function ReservationForm() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!isEditMode || !regencies.length}
+                  disabled={!regencies.length}
                   tooltip="Pilih kabupaten / kota asal pemesan."
                 />
 
@@ -369,7 +340,7 @@ export default function ReservationForm() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!isEditMode || !districts.length}
+                  disabled={!districts.length}
                   tooltip="Pilih kecamatan asal pemesan."
                 />
 
@@ -386,7 +357,7 @@ export default function ReservationForm() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!isEditMode || !villages.length}
+                  disabled={!villages.length}
                   tooltip="Pilih kelurahan / desa asal pemesan."
                 />
 
@@ -403,10 +374,7 @@ export default function ReservationForm() {
                       label: country.code,
                     })
                   )}
-                  disabled={
-                    !isEditMode ||
-                    !Number(Number(form.getValues("foreignMemberTotal")))
-                  }
+                  disabled={!Number(form.getValues("foreignMemberTotal"))}
                   tooltip="Pilih negara asal pemesan (jika ada anggota asing)."
                   countrySelect
                 />
@@ -479,6 +447,49 @@ export default function ReservationForm() {
                 />
               </div>
 
+              {/* ROW 8 */}
+              <div className="grid grid-cols-4 gap-3">
+                {/* No. Seri Pelajar */}
+                <RangeField
+                  control={form.control}
+                  minName="initialStudentSerialNumber"
+                  maxName="finalStudentSerialNumber"
+                  label="No. Seri Pelajar"
+                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                />
+
+                {/* No. Seri Umum */}
+                <RangeField
+                  control={form.control}
+                  minName="initialPublicSerialNumber"
+                  maxName="finalPublicSerialNumber"
+                  label="No. Seri Umum"
+                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                />
+
+                {/* No. Seri Asing */}
+                <RangeField
+                  control={form.control}
+                  minName="initialForeignSerialNumber"
+                  maxName="finalForeignSerialNumber"
+                  label="No. Seri Asing"
+                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                />
+
+                {/* No. Seri Khusus */}
+                <RangeField
+                  control={form.control}
+                  minName="initialCustomSerialNumber"
+                  maxName="finalCustomSerialNumber"
+                  label="No. Seri Khusus"
+                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                />
+              </div>
+
               {/* Submit Button */}
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? (
@@ -486,10 +497,8 @@ export default function ReservationForm() {
                     <Loader2 className="animate-spin" />
                     Loading...
                   </>
-                ) : isEditMode ? (
-                  "Perbarui Reservasi"
                 ) : (
-                  "Tambah Reservasi"
+                  "Tambah Walk-in"
                 )}
               </Button>
             </div>

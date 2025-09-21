@@ -46,7 +46,7 @@ export function ControlledField<T extends FieldValues>({
                 <TooltipTrigger asChild>
                   <Info
                     size={14}
-                    className="text-muted-foreground cursor-pointer"
+                    className="text-muted-foreground cursor-pointer mt-0.5"
                   />
                 </TooltipTrigger>
                 <TooltipContent>

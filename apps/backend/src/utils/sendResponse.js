@@ -15,7 +15,7 @@ export const sendResponse = (
     data,
     errors,
     path: res.req.originalUrl,
-    timestamp: dayjs().format("DD-MM-YYYY, HH:mm:ss"),
+    timestamp: dayjs().format("DD/MM/YYYY, HH:mm:ss"),
   });
 };
 
