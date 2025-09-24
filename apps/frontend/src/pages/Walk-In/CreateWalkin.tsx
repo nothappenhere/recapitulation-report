@@ -6,9 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,91 +19,57 @@ import {
 } from "@rzkyakbr/schemas";
 import {
   api,
-  formatPhoneNumber,
   formatRupiah,
-  useAutoFinalSerial,
-  useAutoPaymentWithAPI,
+  isWithinOperationalHours,
+  useAutoPayment,
   useRegionSelector,
-  useVisitingHourSelect,
 } from "@rzkyakbr/libs";
-import {
-  ArrowLeft,
-  Banknote,
-  ClockIcon,
-  Flag,
-  Loader2,
-  MapPinned,
-} from "lucide-react";
+import { Flag, Loader2, MapPinned } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { Link, useNavigate } from "react-router";
-import { SimpleField } from "@/components/form/SimpleField";
-import { SelectField } from "@/components/form/SelectField";
-import { DateField } from "@/components/form/DateField";
-import { RangeField } from "@/components/form/RangeField";
+import { useNavigate } from "react-router";
+import { useMediaQuery } from "react-responsive";
 import type { AxiosError } from "axios";
-import { useUser } from "@/hooks/UserContext";
+import { SimpleField } from "@/components/form/SimpleField";
+import { DateField } from "@/components/form/DateField";
+import { ComboboxField } from "@/components/form/ComboboxField";
+import { PhoneField } from "@/components/form/PhoneField";
+import { NumberFieldInput } from "@/components/form/NumberField";
 
 export default function CreateWalkin() {
-  const { user } = useUser();
-  const reservationAgent = user?._id || null;
   const navigate = useNavigate();
+  const isMobile = useMediaQuery({ maxWidth: 639 });
+  const isTablet = useMediaQuery({ minWidth: 640, maxWidth: 1023 });
+  const isDesktop = useMediaQuery({ minWidth: 1024 });
 
   const form = useForm<TWalkIn>({
     resolver: zodResolver(WalkInSchema),
     defaultValues: defaultWalkInFormValues,
   });
 
-  // * Hook untuk mengambil seluruh data waktu kunjungan museum
-  // TODO: Akan otomatis fetch data waktu kunjungan dari endpoint API (/visit-hour)
-  const { visitHours } = useVisitingHourSelect(form);
-
   // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
-  // TODO: Akan otomatis fetch data sesuai hierarki (provinsi -> kabupaten -> kecamatan -> desa)
-  // ? Mengatur ulang field form jika parent berubah (misal ganti provinsi, maka kabupaten/kecamatan/desa direset)
-  // ? Return: daftar negara, provinsi, kabupaten, kecamatan, desa
   const { countries, provinces, regencies, districts, villages } =
     useRegionSelector(form);
 
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
-  // TODO: Mengambil harga tiket per kategori dari endpoint API (/ticket-price)
-  // ? Mengalikan (harga * jumlah anggota) untuk setiap kategori
-  // ? Menjumlahkan semua kategori agar dapat total pembayaran
-  // ? Menghitung otomatis kembalian dari downPayment (uang muka)
-  // ? Menentukan status pembayaran: "Paid" kalau lunas, "Unpaid" kalau belum lunas
-  useAutoPaymentWithAPI("/ticket-price", form.watch, form.setValue);
+  useAutoPayment("/ticket-price", form.watch, form.setValue);
 
-  //* Hook untuk menghitung otomatis nomor seri akhir tiap kategori
-  // ? Berdasarkan input nomor seri awal + jumlah anggota - 1
-  // TODO: Contoh: nomor awal 100, jumlah 5 → nomor akhir = 104
-  // ? Memastikan format tetap sesuai (misal leading zero tetap ada)
-  // ? Bekerja untuk semua kategori (student, public, foreign, custom)
-  useAutoFinalSerial(form.watch, form.setValue, {
-    student: true,
-    public: true,
-    foreign: true,
-    custom: true,
-  });
+  const visitorTotal = form.watch("visitorMemberTotal");
+  const phoneNumber = form.watch("phoneNumber");
 
-  //* Submit handler: create
+  //* Submit handler create
   const onSubmit = async (values: TWalkIn): Promise<void> => {
-    if (values.downPayment < values.paymentAmount) {
-      toast.error("Uang muka tidak boleh kurang dari total pembayaran!");
-      return;
-    }
-
     try {
-      // cari nama berdasarkan kode
+      // cari nama wilayah berdasarkan kode
       const provinceName =
-        provinces.find((p) => p.code === values.province)?.name || "";
+        provinces.find((p) => p.code === values.province)?.name || "-";
       const regencyName =
-        regencies.find((r) => r.code === values.regencyOrCity)?.name || "";
+        regencies.find((r) => r.code === values.regencyOrCity)?.name || "-";
       const districtName =
-        districts.find((d) => d.code === values.district)?.name || "";
+        districts.find((d) => d.code === values.district)?.name || "-";
       const villageName =
-        villages.find((v) => v.code === values.village)?.name || "";
+        villages.find((v) => v.code === values.village)?.name || "-";
       const countryName =
-        countries.find((c) => c.code === values.country)?.name ||
-        values.country;
+        countries.find((c) => c.code === values.country)?.name || "Indonesia";
 
       const payload = {
         ...values,
@@ -112,15 +78,17 @@ export default function CreateWalkin() {
         district: districtName,
         village: villageName,
         country: countryName,
-        reservationAgent,
       };
 
       const res = await api.post("/walk-in", payload);
-      toast.success(`${res.data.message}.`);
+      const { walkInNumber } = res.data.data;
 
       form.reset();
-      navigate("/dashboard/walk-in", { replace: true });
+      navigate(`/walk-in/${walkInNumber}`, {
+        replace: true,
+      });
     } catch (err) {
+      console.log(err);
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
         ? `${error.response.data.message}!`
@@ -130,21 +98,12 @@ export default function CreateWalkin() {
   };
 
   return (
-    <Card>
+    <Card className="m-5 shadow-lg rounded-md">
       <CardHeader className="text-center">
-        <CardTitle>Pendataan Walk-in Baru</CardTitle>
+        <CardTitle>Pendataan Kunjungan</CardTitle>
         <CardDescription>
-          Isi formulir di bawah untuk mencatat kunjungan walk-in.
+          Isi formulir di bawah untuk mencatat kunjungan.
         </CardDescription>
-
-        <CardAction>
-          <Button asChild>
-            <Link to="/dashboard/walk-in">
-              <ArrowLeft />
-              Kembali
-            </Link>
-          </Button>
-        </CardAction>
       </CardHeader>
       <Separator />
       <CardContent>
@@ -152,7 +111,7 @@ export default function CreateWalkin() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               {/* ROW 1 */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Tanggal Kunjungan */}
                 <DateField
                   control={form.control}
@@ -163,138 +122,351 @@ export default function CreateWalkin() {
                   disabledForward
                 />
 
-                {/* Waktu Kunjungan */}
-                <SelectField
-                  control={form.control}
-                  name="visitingHour"
-                  label="Waktu Kunjungan"
-                  placeholder="Pilih waktu kunjungan"
-                  icon={ClockIcon}
-                  options={visitHours.map(
-                    (vh: { _id: string; timeRange: string }) => ({
-                      value: vh._id,
-                      label: vh.timeRange,
-                      disabled: vh.timeRange.includes("Istirahat"),
-                    })
-                  )}
-                  tooltip="Tentukan jam kunjungan sesuai jadwal museum."
-                />
-              </div>
-
-              {/* ROW 2 */}
-              <div className="grid gap-3">
+                {/* Nama Pemesan */}
                 <SimpleField
                   control={form.control}
-                  name="description"
-                  label="Deskripsi"
-                  placeholder="Masukan deskripsi"
-                  component={<Textarea />}
-                  tooltip="Tambahkan keterangan tambahan terkait kunjungan (opsional)."
-                />
-              </div>
-
-              {/* ROW 3 */}
-              <div className="grid grid-cols-3 gap-3">
-                {/* Nama Pemesan / Nama Travel */}
-                <SimpleField
-                  control={form.control}
-                  name="ordererNameOrTravelName"
-                  label="Nama Pemesan / Travel"
-                  placeholder="Masukan nama pemesan / travel"
-                  tooltip="Nama pemesan atau biro travel yang berkunjungan."
+                  name="ordererName"
+                  label="Nama Pemesan"
+                  placeholder="Masukan nama pemesan"
+                  tooltip="Nama pemesan yang berkunjungan."
                 />
 
                 {/* Nomor Telepon */}
-                <SimpleField
+                <PhoneField
                   control={form.control}
                   name="phoneNumber"
                   label="Nomor Telepon"
                   placeholder="Masukan nomor telepon"
-                  // tampilkan pakai formatter
-                  valueFormatter={(value) =>
-                    value ? formatPhoneNumber(String(value)) : ""
-                  }
-                  // konversi kembali ke raw number saat user mengetik
-                  onChangeOverride={(e, field) => {
-                    const raw = e.target.value.replace(/\D/g, ""); // hanya angka
-                    field.onChange(
-                      raw.startsWith("0") ? "62" + raw.slice(1) : raw
-                    );
-                  }}
-                  tooltip="Nomor telepon aktif pemesan yang bisa dihubungi."
-                />
-
-                {/* Jumlah Seluruh Anggota Rombongan (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  type="number"
-                  name="groupMemberTotal"
-                  label="Jumlah Seluruh Anggota"
-                  placeholder="Masukan jumlah seluruh angg."
-                  disabled
-                  tooltip="Jumlah total anggota rombongan (terisi otomatis dari semua kategori)."
+                  tooltip="Nomor telepon aktif yang dapat dihubungi."
                 />
               </div>
 
-              {/* ROW 4 */}
-              <div className="grid grid-cols-4 gap-3">
-                {/* Jumlah Anggota Rombongan PELAJAR */}
-                <SimpleField
-                  control={form.control}
-                  type="number"
-                  name="studentMemberTotal"
-                  label="Jumlah Anggota Pelajar"
-                  placeholder="Masukan jumlah angg. pelajar"
-                  tooltip="Jumlah anggota rombongan yang berstatus pelajar (TK / Paud, SD, SMP, SMA, Mahasiswa)."
-                />
+              {/* Kondisional berdasarkan ukuran layar */}
+              {isMobile && (
+                <>
+                  {/* ROW 2 (mobile-only) */}
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* Jumlah Seluruh PELAJAR */}
+                    <NumberFieldInput
+                      control={form.control}
+                      name="studentMemberTotal"
+                      label="Jumlah Pelajar"
+                      placeholder="0"
+                      tooltip="Jumlah anggota pelajar."
+                      minValue={0}
+                      defaultValue={0}
+                    />
 
-                {/* Jumlah Anggota Rombongan UMUM */}
-                <SimpleField
-                  control={form.control}
-                  type="number"
-                  name="publicMemberTotal"
-                  label="Jumlah Anggota Umum"
-                  placeholder="Masukan jumlah angg. umum"
-                  tooltip="Jumlah anggota rombongan kategori umum (di luar Pelajar/Asing/Khusus)."
-                />
+                    {/* Total Harga Keseluruhan PELAJAR (readonly) */}
+                    <SimpleField
+                      control={form.control}
+                      name="studentTotalAmount"
+                      label="Total Harga Tiket Pelajar"
+                      placeholder="0"
+                      tooltip="Total harga tiket kategori pelajar."
+                      valueFormatter={(val) => formatRupiah(val || 0)}
+                      disabled
+                    />
 
-                {/* Jumlah Anggota Rombongan ASING */}
-                <SimpleField
-                  control={form.control}
-                  type="number"
-                  name="foreignMemberTotal"
-                  label="Jumlah Anggota Asing"
-                  placeholder="Masukan jumlah angg. asing"
-                  tooltip="Jumlah anggota rombongan yang merupakan pengunjung dari luar negeri."
-                />
+                    {/* Jumlah Anggota UMUM */}
+                    <NumberFieldInput
+                      control={form.control}
+                      name="publicMemberTotal"
+                      label="Jumlah Umum"
+                      placeholder="0"
+                      tooltip="Jumlah anggota umum."
+                      minValue={0}
+                      defaultValue={0}
+                    />
 
-                {/* Jumlah Anggota Rombongan KHUSUS */}
-                <SimpleField
-                  control={form.control}
-                  type="number"
-                  name="customMemberTotal"
-                  label="Jumlah Anggota Khusus"
-                  placeholder="Masukan jumlah angg. Khusus"
-                  tooltip="Jumlah anggota rombongan dengan kategori khusus (misalnya undangan, VIP, dsb)."
-                />
-              </div>
+                    {/* Total Harga Keseluruhan UMUM (readonly) */}
+                    <SimpleField
+                      control={form.control}
+                      name="publicTotalAmount"
+                      label="Total Harga Tiket Umum"
+                      placeholder="0"
+                      tooltip="Total harga tiket kategori umum."
+                      valueFormatter={(val) => formatRupiah(val || 0)}
+                      disabled
+                    />
 
-              {/* ROW 5 */}
+                    {/* Jumlah Anggota ASING */}
+                    <NumberFieldInput
+                      control={form.control}
+                      name="foreignMemberTotal"
+                      label="Jumlah Asing"
+                      placeholder="0"
+                      tooltip="Jumlah anggota asing."
+                      minValue={0}
+                      defaultValue={0}
+                    />
+
+                    {/* Total Harga Keseluruhan ASING (readonly) */}
+                    <SimpleField
+                      control={form.control}
+                      name="foreignTotalAmount"
+                      label="Total Harga Tiket Asing"
+                      placeholder="0"
+                      tooltip="Total harga tiket kategori asing."
+                      valueFormatter={(val) => formatRupiah(val || 0)}
+                      disabled
+                    />
+
+                    {/* Jumlah Seluruh Anggota */}
+                    <NumberFieldInput
+                      control={form.control}
+                      name="visitorMemberTotal"
+                      label="Total Seluruh Pengunjung"
+                      placeholder="0"
+                      tooltip="Jumlah total pengunjung."
+                      minValue={0}
+                      defaultValue={0}
+                    />
+
+                    {/* Total Harga Pembayaran (readonly) */}
+                    <SimpleField
+                      control={form.control}
+                      name="totalPaymentAmount"
+                      label="Total Pembayaran Harga Tiket"
+                      placeholder="Masukan total pembayaran"
+                      tooltip="Jumlah total pembayaran."
+                      valueFormatter={(val) => formatRupiah(val || 0)}
+                      disabled
+                    />
+                  </div>
+                </>
+              )}
+
+              {isTablet && (
+                <>
+                  {/* ROW 2 (tablet-only) */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      {/* Jumlah Seluruh PELAJAR */}
+                      <NumberFieldInput
+                        control={form.control}
+                        name="studentMemberTotal"
+                        label="Jumlah Pelajar"
+                        placeholder="0"
+                        tooltip="Jumlah anggota pelajar."
+                        minValue={0}
+                        defaultValue={0}
+                      />
+
+                      {/* Jumlah Anggota UMUM */}
+                      <NumberFieldInput
+                        control={form.control}
+                        name="publicMemberTotal"
+                        label="Jumlah Umum"
+                        placeholder="0"
+                        tooltip="Jumlah anggota umum."
+                        minValue={0}
+                        defaultValue={0}
+                      />
+
+                      {/* Jumlah Anggota ASING */}
+                      <NumberFieldInput
+                        control={form.control}
+                        name="foreignMemberTotal"
+                        label="Jumlah Asing"
+                        placeholder="0"
+                        tooltip="Jumlah anggota asing."
+                        minValue={0}
+                        defaultValue={0}
+                      />
+
+                      {/* Jumlah Seluruh Anggota */}
+                      <NumberFieldInput
+                        control={form.control}
+                        name="visitorMemberTotal"
+                        label="Total Seluruh Pengunjung"
+                        placeholder="0"
+                        tooltip="Jumlah total pengunjung."
+                        minValue={0}
+                        defaultValue={0}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                      {/* Total Harga Keseluruhan PELAJAR (readonly) */}
+                      <SimpleField
+                        control={form.control}
+                        name="studentTotalAmount"
+                        label="Total Harga Tiket Pelajar"
+                        placeholder="0"
+                        tooltip="Total harga tiket kategori pelajar."
+                        valueFormatter={(val) => formatRupiah(val || 0)}
+                        disabled
+                      />
+
+                      {/* Total Harga Keseluruhan UMUM (readonly) */}
+                      <SimpleField
+                        control={form.control}
+                        name="publicTotalAmount"
+                        label="Total Harga Tiket Umum"
+                        placeholder="0"
+                        tooltip="Total harga tiket kategori umum."
+                        valueFormatter={(val) => formatRupiah(val || 0)}
+                        disabled
+                      />
+
+                      {/* Total Harga Keseluruhan ASING (readonly) */}
+                      <SimpleField
+                        control={form.control}
+                        name="foreignTotalAmount"
+                        label="Total Harga Tiket Asing"
+                        placeholder="0"
+                        tooltip="Total harga tiket kategori asing."
+                        valueFormatter={(val) => formatRupiah(val || 0)}
+                        disabled
+                      />
+
+                      {/* Total Harga Pembayaran (readonly) */}
+                      <SimpleField
+                        control={form.control}
+                        name="totalPaymentAmount"
+                        label="Total Pembayaran Harga Tiket"
+                        placeholder="Masukan total pembayaran"
+                        tooltip="Jumlah total pembayaran."
+                        valueFormatter={(val) => formatRupiah(val || 0)}
+                        disabled
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {isDesktop && (
+                <>
+                  {/* ROW 2 (desktop only) */}
+                  <div className="grid grid-cols-4 gap-4">
+                    {/* Jumlah Seluruh PELAJAR */}
+                    <NumberFieldInput
+                      control={form.control}
+                      name="studentMemberTotal"
+                      label="Jumlah Pelajar"
+                      placeholder="0"
+                      tooltip="Jumlah anggota pelajar."
+                      minValue={0}
+                      defaultValue={0}
+                    />
+
+                    {/* Jumlah Anggota UMUM */}
+                    <NumberFieldInput
+                      control={form.control}
+                      name="publicMemberTotal"
+                      label="Jumlah Umum"
+                      placeholder="0"
+                      tooltip="Jumlah anggota umum."
+                      minValue={0}
+                      defaultValue={0}
+                    />
+
+                    {/* Jumlah Anggota ASING */}
+                    <NumberFieldInput
+                      control={form.control}
+                      name="foreignMemberTotal"
+                      label="Jumlah Asing"
+                      placeholder="0"
+                      tooltip="Jumlah anggota asing."
+                      minValue={0}
+                      defaultValue={0}
+                    />
+
+                    {/* Jumlah Seluruh Anggota */}
+                    <NumberFieldInput
+                      control={form.control}
+                      name="visitorMemberTotal"
+                      label="Total Seluruh Pengunjung"
+                      placeholder="0"
+                      tooltip="Jumlah total pengunjung."
+                      minValue={0}
+                      defaultValue={0}
+                    />
+
+                    {/* Total Harga Keseluruhan PELAJAR (readonly) */}
+                    <SimpleField
+                      control={form.control}
+                      name="studentTotalAmount"
+                      label="Total Harga Tiket Pelajar"
+                      placeholder="0"
+                      tooltip="Total harga tiket kategori pelajar."
+                      valueFormatter={(val) => formatRupiah(val || 0)}
+                      disabled
+                    />
+
+                    {/* Total Harga Keseluruhan UMUM (readonly) */}
+                    <SimpleField
+                      control={form.control}
+                      name="publicTotalAmount"
+                      label="Total Harga Tiket Umum"
+                      placeholder="0"
+                      tooltip="Total harga tiket kategori umum."
+                      valueFormatter={(val) => formatRupiah(val || 0)}
+                      disabled
+                    />
+
+                    {/* Total Harga Keseluruhan ASING (readonly) */}
+                    <SimpleField
+                      control={form.control}
+                      name="foreignTotalAmount"
+                      label="Total Harga Tiket Asing"
+                      placeholder="0"
+                      tooltip="Total harga tiket kategori asing."
+                      valueFormatter={(val) => formatRupiah(val || 0)}
+                      disabled
+                    />
+
+                    {/* Total Harga Pembayaran (readonly) */}
+                    <SimpleField
+                      control={form.control}
+                      name="totalPaymentAmount"
+                      label="Total Pembayaran Harga Tiket"
+                      placeholder="Masukan total pembayaran"
+                      tooltip="Jumlah total pembayaran."
+                      valueFormatter={(val) => formatRupiah(val || 0)}
+                      disabled
+                    />
+                  </div>
+                </>
+              )}
+
+              {visitorTotal > 19 && (
+                <h2 className="text-xl font-bold text-center">
+                  Ketentuan Kunjungan
+                  <br />
+                  <span className="text-base font-normal">
+                    Jumlah maksimal pembelian tiket langsung adalah 19 orang.
+                    Untuk rombongan lebih dari itu, silakan melakukan reservasi
+                    terlebih dahulu beberapa hari sebelum kedatangan melalui
+                    konter tiket atau menghubungi nomor berikut:
+                  </span>
+                  <br />
+                  <span className="text-base font-normal">
+                    (022)-7213822 atau 0811-1111-9330.
+                  </span>
+                  <br />
+                  <span className="text-base font-medium">Terima Kasih.</span>
+                </h2>
+              )}
+
+              {/* ROW 3 */}
               <div className="grid gap-3">
+                {/* Alamat */}
                 <SimpleField
                   control={form.control}
                   name="address"
                   label="Alamat"
-                  placeholder="Masukan alamat lengkap"
-                  component={<Textarea />}
-                  tooltip="Masukkan alamat lengkap pemesan atau instansi asal rombongan."
+                  placeholder="Masukan alamat"
+                  component={<Textarea className="rounded-xs" />}
+                  tooltip="Masukkan alamat lengkap pemesan."
                 />
               </div>
 
-              {/* ROW 6 */}
-              <div className="grid grid-cols-5 gap-3">
+              {/* ROW 4 */}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Provinsi */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="province"
                   label="Provinsi"
@@ -306,12 +478,11 @@ export default function CreateWalkin() {
                       label: prov.name,
                     })
                   )}
-                  disabled={!provinces.length}
-                  tooltip="Pilih provinsi asal ."
+                  tooltip="Pilih provinsi asal pemesan."
                 />
 
                 {/* Kabupaten/Kota */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="regencyOrCity"
                   label="Kabupaten/Kota"
@@ -324,11 +495,11 @@ export default function CreateWalkin() {
                     })
                   )}
                   disabled={!regencies.length}
-                  tooltip="Pilih kabupaten / kota asal pemesan."
+                  tooltip="Pilih kabupaten/kota asal pemesan."
                 />
 
                 {/* Kecamatan */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="district"
                   label="Kecamatan"
@@ -345,7 +516,7 @@ export default function CreateWalkin() {
                 />
 
                 {/* Kelurahan/Desa */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="village"
                   label="Kelurahan/Desa"
@@ -358,11 +529,11 @@ export default function CreateWalkin() {
                     })
                   )}
                   disabled={!villages.length}
-                  tooltip="Pilih kelurahan / desa asal pemesan."
+                  tooltip="Pilih kelurahan/desa asal pemesan."
                 />
 
                 {/* Negara */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="country"
                   label="Negara Asal "
@@ -374,137 +545,54 @@ export default function CreateWalkin() {
                       label: country.code,
                     })
                   )}
-                  disabled={!Number(form.getValues("foreignMemberTotal"))}
-                  tooltip="Pilih negara asal pemesan (jika ada anggota asing)."
+                  tooltip="Pilih negara asal pemesan."
                   countrySelect
                 />
               </div>
 
-              {/* ROW 7 */}
-              <div className="grid grid-cols-5 gap-3">
-                {/* Total Pembayaran (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  name="paymentAmount"
-                  label="Total Pembayaran"
-                  placeholder="Masukan total pembayaran"
-                  disabled
-                  valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah total pembayaran yang harus dibayarkan  (terhitung otomatis)."
-                />
-
-                {/* Metode Pembayaran */}
-                <SelectField
-                  control={form.control}
-                  name="paymentMethod"
-                  label="Metode Pembayaran"
-                  placeholder="Pilih metode pembayaran"
-                  icon={Banknote}
-                  options={[
-                    { label: "Tunai", value: "Tunai" },
-                    { label: "Transfer", value: "Transfer" },
-                    { label: "QRIS", value: "QRIS" },
-                  ]}
-                  tooltip="Metode pembayaran tiket."
-                />
-
-                {/* Uang Muka */}
-                <SimpleField
-                  control={form.control}
-                  name="downPayment"
-                  label="Uang Muka"
-                  placeholder="Masukan uang muka"
-                  onChangeOverride={(e, field) => {
-                    const rawValue = e.target.value.replace(/[^\d]/g, "");
-                    field.onChange(Number(rawValue));
-                  }}
-                  valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah uang muka yang dibayarkan."
-                />
-
-                {/* Uang Kembalian (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  name="changeAmount"
-                  label="Uang Kembalian"
-                  placeholder="Masukan uang kembalian"
-                  disabled
-                  valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah uang kembalian jika pembayaran melebihi total yang ditentukan."
-                />
-
-                {/* Status Pembayaran (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  name="statusPayment"
-                  label="Status Pembayaran"
-                  placeholder="Masukan status pembayaran"
-                  disabled
-                  valueFormatter={(val) =>
-                    val === "Paid" ? "Lunas" : "Belum Bayar"
-                  }
-                  tooltip="Status pembayaran terisi otomatis (Lunas atau Belum Bayar)."
-                />
-              </div>
-
-              {/* ROW 8 */}
-              <div className="grid grid-cols-4 gap-3">
-                {/* No. Seri Pelajar */}
-                <RangeField
-                  control={form.control}
-                  minName="initialStudentSerialNumber"
-                  maxName="finalStudentSerialNumber"
-                  label="No. Seri Pelajar"
-                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
-                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
-                />
-
-                {/* No. Seri Umum */}
-                <RangeField
-                  control={form.control}
-                  minName="initialPublicSerialNumber"
-                  maxName="finalPublicSerialNumber"
-                  label="No. Seri Umum"
-                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
-                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
-                />
-
-                {/* No. Seri Asing */}
-                <RangeField
-                  control={form.control}
-                  minName="initialForeignSerialNumber"
-                  maxName="finalForeignSerialNumber"
-                  label="No. Seri Asing"
-                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
-                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
-                />
-
-                {/* No. Seri Khusus */}
-                <RangeField
-                  control={form.control}
-                  minName="initialCustomSerialNumber"
-                  maxName="finalCustomSerialNumber"
-                  label="No. Seri Khusus"
-                  placeholder={["No. Seri Awal", "No. Seri Akhir"]}
-                  tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
-                />
-              </div>
-
               {/* Submit Button */}
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  "Tambah Walk-in"
-                )}
-              </Button>
+              {isWithinOperationalHours() && (
+                <Button
+                  type="submit"
+                  className="rounded-xs"
+                  disabled={
+                    form.formState.isSubmitting ||
+                    visitorTotal === 0 ||
+                    visitorTotal > 19 ||
+                    !phoneNumber.trim()
+                  }
+                >
+                  {form.formState.isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
+                </Button>
+              )}
             </div>
           </form>
         </Form>
       </CardContent>
+
+      <CardFooter className="flex justify-center">
+        {!isWithinOperationalHours() && (
+          <h2 className="text-xl font-bold text-center">
+            Ketentuan Kunjungan
+            <br />
+            <span className="text-base font-normal">
+              Pemesanan tiket hanya dapat dilakukan 30 menit sebelum jam
+              operasional:
+            </span>
+            <br />
+            <span className="text-base font-normal">09:00 – 15:00 WIB</span>
+            <br />
+            <span className="text-base font-medium">Terima Kasih.</span>
+          </h2>
+        )}
+      </CardFooter>
     </Card>
   );
 }

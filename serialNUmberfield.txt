@@ -1,0 +1,42 @@
+{/* ROW 8 */}
+                  <div className="grid grid-cols-4 gap-3">
+                    {/* No. Seri Pelajar */}
+                    <RangeField
+                      control={form.control}
+                      minName="initialStudentSerialNumber"
+                      maxName="finalStudentSerialNumber"
+                      label="No. Seri Pelajar"
+                      placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                      tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                    />
+
+                    {/* No. Seri Umum */}
+                    <RangeField
+                      control={form.control}
+                      minName="initialPublicSerialNumber"
+                      maxName="finalPublicSerialNumber"
+                      label="No. Seri Umum"
+                      placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                      tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                    />
+
+                    {/* No. Seri Asing */}
+                    <RangeField
+                      control={form.control}
+                      minName="initialForeignSerialNumber"
+                      maxName="finalForeignSerialNumber"
+                      label="No. Seri Asing"
+                      placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                      tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                    />
+
+                    {/* No. Seri Khusus */}
+                    <RangeField
+                      control={form.control}
+                      minName="initialCustomSerialNumber"
+                      maxName="finalCustomSerialNumber"
+                      label="No. Seri Khusus"
+                      placeholder={["No. Seri Awal", "No. Seri Akhir"]}
+                      tooltip="Nomor seri awal dimasukkan manual, nomor seri akhir akan terhitung otomatis."
+                    />
+                  </div>

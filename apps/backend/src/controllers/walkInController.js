@@ -1,15 +1,14 @@
-import { WalkIn } from "../models/walkIn.js";
+import { WalkIn } from "../models/Walkin.js";
 import { sendResponse } from "../utils/sendResponse.js";
 
 /**
  * * @desc Mendapatkan seluruh data walk-in
  * @route GET /api/walk-in
  */
-export const getWalkIns = async (req, res) => {
+export const getWalkIns = async (_, res) => {
   try {
     const allWalkIns = await WalkIn.find()
-      .populate("reservationAgent", "fullName username")
-      .populate("visitingHour", "timeRange")
+      .populate("agent", "fullName username")
       .sort({ createdAt: -1 });
 
     sendResponse(
@@ -27,24 +26,27 @@ export const getWalkIns = async (req, res) => {
 };
 
 /**
- * * @desc Mendapatkan satu data walk-in berdasarkan ID
- * @route GET /api/walk-in/:id
- * @param id - ID dari walk-in yang dicari
+ * * @desc Mendapatkan satu data walk-in berdasarkan Kode Unik
+ * @route GET /api/walk-in/:uniqueCode
+ * @param uniqueCode - Kode unik dari walk-in yang dicari
  */
-export const getWalkInById = async (req, res) => {
-  const { id } = req.params;
+export const getWalkInByCode = async (req, res) => {
+  const { uniqueCode } = req.params;
 
   try {
-    const walkIn = await WalkIn.findById(id)
-      .populate("reservationAgent", "fullName username")
-      .populate("visitingHour", "timeRange");
+    // Cari satu data dengan walkInNumber
+    const walkIns = await WalkIn.find({ walkInNumber: uniqueCode }).populate(
+      "agent",
+      "fullName username"
+    );
 
-    if (!walkIn) {
+    // Karena response API `data` adalah array, pastikan ada data dan ambil objek pertama
+    if (!walkIns || walkIns.length === 0) {
       return sendResponse(
         res,
         404,
         false,
-        `Data walk-in dengan ID ${id} tidak ditemukan`
+        `Data walk-in dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
 
@@ -52,8 +54,8 @@ export const getWalkInById = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil mendapatkan data walk-in dengan ID ${id}`,
-      walkIn
+      `Berhasil mendapatkan data walk-in dengan kode ${uniqueCode}`,
+      walkIns[0]
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
@@ -67,10 +69,8 @@ export const getWalkInById = async (req, res) => {
  * @route POST /api/walk-in
  */
 export const createWalkIn = async (req, res) => {
-  const { reservationAgent } = req.body;
-
   try {
-    const newWalkIn = new WalkIn({ ...req.validatedData, reservationAgent });
+    const newWalkIn = new WalkIn({ ...req.validatedData });
     await newWalkIn.save();
 
     sendResponse(
@@ -88,25 +88,32 @@ export const createWalkIn = async (req, res) => {
 };
 
 /**
- * * @desc Memperbarui data walk-in berdasarkan ID
- * @route PUT /api/walk-in/:id
- * @param id - ID dari walk-in yang akan diperbarui
+ * * @desc Memperbarui data walk-in berdasarkan Kode Unik
+ * @route PUT /api/walk-in/:uniqueCode
+ * @param uniqueCode - Kode unik dari walk-in yang akan diperbarui
  */
-export const updateWalkInById = async (req, res) => {
-  const { id } = req.params;
+export const updateWalkInByCode = async (req, res) => {
+  const { uniqueCode } = req.params;
+  const { agent } = req.body;
+  console.log(req.body);
 
   try {
-    const updated = await WalkIn.findByIdAndUpdate(id, req.validatedData, {
-      new: true,
-      runValidators: true,
-    });
+    // Pakai findOneAndUpdate agar update satu dokumen dan return data terbaru
+    const updated = await WalkIn.findOneAndUpdate(
+      { walkInNumber: uniqueCode },
+      { ...req.validatedData, agent },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!updated) {
       return sendResponse(
         res,
         404,
         false,
-        `Data walk-in dengan ID ${id} tidak ditemukan`
+        `Data walk-in dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
 
@@ -114,7 +121,7 @@ export const updateWalkInById = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil memperbarui data walk-in dengan ID ${id}`,
+      `Berhasil memperbarui data walk-in dengan kode ${uniqueCode}`,
       updated
     );
   } catch (err) {
@@ -125,22 +132,23 @@ export const updateWalkInById = async (req, res) => {
 };
 
 /**
- * * @desc Menghapus data walk-in berdasarkan ID
- * @route DELETE /api/walk-in/:id
- * @param id - ID dari walk-in yang akan dihapus
+ * * @desc Menghapus data walk-in berdasarkan Kode Unik
+ * @route DELETE /api/walk-in/:uniqueCode
+ * @param uniqueCode - Kode unik dari walk-in yang akan dihapus
  */
-export const deleteWalkInById = async (req, res) => {
-  const { id } = req.params;
+export const deleteWalkInByCode = async (req, res) => {
+  const { uniqueCode } = req.params;
 
   try {
-    const deleted = await WalkIn.findByIdAndDelete(id);
+    // Pakai findOneAndDelete untuk hapus satu dokumen
+    const deleted = await WalkIn.findOneAndDelete({ walkInNumber: uniqueCode });
 
     if (!deleted) {
       return sendResponse(
         res,
         404,
         false,
-        `Data walk-in dengan ID ${id} tidak ditemukan`
+        `Data walk-in dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
 
@@ -148,7 +156,7 @@ export const deleteWalkInById = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil menghapus data walk-in dengan ID ${id}`
+      `Berhasil menghapus data walk-in dengan kode ${uniqueCode}`
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

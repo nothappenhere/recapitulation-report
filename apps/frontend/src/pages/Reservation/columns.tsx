@@ -60,9 +60,6 @@ export function useReservationColumns(
     createColumn("foreignMemberTotal", "Jumlah Asing", {
       meta: { sum: true, label: "Jumlah Asing" },
     }),
-    createColumn("customMemberTotal", "Jumlah Khusus", {
-      meta: { sum: true, label: "Jumlah Khusus" },
-    }),
     createColumn("groupMemberTotal", "Jumlah Keseluruhan", {
       meta: { sum: true, label: "Jumlah Keseluruhan" },
     }),
@@ -103,8 +100,9 @@ export function useReservationColumns(
     }),
 
     createActionsColumn<TReservation>(
-      (item) => navigate(`/dashboard/reservation/edit/${item._id}`),
-      onDelete
+      (item) => navigate(`edit/${item._id}`),
+      onDelete,
+      (item) => navigate(`print/${item._id}`)
     ),
   ];
 }

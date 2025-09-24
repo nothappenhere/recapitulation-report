@@ -16,6 +16,7 @@ export function SortableHeader({
   return (
     <Button
       variant="ghost"
+      className="hover:bg-neutral-300 rounded-xs"
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
     >
       {title}
@@ -30,7 +31,7 @@ export function createSelectColumn<T>(): ColumnDef<T> {
     id: "select",
     header: ({ table }) => (
       <Checkbox
-        className="me-2"
+        className="me-2 border-black"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
@@ -41,7 +42,7 @@ export function createSelectColumn<T>(): ColumnDef<T> {
     ),
     cell: ({ row }) => (
       <Checkbox
-        className="me-2"
+        className="me-2 border-black"
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Pilih baris"
@@ -73,7 +74,8 @@ export function createColumn<T>(
 // Reusable Actions Column
 export function createActionsColumn<T extends { _id?: string }>(
   onEdit: (item: T) => void,
-  onDelete: (item: T) => void
+  onDelete: (item: T) => void,
+  onPrint?: (item: T) => void
 ): ColumnDef<T> {
   return {
     id: "actions",
@@ -86,6 +88,7 @@ export function createActionsColumn<T extends { _id?: string }>(
           getId={(item) => item._id || ""}
           onEdit={onEdit}
           onDelete={onDelete}
+          onPrint={onPrint}
         />
       );
     },

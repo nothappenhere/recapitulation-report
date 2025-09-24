@@ -27,7 +27,6 @@ const reservationSchema = new mongoose.Schema(
     studentMemberTotal: { type: Number, default: 0, required: true },
     publicMemberTotal: { type: Number, default: 0, required: true },
     foreignMemberTotal: { type: Number, default: 0, required: true },
-    customMemberTotal: { type: Number, default: 0, required: true },
     groupMemberTotal: { type: Number, default: 0 },
 
     actualMemberTotal: { type: Number, default: 0 },
@@ -69,10 +68,7 @@ reservationSchema.pre("save", function (next) {
 
   // Mengatur total anggota group/kelompok
   this.groupMemberTotal =
-    this.studentMemberTotal +
-    this.publicMemberTotal +
-    this.foreignMemberTotal +
-    this.customMemberTotal;
+    this.studentMemberTotal + this.publicMemberTotal + this.foreignMemberTotal;
 
   next();
 });

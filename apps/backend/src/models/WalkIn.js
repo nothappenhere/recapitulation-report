@@ -1,58 +1,54 @@
 import mongoose from "mongoose";
-import { CounterWalkIn } from "./CounterWalkIn.js";
 
 const walkInSchema = new mongoose.Schema(
   {
     walkInNumber: { type: String, unique: true },
-
-    reservationAgent: {
+    agent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null,
     },
 
     visitingDate: { type: Date, required: true },
-    visitingHour: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "VisitingHour",
-      required: true,
-    },
-    description: { type: String, default: "-" },
-
-    ordererNameOrTravelName: { type: String, required: true },
+    ordererName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
 
-    studentMemberTotal: { type: Number, default: 0, required: true },
-    publicMemberTotal: { type: Number, default: 0, required: true },
-    foreignMemberTotal: { type: Number, default: 0, required: true },
-    customMemberTotal: { type: Number, default: 0, required: true },
-    groupMemberTotal: { type: Number, default: 0 },
+    studentMemberTotal: { type: Number, required: true, default: 0 },
+    publicMemberTotal: { type: Number, required: true, default: 0 },
+    foreignMemberTotal: { type: Number, required: true, default: 0 },
+    visitorMemberTotal: { type: Number, required: true, default: 0 },
 
     address: { type: String, required: true },
-    province: { type: String, default: "-" },
-    regencyOrCity: { type: String, default: "-" },
-    district: { type: String, default: "-" },
-    village: { type: String, default: "-" },
-    country: { type: String, default: "-" },
+    province: { type: String, required: true },
+    regencyOrCity: { type: String, required: true },
+    district: { type: String, required: true },
+    village: { type: String, required: true },
+    country: { type: String, required: true, default: "Indonesia" },
 
-    paymentAmount: { type: Number, default: 0 },
-    paymentMethod: { type: String, required: true },
-    downPayment: { type: Number, default: 0, required: true },
+    studentTotalAmount: { type: Number, default: 0 },
+    publicTotalAmount: { type: Number, default: 0 },
+    foreignTotalAmount: { type: Number, default: 0 },
+    totalPaymentAmount: { type: Number, default: 0 },
+
+    paymentMethod: {
+      type: String,
+      enum: ["Tunai", "QRIS", "-"],
+      default: "-",
+    },
+    downPayment: { type: Number, default: 0 },
     changeAmount: { type: Number, default: 0 },
     statusPayment: {
       type: String,
-      enum: ["Paid", "Unpaid"],
-      default: "Unpaid",
+      enum: ["Lunas", "Belum Bayar"],
+      default: "Belum Bayar",
     },
 
-    initialStudentSerialNumber: { type: Number, default: 0 },
-    finalStudentSerialNumber: { type: Number, default: 0 },
-    initialPublicSerialNumber: { type: Number, default: 0 },
-    finalPublicSerialNumber: { type: Number, default: 0 },
-    initialForeignSerialNumber: { type: Number, default: 0 },
-    finalForeignSerialNumber: { type: Number, default: 0 },
-    initialCustomSerialNumber: { type: Number, default: 0 },
-    finalCustomSerialNumber: { type: Number, default: 0 },
+    // initialStudentSerialNumber: { type: Number, default: 0 },
+    // finalStudentSerialNumber: { type: Number, default: 0 },
+    // initialPublicSerialNumber: { type: Number, default: 0 },
+    // finalPublicSerialNumber: { type: Number, default: 0 },
+    // initialForeignSerialNumber: { type: Number, default: 0 },
+    // finalForeignSerialNumber: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
@@ -60,10 +56,10 @@ const walkInSchema = new mongoose.Schema(
 // Middleware untuk auto-calculation
 walkInSchema.pre("save", function (next) {
   // Mengatur status pembayaran
-  if (this.downPayment >= this.paymentAmount) {
-    this.statusPayment = "Paid";
+  if (this.downPayment >= this.totalPaymentAmount) {
+    this.statusPayment = "Lunas";
   } else {
-    this.statusPayment = "Unpaid";
+    this.statusPayment = "Belum Bayar";
   }
 
   // Menghitung kembalian
@@ -72,54 +68,60 @@ walkInSchema.pre("save", function (next) {
   }
 
   // Mengatur total anggota group/kelompok
-  this.groupMemberTotal =
-    this.studentMemberTotal +
-    this.publicMemberTotal +
-    this.foreignMemberTotal +
-    this.customMemberTotal;
+  this.visitorMemberTotal =
+    this.studentMemberTotal + this.publicMemberTotal + this.foreignMemberTotal;
 
   next();
 });
 
-// Middleware untuk menerapkan default value
-walkInSchema.pre("save", function (next) {
-  // Ganti semua string kosong dengan default jika ada
-  const fieldsWithDefault = [
-    "province",
-    "regencyOrCity",
-    "district",
-    "village",
-    "country",
-    "description",
-  ];
-
-  fieldsWithDefault.forEach((field) => {
-    if (this[field] === "") {
-      this[field] = "-";
-    }
-  });
-
-  next();
-});
-
-// Middleware untuk generate walkInNumber berurutan
+// Middleware untuk generate walkInNumber acak 6 karakter (unik)
 walkInSchema.pre("save", async function (next) {
   if (!this.walkInNumber) {
     try {
-      const counter = await CounterWalkIn.findOneAndUpdate(
-        { name: "walkInNumber" },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      );
+      const generateRandomCode = () => {
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let result = "";
+        for (let i = 0; i < 6; i++) {
+          result += characters.charAt(
+            Math.floor(Math.random() * characters.length)
+          );
+        }
+        return result;
+      };
 
-      // Format 6 digit dengan leading zero
-      const formattedSeq = counter.seq.toString().padStart(6, "0");
-      this.walkInNumber = `WI-${formattedSeq}`;
+      let unique = false;
+      let attempt = 0;
+      const maxAttempts = 10;
+
+      while (!unique && attempt < maxAttempts) {
+        const randomCode = generateRandomCode();
+        const candidate = `MG-${randomCode}`;
+
+        const existing = await mongoose.models.WalkIn.findOne({
+          walkInNumber: candidate,
+        });
+
+        if (!existing) {
+          this.walkInNumber = candidate;
+          unique = true;
+        }
+
+        attempt++;
+      }
+
+      if (!unique) {
+        throw new Error(
+          "Failed to generate unique walkInNumber after multiple attempts."
+        );
+      }
+
+      next();
     } catch (err) {
       return next(err);
     }
+  } else {
+    next();
   }
-  next();
 });
 
 export const WalkIn = mongoose.model("WalkIn", walkInSchema);

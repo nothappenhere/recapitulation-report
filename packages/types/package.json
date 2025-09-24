@@ -1,7 +1,7 @@
 {
-  "name": "@rzkyakbr/libs",
+  "name": "@rzkyakbr/types",
   "version": "1.0.0",
-  "description": "Shared Utility for frontend & backend",
+  "description": "Shared type declaration for frontend & backend",
   "type": "module",
   "private": true,
   "main": "./dist/index.js",
@@ -12,9 +12,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -w -p tsconfig.json"
-  },
-  "dependencies": {
-    "axios": "^1.11.0"
   },
   "devDependencies": {
     "typescript": "^5.9.2"

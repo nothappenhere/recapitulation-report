@@ -23,7 +23,7 @@ import {
   formatPhoneNumber,
   formatRupiah,
   useAutoFinalSerial,
-  useAutoPaymentWithAPI,
+  useAutoPayment,
   useRegionSelector,
   useVisitingHourSelect,
 } from "@rzkyakbr/libs";
@@ -44,6 +44,7 @@ import { DateField } from "@/components/form/DateField";
 import type { AxiosError } from "axios";
 import { useUser } from "@/hooks/UserContext";
 import ReservationFormSkeleton from "@/components/skeleton/ReservationFormSkeleton";
+import { ComboboxField } from "@/components/form/ComboboxField";
 
 export default function DetailReservation() {
   const { id } = useParams();
@@ -76,7 +77,7 @@ export default function DetailReservation() {
   // ? Menjumlahkan semua kategori agar dapat total pembayaran
   // ? Menghitung otomatis kembalian dari downPayment (uang muka)
   // ? Menentukan status pembayaran: "Paid" kalau lunas, "Unpaid" kalau belum lunas
-  useAutoPaymentWithAPI("/ticket-price", form.watch, form.setValue);
+  useAutoPayment("/ticket-price", form.watch, form.setValue);
 
   //* Hook untuk menghitung otomatis nomor seri akhir tiap kategori
   // ? Berdasarkan input nomor seri awal + jumlah anggota - 1
@@ -184,7 +185,9 @@ export default function DetailReservation() {
       toast.success(`${res.data.message}`);
 
       form.reset();
-      navigate("/dashboard/reservation", { replace: true });
+      navigate(`/dashboard/reservation/print/${res.data.data._id}`, {
+        replace: true,
+      });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -242,6 +245,7 @@ export default function DetailReservation() {
                         (vh: { _id: string; timeRange: string }) => ({
                           value: vh._id,
                           label: vh.timeRange,
+                          disabled: vh.timeRange.includes("Istirahat"),
                         })
                       )}
                       tooltip="Tentukan jam kunjungan sesuai jadwal museum."
@@ -257,7 +261,8 @@ export default function DetailReservation() {
                       options={[
                         { value: "WhatsApp", label: "WhatsApp" },
                         { value: "Google Form", label: "Google Form" },
-                        { value: "Lainnya", label: "Lainnya..." },
+                        { value: "Datang langsung", label: "Datang langsung" },
+                        { value: "lainnya", label: "Lainnya..." },
                       ]}
                       tooltip="Pilih metode reservasi yang digunakan."
                     />
@@ -317,7 +322,7 @@ export default function DetailReservation() {
                   </div>
 
                   {/* ROW 4 */}
-                  <div className="grid grid-cols-5 gap-3">
+                  <div className="grid grid-cols-4 gap-3">
                     {/* Jumlah Anggota Rombongan PELAJAR */}
                     <SimpleField
                       control={form.control}
@@ -325,7 +330,7 @@ export default function DetailReservation() {
                       name="studentMemberTotal"
                       label="Jumlah Anggota Pelajar"
                       placeholder="Masukan jumlah angg. pelajar"
-                      tooltip="Jumlah anggota rombongan yang berstatus pelajar (TK / Paud, SD, SMP, SMA, Mahasiswa)."
+                      tooltip="Jumlah anggota rombongan yang berstatus pelajar (TK/Paud, SD, SMP, SMA, Mahasiswa)."
                     />
 
                     {/* Jumlah Anggota Rombongan UMUM */}
@@ -335,7 +340,7 @@ export default function DetailReservation() {
                       name="publicMemberTotal"
                       label="Jumlah Anggota Umum"
                       placeholder="Masukan jumlah angg. umum"
-                      tooltip="Jumlah anggota rombongan kategori umum (di luar Pelajar/Asing/Khusus)."
+                      tooltip="Jumlah anggota rombongan kategori umum (di luar Pelajar/Asing)."
                     />
 
                     {/* Jumlah Anggota Rombongan ASING */}
@@ -346,16 +351,6 @@ export default function DetailReservation() {
                       label="Jumlah Anggota Asing"
                       placeholder="Masukan jumlah angg. asing"
                       tooltip="Jumlah anggota rombongan yang merupakan pengunjung dari luar negeri."
-                    />
-
-                    {/* Jumlah Anggota Rombongan KHUSUS */}
-                    <SimpleField
-                      control={form.control}
-                      type="number"
-                      name="customMemberTotal"
-                      label="Jumlah Anggota Khusus"
-                      placeholder="Masukan jumlah angg. Khusus"
-                      tooltip="Jumlah anggota rombongan dengan kategori khusus (misalnya undangan, VIP, dsb)."
                     />
 
                     {/* Jumlah Seluruh Anggota Rombongan (readonly) */}
@@ -413,7 +408,7 @@ export default function DetailReservation() {
                   {/* ROW 7 */}
                   <div className="grid grid-cols-5 gap-3">
                     {/* Provinsi */}
-                    <SelectField
+                    <ComboboxField
                       control={form.control}
                       name="province"
                       label="Provinsi"
@@ -425,11 +420,11 @@ export default function DetailReservation() {
                           label: prov.name,
                         })
                       )}
-                      tooltip="Pilih provinsi asal ."
+                      tooltip="Pilih provinsi asal rombongan."
                     />
 
                     {/* Kabupaten/Kota */}
-                    <SelectField
+                    <ComboboxField
                       control={form.control}
                       name="regencyOrCity"
                       label="Kabupaten/Kota"
@@ -441,11 +436,12 @@ export default function DetailReservation() {
                           label: reg.name,
                         })
                       )}
-                      tooltip="Pilih kabupaten / kota asal pemesan."
+                      disabled={!regencies.length}
+                      tooltip="Pilih kabupaten / kota asal rombongan."
                     />
 
                     {/* Kecamatan */}
-                    <SelectField
+                    <ComboboxField
                       control={form.control}
                       name="district"
                       label="Kecamatan"
@@ -457,11 +453,12 @@ export default function DetailReservation() {
                           label: dist.name,
                         })
                       )}
-                      tooltip="Pilih kecamatan asal pemesan."
+                      disabled={!districts.length}
+                      tooltip="Pilih kecamatan asal rombongan."
                     />
 
                     {/* Kelurahan/Desa */}
-                    <SelectField
+                    <ComboboxField
                       control={form.control}
                       name="village"
                       label="Kelurahan/Desa"
@@ -473,11 +470,12 @@ export default function DetailReservation() {
                           label: vill.name,
                         })
                       )}
-                      tooltip="Pilih kelurahan / desa asal pemesan."
+                      disabled={!villages.length}
+                      tooltip="Pilih kelurahan / desa asal rombongan."
                     />
 
                     {/* Negara */}
-                    <SelectField
+                    <ComboboxField
                       control={form.control}
                       name="country"
                       label="Negara Asal "
@@ -490,7 +488,7 @@ export default function DetailReservation() {
                         })
                       )}
                       disabled={!Number(form.getValues("foreignMemberTotal"))}
-                      tooltip="Pilih negara asal pemesan (jika ada anggota asing)."
+                      tooltip="Pilih negara asal rombongan (jika ada anggota asing)."
                       countrySelect
                     />
                   </div>

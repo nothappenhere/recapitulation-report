@@ -25,9 +25,6 @@ export const ReservationSchema = z.object({
   foreignMemberTotal: z.coerce
     .number()
     .nonnegative("Total anggota asing tidak boleh kosong / negative!"),
-  customMemberTotal: z.coerce
-    .number()
-    .nonnegative("Total anggota khusus tidak boleh kosong / negative!"),
   groupMemberTotal: z.coerce.number().optional(),
 
   actualMemberTotal: z.coerce.number().optional(),
@@ -65,7 +62,6 @@ export const defaultReservationFormValues: TReservation = {
   studentMemberTotal: 0,
   publicMemberTotal: 0,
   foreignMemberTotal: 0,
-  customMemberTotal: 0,
   groupMemberTotal: 0,
   actualMemberTotal: 0,
   reservationStatus: "",

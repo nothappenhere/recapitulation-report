@@ -23,7 +23,8 @@ type DateFieldProps<T extends FieldValues> = {
   label: string;
   placeholder?: string;
   tooltip?: string | ReactNode;
-  disabledForward: boolean;
+  disabled?: boolean;
+  disabledForward?: boolean;
 };
 
 export function DateField<T extends FieldValues>({
@@ -32,6 +33,7 @@ export function DateField<T extends FieldValues>({
   label,
   placeholder,
   tooltip,
+  disabled,
   disabledForward,
 }: DateFieldProps<T>) {
   return (
@@ -46,8 +48,9 @@ export function DateField<T extends FieldValues>({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
+              disabled={disabled}
               className={cn(
-                "border-black rounded-sm font-normal relative w-full text-left",
+                "border-black rounded-xs font-normal relative w-full text-left disabled:cursor-not-allowed disabled:bg-neutral-200",
                 !field.value && "text-muted-foreground"
               )}
             >
@@ -65,8 +68,10 @@ export function DateField<T extends FieldValues>({
           <PopoverContent className="w-auto p-0" align="center">
             <Calendar
               mode="single"
-              selected={field.value}
-              onSelect={field.onChange}
+              selected={field.value as Date | undefined}
+              onSelect={(date) => {
+                field.onChange(date ?? null); // null kalau kosong
+              }}
               disabled={(date) => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);

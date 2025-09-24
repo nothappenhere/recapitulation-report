@@ -22,7 +22,7 @@ import {
   formatPhoneNumber,
   formatRupiah,
   useAutoFinalSerial,
-  useAutoPaymentWithAPI,
+  useAutoPayment,
   useRegionSelector,
   useVisitingHourSelect,
 } from "@rzkyakbr/libs";
@@ -42,6 +42,7 @@ import { SelectField } from "@/components/form/SelectField";
 import { DateField } from "@/components/form/DateField";
 import type { AxiosError } from "axios";
 import { useUser } from "@/hooks/UserContext";
+import { ComboboxField } from "@/components/form/ComboboxField";
 
 export default function CreateReservation() {
   const { user } = useUser();
@@ -70,7 +71,7 @@ export default function CreateReservation() {
   // ? Menjumlahkan semua kategori agar dapat total pembayaran
   // ? Menghitung otomatis kembalian dari downPayment (uang muka)
   // ? Menentukan status pembayaran: "Paid" kalau lunas, "Unpaid" kalau belum lunas
-  useAutoPaymentWithAPI("/ticket-price", form.watch, form.setValue);
+  useAutoPayment("/ticket-price", form.watch, form.setValue);
 
   //* Hook untuk menghitung otomatis nomor seri akhir tiap kategori
   // ? Berdasarkan input nomor seri awal + jumlah anggota - 1
@@ -119,7 +120,9 @@ export default function CreateReservation() {
       toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate("/dashboard/reservation", { replace: true });
+      navigate(`/dashboard/reservation/print/${res.data.data._id}`, {
+        replace: true,
+      });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -189,6 +192,7 @@ export default function CreateReservation() {
                   options={[
                     { value: "WhatsApp", label: "WhatsApp" },
                     { value: "Google Form", label: "Google Form" },
+                    { value: "Datang langsung", label: "Datang langsung" },
                     { value: "lainnya", label: "Lainnya..." },
                   ]}
                   tooltip="Pilih metode reservasi yang digunakan."
@@ -209,7 +213,7 @@ export default function CreateReservation() {
 
               {/* ROW 3 */}
               <div className="grid grid-cols-3 gap-3">
-                {/* Nama Pemesan / Nama Travel */}
+                {/* Nama rombongan / Nama Travel */}
                 <SimpleField
                   control={form.control}
                   name="ordererNameOrTravelName"
@@ -249,7 +253,7 @@ export default function CreateReservation() {
               </div>
 
               {/* ROW 4 */}
-              <div className="grid grid-cols-5 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {/* Jumlah Anggota Rombongan PELAJAR */}
                 <SimpleField
                   control={form.control}
@@ -257,7 +261,7 @@ export default function CreateReservation() {
                   name="studentMemberTotal"
                   label="Jumlah Anggota Pelajar"
                   placeholder="Masukan jumlah angg. pelajar"
-                  tooltip="Jumlah anggota rombongan yang berstatus pelajar (TK / Paud, SD, SMP, SMA, Mahasiswa)."
+                  tooltip="Jumlah anggota rombongan yang berstatus pelajar (TK/Paud, SD, SMP, SMA, Mahasiswa)."
                 />
 
                 {/* Jumlah Anggota Rombongan UMUM */}
@@ -267,7 +271,7 @@ export default function CreateReservation() {
                   name="publicMemberTotal"
                   label="Jumlah Anggota Umum"
                   placeholder="Masukan jumlah angg. umum"
-                  tooltip="Jumlah anggota rombongan kategori umum (di luar Pelajar/Asing/Khusus)."
+                  tooltip="Jumlah anggota rombongan kategori umum (di luar Pelajar/Asing)."
                 />
 
                 {/* Jumlah Anggota Rombongan ASING */}
@@ -278,16 +282,6 @@ export default function CreateReservation() {
                   label="Jumlah Anggota Asing"
                   placeholder="Masukan jumlah angg. asing"
                   tooltip="Jumlah anggota rombongan yang merupakan pengunjung dari luar negeri."
-                />
-
-                {/* Jumlah Anggota Rombongan KHUSUS */}
-                <SimpleField
-                  control={form.control}
-                  type="number"
-                  name="customMemberTotal"
-                  label="Jumlah Anggota Khusus"
-                  placeholder="Masukan jumlah angg. Khusus"
-                  tooltip="Jumlah anggota rombongan dengan kategori khusus (misalnya undangan, VIP, dsb)."
                 />
 
                 {/* Jumlah Seluruh Anggota Rombongan (readonly) */}
@@ -317,7 +311,7 @@ export default function CreateReservation() {
               {/* ROW 6 */}
               <div className="grid grid-cols-5 gap-3">
                 {/* Provinsi */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="province"
                   label="Provinsi"
@@ -329,12 +323,11 @@ export default function CreateReservation() {
                       label: prov.name,
                     })
                   )}
-                  disabled={!provinces.length}
-                  tooltip="Pilih provinsi asal ."
+                  tooltip="Pilih provinsi asal rombongan."
                 />
 
                 {/* Kabupaten/Kota */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="regencyOrCity"
                   label="Kabupaten/Kota"
@@ -347,11 +340,11 @@ export default function CreateReservation() {
                     })
                   )}
                   disabled={!regencies.length}
-                  tooltip="Pilih kabupaten / kota asal pemesan."
+                  tooltip="Pilih kabupaten / kota asal rombongan."
                 />
 
                 {/* Kecamatan */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="district"
                   label="Kecamatan"
@@ -364,11 +357,11 @@ export default function CreateReservation() {
                     })
                   )}
                   disabled={!districts.length}
-                  tooltip="Pilih kecamatan asal pemesan."
+                  tooltip="Pilih kecamatan asal rombongan."
                 />
 
                 {/* Kelurahan/Desa */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="village"
                   label="Kelurahan/Desa"
@@ -381,11 +374,11 @@ export default function CreateReservation() {
                     })
                   )}
                   disabled={!villages.length}
-                  tooltip="Pilih kelurahan / desa asal pemesan."
+                  tooltip="Pilih kelurahan / desa asal rombongan."
                 />
 
                 {/* Negara */}
-                <SelectField
+                <ComboboxField
                   control={form.control}
                   name="country"
                   label="Negara Asal "
@@ -398,7 +391,7 @@ export default function CreateReservation() {
                     })
                   )}
                   disabled={!Number(form.getValues("foreignMemberTotal"))}
-                  tooltip="Pilih negara asal pemesan (jika ada anggota asing)."
+                  tooltip="Pilih negara asal rombongan (jika ada anggota asing)."
                   countrySelect
                 />
               </div>
@@ -425,24 +418,23 @@ export default function CreateReservation() {
                   icon={Banknote}
                   options={[
                     { label: "Tunai", value: "Tunai" },
-                    { label: "Transfer", value: "Transfer" },
                     { label: "QRIS", value: "QRIS" },
                   ]}
                   tooltip="Metode pembayaran tiket."
                 />
 
-                {/* Uang Muka */}
+                {/* Uang Bayar */}
                 <SimpleField
                   control={form.control}
                   name="downPayment"
-                  label="Uang Muka"
-                  placeholder="Masukan uang muka"
+                  label="Uang Bayar"
+                  placeholder="Masukan uang bayar"
                   onChangeOverride={(e, field) => {
                     const rawValue = e.target.value.replace(/[^\d]/g, "");
                     field.onChange(Number(rawValue));
                   }}
                   valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah uang muka yang dibayarkan."
+                  tooltip="Jumlah uang yang dibayarkan."
                 />
 
                 {/* Uang Kembalian (readonly) */}

@@ -1,3 +1,6 @@
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+
 export function formatRupiah(number: number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -37,4 +40,8 @@ export function formatPhoneNumber(input: string): string {
   return `${prefix} ${firstGroup}${secondGroup ? `-${secondGroup}` : ""}${
     thirdGroup ? `-${thirdGroup}` : ""
   }`;
+}
+
+export function formatDate(dateString: string) {
+  return format(new Date(dateString), "dd/MM/yyyy", { locale: id });
 }

@@ -1,9 +1,5 @@
 import { ControlledField } from "./ControlledField";
-import {
-  type Control,
-  type FieldPath,
-  type FieldValues,
-} from "react-hook-form";
+import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import {
   Select,
   SelectContent,
@@ -50,13 +46,17 @@ export function SelectField<T extends FieldValues>({
           value={field.value}
           disabled={disabled}
         >
-          <SelectTrigger className="relative ps-10 w-full max-w-full truncate">
-            <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3">
-              {Icon && <Icon size={16} aria-hidden="true" />}
-            </div>
+          <SelectTrigger className="relative ps-10 w-full max-w-full rounded-xs">
+            {/* Icon di kiri */}
+            {Icon && (
+              <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3">
+                <Icon size={16} aria-hidden="true" />
+              </div>
+            )}
+
             <SelectValue placeholder={placeholder} className="truncate" />
           </SelectTrigger>
-          <SelectContent className="">
+          <SelectContent>
             {options.map((opt) => (
               <SelectItem
                 key={opt.value}

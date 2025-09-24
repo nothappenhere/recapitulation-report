@@ -36,7 +36,7 @@ import { formatRupiah } from "@rzkyakbr/libs";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  addTitle: string;
+  addTitle?: string;
   colSpan: number;
 }
 
@@ -88,9 +88,11 @@ export function DataTable<TData, TValue>({
 
         <div className="flex justify-evenly items-center gap-3">
           {/* Add Button */}
-          <Button asChild>
-            <Link to="add">{addTitle}</Link>
-          </Button>
+          {addTitle && (
+            <Button asChild>
+              <Link to="add">{addTitle}</Link>
+            </Button>
+          )}
 
           {/* Dropdown column visibility */}
           <DropdownMenu>
@@ -124,7 +126,7 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-sm border">
+      <div className="overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -149,20 +151,36 @@ export function DataTable<TData, TValue>({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
                 const status = row.original.reservationStatus; // ambil dari data
+                const statusPayment = row.original.statusPayment; // ambil dari data
                 let statusClass = "";
+                let statusPaymentClass = "";
 
                 switch (status) {
                   case "Batal":
-                    statusClass = "bg-red-300";
+                    statusClass = "bg-[#E63424]";
                     break;
                   case "Reschedule":
-                    statusClass = "bg-yellow-200";
+                    statusClass = "bg-[#FFCB01]";
                     break;
                   case "Lainnya":
-                    statusClass = "bg-blue-200";
+                    statusClass = "bg-[#0086CE]";
                     break;
                   default:
                     statusClass = "";
+                    break;
+                }
+
+                switch (statusPayment) {
+                  case "Lunas":
+                    statusPaymentClass =
+                      "bg-green-100 hover:bg-green-200 data-[state=selected]:bg-green-300";
+                    break;
+                  case "Belum Bayar":
+                    statusPaymentClass =
+                      "bg-red-100 hover:bg-red-200 data-[state=selected]:bg-red-300";
+                    break;
+                  default:
+                    statusPaymentClass = "";
                     break;
                 }
 
@@ -170,8 +188,10 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className={`cursor-pointer data-[state=selected]:bg-stone-300 ${statusClass}`}
-                    onClick={() => navigate(`edit/${row.original._id}`)} // klik baris → navigate
+                    className={`cursor-pointer ${statusClass} ${statusPaymentClass}`}
+                    onClick={() =>
+                      navigate(`edit/${row.original.walkInNumber}`)
+                    }
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell

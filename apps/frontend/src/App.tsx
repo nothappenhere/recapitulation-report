@@ -21,11 +21,17 @@ import DetailTicketPrice from "./pages/TicketPrice/DetailTicketPrice";
 import ReservationTable from "./pages/Reservation/ReservationTable";
 import CreateReservation from "./pages/Reservation/CreateReservation";
 import DetailReservation from "./pages/Reservation/DetailReservation";
+import ReservationPrintPage from "./pages/Reservation/ReservationPrintPage";
 // Walk-in
-import WalkinTable from "./pages/Walk-In/WalkinTable";
-import CreateWalkin from "./pages/Walk-In/CreateWalkin";
-import DetailWalkin from "./pages/Walk-In/DetailWalkin";
+import WalkinTable from "./pages/Walk-in/WalkinTable";
+import CreateWalkin from "./pages/Walk-in/CreateWalkin";
+import DetailWalkin from "./pages/Walk-in/DetailWalkin";
+import WalkinPrintPage from "./pages/Walk-in/WalkinPrintPage";
+import QRPage from "./pages/Walk-in/QRPage";
+
 import CalendarEventPage from "./pages/CalendarEventPage";
+// import ReservationPrintPDF from "./pages/Reservation/ReservationPrintPDF";
+// import QRForm from "./pages/QRForm";
 
 function App() {
   return (
@@ -36,6 +42,11 @@ function App() {
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/auth/register" element={<RegisterPage />} />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+        </Route>
+
+        <Route path="/walk-in">
+          <Route index element={<CreateWalkin />} />
+          <Route path=":uniqueCode" element={<QRPage />} />
         </Route>
 
         <Route path="/dashboard" element={<DashboardPage />}>
@@ -59,6 +70,11 @@ function App() {
               element={<Navigate to="/dashboard/reservation" replace />}
             />
             <Route path="edit/:id" element={<DetailReservation />} />
+            <Route
+              path="print"
+              element={<Navigate to="/dashboard/reservation" replace />}
+            />
+            <Route path="print/:id" element={<ReservationPrintPage />} />
           </Route>
 
           <Route path="walk-in">
@@ -68,7 +84,12 @@ function App() {
               path="edit"
               element={<Navigate to="/dashboard/walk-in" replace />}
             />
-            <Route path="edit/:id" element={<DetailWalkin />} />
+            <Route path="edit/:uniqueCode" element={<DetailWalkin />} />
+            <Route
+              path="print"
+              element={<Navigate to="/dashboard/walk-in" replace />}
+            />
+            <Route path="print/:uniqueCode" element={<WalkinPrintPage />} />
           </Route>
 
           <Route path="calendar" element={<CalendarEventPage />} />

@@ -70,9 +70,8 @@ export function useRegionSelector<TForm extends UseFormReturn<any>>(
   useEffect(() => {
     if (!provinceCode || !regencyCode) return;
 
-    const regencyCodeOnly = regencyCode.split(".")[1];
-
     const getDistricts = async () => {
+      const [_, regencyCodeOnly] = regencyCode.split(".");
       try {
         const res = await api.get(
           `/region/districts/${provinceCode}/${regencyCodeOnly}`
@@ -98,9 +97,8 @@ export function useRegionSelector<TForm extends UseFormReturn<any>>(
   useEffect(() => {
     if (!provinceCode || !regencyCode || !districtCode) return;
 
-    const [_, regencyCodeOnly, districtCodeOnly] = districtCode.split(".");
-
     const getVillages = async () => {
+      const [_, regencyCodeOnly, districtCodeOnly] = districtCode.split(".");
       try {
         const res = await api.get(
           `/region/villages/${provinceCode}/${regencyCodeOnly}/${districtCodeOnly}`

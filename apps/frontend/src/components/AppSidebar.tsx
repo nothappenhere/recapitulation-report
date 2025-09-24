@@ -42,8 +42,9 @@ const navConfig: NavConfig = {
       items: [
         { title: "Pengelolaan Pengguna", url: "user-management" },
         { title: "Harga Tiket", url: "ticket-price" },
-        { title: "Reservasi", url: "reservation" },
-        { title: "Walk-in", url: "walk-in" },
+        { title: "Reservasi Rombongan", url: "reservation" },
+        { title: "Reservasi Langsung", url: "walk-in" },
+        { title: "Reservasi Khusus", url: "walk-in" },
         { title: "Kalender", url: "calendar" },
       ],
     },
@@ -54,8 +55,9 @@ const navConfig: NavConfig = {
       url: "#",
       items: [
         { title: "Harga Tiket", url: "ticket-price" },
-        { title: "Reservasi", url: "reservation" },
-        { title: "Walk-in", url: "walk-in" },
+        { title: "Reservasi Rombongan", url: "reservation" },
+        { title: "Reservasi Langsung", url: "walk-in" },
+        { title: "Reservasi Khusus", url: "walk-in" },
         { title: "Kalender", url: "calendar" },
         // { title: "Target Tahunan", url: "annual-target" },
       ],

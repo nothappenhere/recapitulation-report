@@ -46,7 +46,7 @@ export function SimpleField<T extends FieldValues>({
   label,
   placeholder,
   type = "text",
-  disabled = false,
+  disabled,
   valueFormatter,
   component,
   onChangeOverride,
@@ -86,7 +86,7 @@ export function SimpleField<T extends FieldValues>({
               })
             ) : (
               <Input
-                className="disabled:bg-neutral-300"
+                className="rounded-xs"
                 type={type}
                 placeholder={placeholder}
                 disabled={disabled}

@@ -21,7 +21,7 @@ const TicketPriceFormSkeleton = () => {
               <div className="grid gap-3">
                 <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
               </div>
-              {/* Row 3 */}
+              {/* Submit Button */}
               <div className="grid gap-3">
                 <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
               </div>

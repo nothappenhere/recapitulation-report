@@ -1,11 +1,11 @@
 import express from "express";
 import {
   getWalkIns,
-  getWalkInById,
+  getWalkInByCode,
   createWalkIn,
-  updateWalkInById,
-  deleteWalkInById,
-} from "../controllers/walkInController.js";
+  updateWalkInByCode,
+  deleteWalkInByCode,
+} from "../controllers/WalkinController.js";
 import { validateSchema } from "../utils/validateSchema.js";
 import { WalkInSchema } from "@rzkyakbr/schemas";
 
@@ -18,11 +18,11 @@ const router = express.Router();
 router.get("/", getWalkIns);
 
 /**
- * * @desc Mendapatkan satu data walk-in berdasarkan ID
- * @route GET /api/walk-in/:id
- * @param id - ID dari walk-in yang dicari
+ * * @desc Mendapatkan satu data walk-in berdasarkan Kode Unik
+ * @route GET /api/walk-in/:uniqueCode
+ * @param uniqueCode - Kode unik dari walk-in yang dicari
  */
-router.get("/:id", getWalkInById);
+router.get("/:uniqueCode", getWalkInByCode);
 
 /**
  * * @desc Membuat data walk-in baru
@@ -31,17 +31,17 @@ router.get("/:id", getWalkInById);
 router.post("/", validateSchema(WalkInSchema), createWalkIn);
 
 /**
- * * @desc Memperbarui data walk-in berdasarkan ID
- * @route PUT /api/walk-in/:id
- * @param id - ID dari walk-in yang akan diperbarui
+ * * @desc Memperbarui data walk-in berdasarkan Kode Unik
+ * @route PUT /api/walk-in/:uniqueCode
+ * @param uniqueCode - Kode unik dari walk-in yang akan diperbarui
  */
-router.put("/:id", validateSchema(WalkInSchema), updateWalkInById);
+router.put("/:uniqueCode", validateSchema(WalkInSchema), updateWalkInByCode);
 
 /**
- * * @desc Menghapus data walk-in berdasarkan ID
- * @route DELETE /api/walk-in/:id
- * @param id - ID dari walk-in yang akan dihapus
+ * * @desc Menghapus data walk-in berdasarkan Kode Unik
+ * @route DELETE /api/walk-in/:uniqueCode
+ * @param uniqueCode - Kode unik dari walk-in yang akan dihapus
  */
-router.delete("/:id", deleteWalkInById);
+router.delete("/:uniqueCode", deleteWalkInByCode);
 
 export default router;
