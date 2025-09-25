@@ -3,9 +3,17 @@ const ReservationFormSkeleton = () => {
     <>
       <div className="bg-white p-6 rounded-lg border">
         {/* Header */}
-        <div className="text-center mb-4">
-          <div className="h-6 w-1/2 bg-neutral-300 animate-pulse mx-auto rounded"></div>
-          <div className="h-4 w-1/3 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
+        <div className="relative flex justify-between items-center text-center mb-4">
+          <div className="w-1/2 ps-26">
+            <div className="h-5 w-1/2 bg-neutral-200 animate-pulse mx-auto rounded"></div>
+            <div className="h-4 w-10/12 bg-neutral-300 animate-pulse mx-auto rounded mt-2"></div>
+          </div>
+
+          <div className="w-1/3 flex gap-3 absolute right-0 -top-2">
+            <div className="h-9 w-1/3 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
+            <div className="h-9 w-1/3 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
+            <div className="h-9 w-1/3 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
+          </div>
         </div>
 
         <div className="border-t border-neutral-300 my-4"></div>
@@ -28,29 +36,27 @@ const ReservationFormSkeleton = () => {
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
           </div>
           {/* Row 4 */}
-          <div className="grid grid-cols-5 gap-3">
-            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
+          <div className="grid grid-cols-4 gap-3">
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
           </div>
           {/* Row 5 */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-4 gap-3">
+            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
+            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
           </div>
           {/* Row 6 */}
-          <div className="grid gap-3">
-            <div className="h-16 bg-neutral-300 animate-pulse rounded"></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
+            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
           </div>
           {/* Row 7 */}
-          <div className="grid grid-cols-5 gap-3">
-            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
-            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
-            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
-            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
-            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
+          <div className="grid gap-3">
+            <div className="h-16 bg-neutral-300 animate-pulse rounded"></div>
           </div>
           {/* Row 8 */}
           <div className="grid grid-cols-5 gap-3">
@@ -60,10 +66,26 @@ const ReservationFormSkeleton = () => {
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
           </div>
+          {/* Row 9 */}
+          <div className="grid grid-cols-4 gap-3">
+            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
+            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
+            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
+            <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
+          </div>
           {/* Submit Button */}
           <div className="grid gap-3">
             <div className="h-10 bg-neutral-300 animate-pulse rounded"></div>
           </div>
+        </div>
+
+        <div className="border-t border-neutral-300 my-4"></div>
+
+        {/* Footer */}
+        <div className="text-center mt-4">
+          <div className="h-6 w-1/2 bg-neutral-300 animate-pulse mx-auto rounded"></div>
+          <div className="h-4 w-10/12 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
+          <div className="h-4 w-1/4 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
         </div>
       </div>
     </>

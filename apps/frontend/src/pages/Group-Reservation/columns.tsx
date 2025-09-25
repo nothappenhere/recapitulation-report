@@ -1,4 +1,4 @@
-import { type WalkInFullTypes } from "@rzkyakbr/types";
+import { type GroupReservationFullTypes } from "@rzkyakbr/types";
 import { type ColumnDef } from "@tanstack/react-table";
 import { formatRupiah } from "@rzkyakbr/libs";
 import { Badge } from "@/components/ui/badge";
@@ -11,16 +11,16 @@ import {
 } from "@/components/table/column-factory";
 import { useNavigate } from "react-router";
 
-export function useWalkInColumns(
-  onDelete: (item: WalkInFullTypes) => void
-): ColumnDef<WalkInFullTypes>[] {
+export function useReservationColumns(
+  onDelete: (item: GroupReservationFullTypes) => void
+): ColumnDef<GroupReservationFullTypes>[] {
   const navigate = useNavigate();
 
   return [
-    createSelectColumn<WalkInFullTypes>(),
+    createSelectColumn<GroupReservationFullTypes>(),
 
-    createColumn("walkInNumber", "Kode Kunjungan"),
-    createColumn("agent", "Petugas Tiket", {
+    createColumn("reservationNumber", "Kode Reservasi"),
+    createColumn("agent", "Petugas Reservasi", {
       cell: ({ row }) => {
         const agent = row.original.agent as unknown as {
           fullName: string;
@@ -31,15 +31,28 @@ export function useWalkInColumns(
 
     createColumn("visitingDate", "Tgl. Kunjungan", {
       cell: ({ row }) =>
-        format(new Date(row.original.visitingDate), "dd MMM yyyy, HH:mm:ss", {
+        format(new Date(row.original.visitingDate), "dd MMMM yyyy", {
           locale: id,
         }),
     }),
+    createColumn("visitingHour", "Wkt. Kunjungan", {
+      cell: ({ row }) => {
+        const visitingHour = row.original.visitingHour as unknown as {
+          timeRange: string;
+        } | null;
+        return <span>{visitingHour?.timeRange ?? "-"} WIB</span>;
+      },
+    }),
     createColumn("ordererName", "Nama Pemesan"),
     createColumn("phoneNumber", "No. Telepon"),
+    createColumn("groupName", "Nama Rombongan"),
 
     createColumn("address", "Alamat"),
     createColumn("country", "Negara Asal"),
+
+    createColumn("reservationMechanism", "Mekanisme Reservasi"),
+    createColumn("reservationStatus", "Status Reservasi"),
+    createColumn("description", "Deskripsi"),
 
     createColumn("studentMemberTotal", "Jumlah Pelajar", {
       meta: { sum: true, label: "Jumlah Pelajar" },
@@ -70,6 +83,10 @@ export function useWalkInColumns(
       cell: ({ row }) => formatRupiah(row.getValue("totalPaymentAmount")),
     }),
 
+    createColumn("actualMemberTotal", "Jumlah Kedatangan", {
+      meta: { sum: true, label: "Jumlah Kedatangan" },
+    }),
+
     createColumn("paymentMethod", "Metode Pemb."),
     createColumn("downPayment", "Uang Pemb.", {
       meta: { sum: true, isCurrency: true, label: "Uang Bayar" },
@@ -90,10 +107,10 @@ export function useWalkInColumns(
       },
     }),
 
-    createActionsColumn<WalkInFullTypes>(
-      (item) => navigate(`edit/${item.walkInNumber}`),
+    createActionsColumn<GroupReservationFullTypes>(
+      (item) => navigate(`edit/${item.reservationNumber}`),
       onDelete,
-      (item) => navigate(`print/${item.walkInNumber}`)
+      (item) => navigate(`print/${item.reservationNumber}`)
     ),
   ];
 }

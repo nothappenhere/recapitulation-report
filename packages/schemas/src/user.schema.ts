@@ -1,15 +1,17 @@
 import { z } from "zod";
 
 const UserSchema = z.object({
-  NIP: z.coerce.number().nonnegative("NIP tidak boleh kosong / negative!"),
+  NIP: z.coerce.number().nonnegative("NIP tidak boleh kosong/negative!"),
   position: z.string().nonempty("Jabatan tidak boleh kosong!"),
   fullName: z
     .string()
     .nonempty("Nama lengkap tidak boleh kosong!")
     .min(3, "Nama lengkap harus minimal 3 karakter!"),
+
   username: z
     .string()
     .nonempty("Username tidak boleh kosong!")
+    .min(3, "Username harus minimal 3 karakter!")
     .transform((val) => val.toLowerCase()),
   password: z
     .string()
@@ -22,9 +24,10 @@ const UserSchema = z.object({
       /[^A-Za-z0-9]/,
       "Passwords harus memiliki minimal 1 karakter spesial!"
     ),
+
   role: z
-    .enum(["administrator", "user"], "Role tidak boleh kosong!")
-    .default("user"),
+    .enum(["Administrator", "User"], "Role tidak boleh kosong!")
+    .default("User"),
 });
 
 export const LoginSchema = UserSchema.pick({ username: true, password: true });
@@ -40,9 +43,11 @@ export const defaultRegisterFormValues: TRegister = {
   NIP: 0,
   position: "",
   fullName: "",
+
   username: "",
   password: "",
-  role: "user",
+
+  role: "User",
 };
 
 export const VerifyUsernameSchema = UserSchema.pick({ username: true });

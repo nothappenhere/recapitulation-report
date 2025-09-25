@@ -1,22 +1,22 @@
 import express from "express";
-const router = express.Router();
-
 import {
-  checkAuth,
   login,
-  logout,
-  resetPassword,
   register,
   verifyUsername,
-} from "../controllers/authController.js";
+  resetPassword,
+  checkAuth,
+  logout,
+} from "../controllers/AuthController.js";
 import { validateSchema } from "../utils/validateSchema.js";
+import { validateToken } from "../utils/validateToken.js";
 import {
   LoginSchema,
   RegisterSchema,
-  ResetPasswordSchema,
   VerifyUsernameSchema,
+  ResetPasswordSchema,
 } from "@rzkyakbr/schemas";
-import { validateToken } from "../utils/validateToken.js";
+
+const router = express.Router();
 
 /**
  * * @desc Login user

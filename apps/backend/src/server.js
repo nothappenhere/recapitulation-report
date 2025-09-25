@@ -4,11 +4,11 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
 import { connectDB } from "./config/db.js";
-import authRoutes from "./routes/authRoutes.js";
+import authRoutes from "./routes/AuthRoutes.js";
 import ticketPriceRoutes from "./routes/ticketPriceRoutes.js";
 import visitHourRoutes from "./routes/visitHourRoutes.js";
 import regionRoutes from "./routes/regionRoutes.js";
-import reservationRoutes from "./routes/reservationRoutes.js";
+import reservationRoutes from "./routes/ReservationRoutes.js";
 import WalkinRoutes from "./routes/WalkinRoutes.js";
 import calendarEventRoutes from "./routes/calendarEventRoutes.js";
 

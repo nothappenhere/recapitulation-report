@@ -5,3 +5,4 @@ export * from "./useRegionSelector.js";
 export * from "./useAutoPayment.js";
 export * from "./useAutoFinalSerial.js";
 export * from "./isWithinOperationalHours.js";
+export * from "./regionMapper.js";

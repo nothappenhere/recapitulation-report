@@ -5,7 +5,11 @@ const TableSkeleton = () => {
         {/* Header Control */}
         <div className="flex items-center justify-between py-4">
           <div className="animate-pulse bg-neutral-200 h-10 w-1/3 rounded"></div>
-          <div className="flex justify-between items-center gap-3">
+
+          <div className="flex justify-end items-center gap-3">
+            <div className="animate-pulse bg-neutral-200 h-10 rounded px-4 flex items-center">
+              <span className="mr-2 text-transparent">Lorem, ipsum.</span>
+            </div>
             <div className="animate-pulse bg-neutral-200 h-10 rounded px-4 flex items-center">
               <span className="mr-2 text-transparent">Lorem, ipsum.</span>
             </div>

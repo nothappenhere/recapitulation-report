@@ -1,12 +1,19 @@
 const WalkinFormSkeleton = () => {
   return (
     <>
-      <div className="bg-white p-6 rounded-lg border">
+      <div className=" bg-white p-6 rounded-lg border">
         {/* Header */}
-        <div className="relative text-center mb-4">
-          <div className="h-6 w-1/2 bg-neutral-300 animate-pulse mx-auto rounded"></div>
-          <div className="h-4 w-1/3 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
-          <div className="h-8 w-1/6 bg-neutral-200 animate-pulse mx-auto rounded mt-2 absolute right-0 top-0"></div>
+        <div className="relative flex justify-between items-center text-center mb-4">
+          <div className="w-1/2 ps-26">
+            <div className="h-5 w-1/2 bg-neutral-200 animate-pulse mx-auto rounded"></div>
+            <div className="h-4 w-10/12 bg-neutral-300 animate-pulse mx-auto rounded mt-2"></div>
+          </div>
+
+          <div className="w-1/3 flex gap-3 absolute right-0 -top-2">
+            <div className="h-9 w-1/3 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
+            <div className="h-9 w-1/3 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
+            <div className="h-9 w-1/3 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
+          </div>
         </div>
 
         <div className="border-t border-neutral-300 my-4"></div>
@@ -62,7 +69,7 @@ const WalkinFormSkeleton = () => {
         {/* Footer */}
         <div className="text-center mt-4">
           <div className="h-6 w-1/2 bg-neutral-300 animate-pulse mx-auto rounded"></div>
-          <div className="h-4 w-1/3 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
+          <div className="h-4 w-10/12 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
           <div className="h-4 w-1/4 bg-neutral-200 animate-pulse mx-auto rounded mt-2"></div>
         </div>
       </div>

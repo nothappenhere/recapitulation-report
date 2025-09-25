@@ -12,7 +12,7 @@ export const login = async (req, res) => {
 
   try {
     const user = await User.findOne({ username });
-    if (!user) {
+    if (!user || user.lenght === 0) {
       return sendResponse(res, 400, false, "kredensial tidak valid");
     }
 
@@ -49,10 +49,15 @@ export const register = async (req, res) => {
 
   try {
     const userExist = await User.findOne({
-      $or: [{ username }, { NIP }],
+      $or: [{ NIP }, { username }],
     });
     if (userExist) {
-      return sendResponse(res, 409, false, "Pengguna telah terdaftar");
+      return sendResponse(
+        res,
+        409,
+        false,
+        "Pengguna dengan NIP/username tersebut telah terdaftar"
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -65,7 +70,7 @@ export const register = async (req, res) => {
       role,
     });
 
-    sendResponse(res, 201, true, "Pengguna telah berhasil dibuat", {
+    sendResponse(res, 201, true, "Berhasil membuat pengguna baru", {
       user: {
         ...newUser._doc,
         password: undefined,
@@ -87,8 +92,8 @@ export const verifyUsername = async (req, res) => {
 
   try {
     const userExist = await User.findOne({ username });
-    if (!userExist) {
-      return sendResponse(res, 409, false, "kredensial tidak valid", {
+    if (!userExist || userExist.lenght === 0) {
+      return sendResponse(res, 404, false, "Pengguna tidak ditemukan", {
         exist: false,
       });
     }
@@ -110,8 +115,8 @@ export const resetPassword = async (req, res) => {
 
   try {
     const userExist = await User.findOne({ username });
-    if (!userExist) {
-      return sendResponse(res, 409, false, "kredensial tidak valid", {
+    if (!userExist || userExist.lenght === 0) {
+      return sendResponse(res, 404, false, "Pengguna tidak ditemukan", {
         exist: false,
       });
     }
@@ -125,7 +130,7 @@ export const resetPassword = async (req, res) => {
       { $set: { password: newHashedPassword } }
     );
 
-    sendResponse(res, 200, true, "Reset kata sandi berhasil");
+    sendResponse(res, 200, true, "Berhasil melakukan reset kata sandi");
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
       detail: err.message,
@@ -140,11 +145,11 @@ export const resetPassword = async (req, res) => {
 export const checkAuth = async (req, res) => {
   try {
     const userExist = await User.findById(req.userId).select("-password");
-    if (!userExist) {
+    if (!userExist || userExist.lenght === 0) {
       return sendResponse(res, 404, false, "Pengguna tidak ditemukan");
     }
 
-    sendResponse(res, 200, true, "Verifikasi otentikasi berhasil", {
+    sendResponse(res, 200, true, "Berhasil melakukan verifikasi otentikasi", {
       user: userExist,
     });
   } catch (err) {

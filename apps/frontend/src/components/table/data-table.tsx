@@ -23,14 +23,20 @@ import {
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { formatRupiah } from "@rzkyakbr/libs";
 
 interface DataTableProps<TData, TValue> {
@@ -38,6 +44,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   addTitle?: string;
   colSpan: number;
+  onRefresh?: () => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -45,6 +52,7 @@ export function DataTable<TData, TValue>({
   data,
   addTitle,
   colSpan,
+  onRefresh,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -52,6 +60,7 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   const table = useReactTable({
     data,
@@ -80,17 +89,29 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center justify-between py-4">
         {/* Search Filters */}
         <Input
-          placeholder="Cari berdasarkan Nama Pemesan, Tanggal / Waktu Kunjungan, dll..."
+          placeholder="Cari berdasarkan Kode, Nama Pemesan, Tgl/Wkt Kunjungan, dll..."
           value={globalFilter}
           onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-md"
+          autoFocus
         />
 
         <div className="flex justify-evenly items-center gap-3">
+          {/* Refresh Button */}
+          {onRefresh && (
+            <Button onClick={onRefresh}>
+              <RefreshCw className="mt-0.5" />
+              Refresh
+            </Button>
+          )}
+
           {/* Add Button */}
           {addTitle && (
-            <Button asChild>
-              <Link to="add">{addTitle}</Link>
+            <Button variant="outline" asChild>
+              <Link to="add">
+                <Plus className="mt-0.5" />
+                {addTitle}
+              </Link>
             </Button>
           )}
 
@@ -150,23 +171,31 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
-                const status = row.original.reservationStatus; // ambil dari data
-                const statusPayment = row.original.statusPayment; // ambil dari data
-                let statusClass = "";
+                const statusReservation = row.original.reservationStatus;
+                const statusPayment = row.original.statusPayment;
+                let statusReservationClass = "";
                 let statusPaymentClass = "";
+                let rowClass = "";
 
-                switch (status) {
-                  case "Batal":
-                    statusClass = "bg-[#E63424]";
+                switch (statusReservation) {
+                  case "Hadir":
+                    statusReservationClass =
+                      "bg-green-100 hover:bg-green-200 data-[state=selected]:bg-green-300";
                     break;
                   case "Reschedule":
-                    statusClass = "bg-[#FFCB01]";
+                    statusReservationClass =
+                      "bg-yellow-100 hover:bg-yellow-200 data-[state=selected]:bg-yellow-300";
+                    break;
+                  case "Batal Hadir":
+                    statusReservationClass =
+                      "bg-red-100 hover:bg-red-200 data-[state=selected]:bg-red-300";
                     break;
                   case "Lainnya":
-                    statusClass = "bg-[#0086CE]";
+                    statusReservationClass =
+                      "bg-blue-100 hover:bg-blue-200 data-[state=selected]:bg-blue-300";
                     break;
                   default:
-                    statusClass = "";
+                    statusReservationClass = "";
                     break;
                 }
 
@@ -184,13 +213,24 @@ export function DataTable<TData, TValue>({
                     break;
                 }
 
+                if (location.pathname.includes("walk-in")) {
+                  rowClass = statusPaymentClass;
+                } else if (location.pathname.includes("group-reservation")) {
+                  rowClass = statusReservationClass;
+                }
+
                 return (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className={`cursor-pointer ${statusClass} ${statusPaymentClass}`}
+                    className={`cursor-pointer ${rowClass}`}
                     onClick={() =>
-                      navigate(`edit/${row.original.walkInNumber}`)
+                      navigate(
+                        `edit/${
+                          row.original.walkInNumber ||
+                          row.original.reservationNumber
+                        }`
+                      )
                     }
                   >
                     {row.getVisibleCells().map((cell) => (

@@ -14,7 +14,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { NavUser } from "./NavUser";
+import { NavUser } from "./nav-user";
 import { useUser } from "@/hooks/UserContext";
 import { Link, NavLink, useLocation } from "react-router";
 import { capitalizeFirstLetter } from "@/lib/utils";
@@ -40,12 +40,13 @@ const navConfig: NavConfig = {
       title: "Getting Started",
       url: "#",
       items: [
+        { title: "Kalender", url: "calendar" },
         { title: "Pengelolaan Pengguna", url: "user-management" },
         { title: "Harga Tiket", url: "ticket-price" },
-        { title: "Reservasi Rombongan", url: "reservation" },
         { title: "Reservasi Langsung", url: "walk-in" },
-        { title: "Reservasi Khusus", url: "walk-in" },
-        { title: "Kalender", url: "calendar" },
+        { title: "Reservasi Rombongan", url: "group-reservation" },
+        { title: "Reservasi Khusus", url: "custom-reservation" },
+        { title: "Rekap Harian", url: "daily-recap" },
       ],
     },
   ],
@@ -54,12 +55,12 @@ const navConfig: NavConfig = {
       title: "Getting Started",
       url: "#",
       items: [
-        { title: "Harga Tiket", url: "ticket-price" },
-        { title: "Reservasi Rombongan", url: "reservation" },
-        { title: "Reservasi Langsung", url: "walk-in" },
-        { title: "Reservasi Khusus", url: "walk-in" },
         { title: "Kalender", url: "calendar" },
-        // { title: "Target Tahunan", url: "annual-target" },
+        { title: "Harga Tiket", url: "ticket-price" },
+        { title: "Reservasi Langsung", url: "walk-in" },
+        { title: "Reservasi Rombongan", url: "group-reservation" },
+        { title: "Reservasi Khusus", url: "custom-reservation" },
+        { title: "Rekap Harian", url: "daily-recap" },
       ],
     },
   ],
@@ -136,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               _id: "12345",
               position: "Guest",
               fullName: "Guest",
-              username: "guest123",
+              username: "guest",
               role: "Guest",
               avatar: "/avatars/default.jpg",
             }

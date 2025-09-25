@@ -1,39 +1,49 @@
 import type { Agent } from "./Agent.js";
 
-export type VisitingHour = {
+type VisitingHour = {
   _id: string;
   timeRange: string;
 };
 
-export type Reservation = {
+export type GroupReservationFullTypes = {
   _id: string;
-  reservationAgent: Agent;
+  agent: Agent;
+  reservationNumber: string;
+
   visitingDate: string;
   visitingHour: VisitingHour;
   reservationMechanism: string;
   description: string;
-  ordererNameOrTravelName: string;
+
+  ordererName: string;
   phoneNumber: string;
   groupName: string;
+
   studentMemberTotal: number;
   publicMemberTotal: number;
   foreignMemberTotal: number;
-  customMemberTotal: number;
-  groupMemberTotal: number;
+  visitorMemberTotal: number;
+
   actualMemberTotal: number;
   reservationStatus: string;
+
   address: string;
   province: string;
   regencyOrCity: string;
   district: string;
   village: string;
   country: string;
-  paymentAmount: number;
+
+  studentTotalAmount: number;
+  publicTotalAmount: number;
+  foreignTotalAmount: number;
+  totalPaymentAmount: number;
+
   paymentMethod: string;
   downPayment: number;
   changeAmount: number;
   statusPayment: string;
+
   createdAt: string;
   updatedAt: string;
-  bookingNumber: string;
 };

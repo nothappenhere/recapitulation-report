@@ -5,10 +5,10 @@ import { sendResponse } from "../utils/sendResponse.js";
  * * @desc Mendapatkan seluruh data reservasi
  * @route GET /api/reservation
  */
-export const getReservations = async (req, res) => {
+export const getReservations = async (_, res) => {
   try {
     const allReservations = await Reservation.find()
-      .populate("reservationAgent", "fullName username")
+      .populate("agent", "fullName username")
       .populate("visitingHour", "timeRange")
       .sort({ createdAt: -1 });
 
@@ -16,7 +16,7 @@ export const getReservations = async (req, res) => {
       res,
       200,
       true,
-      "Berhasil mendapatkan semua data reservasi",
+      "Berhasil mendapatkan seluruh data reservasi",
       allReservations
     );
   } catch (err) {
@@ -27,24 +27,28 @@ export const getReservations = async (req, res) => {
 };
 
 /**
- * * @desc Mendapatkan satu data reservasi berdasarkan ID
- * @route GET /api/reservation/:id
- * @param id - ID dari reservasi yang dicari
+ * * @desc Mendapatkan satu data reservasi berdasarkan Kode Unik
+ * @route GET /api/reservation/:uniqueCode
+ * @param uniqueCode - Kode Unik dari reservasi yang dicari
  */
-export const getReservationById = async (req, res) => {
-  const { id } = req.params;
+export const getReservationByCode = async (req, res) => {
+  const { uniqueCode } = req.params;
 
   try {
-    const reservation = await Reservation.findById(id)
-      .populate("reservationAgent", "fullName username")
+    // Cari satu data dengan ReservationNumber
+    const reservation = await Reservation.find({
+      reservationNumber: uniqueCode,
+    })
+      .populate("agent", "fullName username")
       .populate("visitingHour", "timeRange");
 
-    if (!reservation) {
+    // Karena response API `data` adalah array, pastikan ada data dan ambil objek pertama
+    if (!reservation || reservation.length === 0) {
       return sendResponse(
         res,
         404,
         false,
-        `Data reservasi dengan ID ${id} tidak ditemukan`
+        `Data reservasi dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
 
@@ -52,8 +56,8 @@ export const getReservationById = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil mendapatkan data reservasi dengan ID ${id}`,
-      reservation
+      `Berhasil mendapatkan data reservasi dengan kode ${uniqueCode}`,
+      reservation[0]
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
@@ -67,8 +71,9 @@ export const getReservationById = async (req, res) => {
  * @route POST /api/reservation
  */
 export const createReservation = async (req, res) => {
+  const { agent } = req.body;
+
   try {
-    const { reservationAgent } = req.body;
     // const { visitingDate, visitingHour } = req.validatedData;
 
     // Cek apakah slot waktu sudah dipakai di tanggal itu
@@ -86,10 +91,9 @@ export const createReservation = async (req, res) => {
     //   );
     // }
 
-    // Buat reservasi baru
     const newReservation = new Reservation({
       ...req.validatedData,
-      reservationAgent,
+      agent,
     });
     await newReservation.save();
 
@@ -108,25 +112,31 @@ export const createReservation = async (req, res) => {
 };
 
 /**
- * * @desc Memperbarui data reservasi berdasarkan ID
- * @route PUT /api/reservation/:id
- * @param id - ID dari reservasi yang akan diperbarui
+ * * @desc Memperbarui data reservasi berdasarkan Kode Unik
+ * @route PUT /api/reservation/:uniqueCode
+ * @param uniqueCode - Kode Unik dari reservasi yang akan diperbarui
  */
-export const updateReservationById = async (req, res) => {
-  const { id } = req.params;
+export const updateReservationByCode = async (req, res) => {
+  const { uniqueCode } = req.params;
+  const { agent } = req.body;
 
   try {
-    const updated = await Reservation.findByIdAndUpdate(id, req.validatedData, {
-      new: true,
-      runValidators: true,
-    });
+    // Pakai findOneAndUpdate agar update satu dokumen dan return data terbaru
+    const updated = await Reservation.findOneAndUpdate(
+      { reservationNumber: uniqueCode },
+      { ...req.validatedData, agent },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
-    if (!updated) {
+    if (!updated || updated.length === 0) {
       return sendResponse(
         res,
         404,
         false,
-        `Data reservasi dengan ID ${id} tidak ditemukan`
+        `Data reservasi dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
 
@@ -134,7 +144,7 @@ export const updateReservationById = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil memperbarui data reservasi dengan ID ${id}`,
+      `Berhasil memperbarui data reservasi dengan kode ${uniqueCode}`,
       updated
     );
   } catch (err) {
@@ -145,22 +155,25 @@ export const updateReservationById = async (req, res) => {
 };
 
 /**
- * * @desc Menghapus data reservasi berdasarkan ID
- * @route DELETE /api/reservation/:
- * @param id - ID dari reservasi yang akan dihapus
+ * * @desc Menghapus data reservasi berdasarkan Kode Unik
+ * @route DELETE /api/reservation/:uniqueCode
+ * @param uniqueCode - Kode Unik dari reservasi yang akan dihapus
  */
-export const deleteReservationById = async (req, res) => {
-  const { id } = req.params;
+export const deleteReservationByCode = async (req, res) => {
+  const { uniqueCode } = req.params;
 
   try {
-    const deleted = await Reservation.findByIdAndDelete(id);
+    // Pakai findOneAndDelete untuk hapus satu dokumen
+    const deleted = await Reservation.findOneAndDelete({
+      reservationNumber: uniqueCode,
+    });
 
-    if (!deleted) {
+    if (!deleted || deleted.length === 0) {
       return sendResponse(
         res,
         404,
         false,
-        `Data reservasi dengan ID ${id} tidak ditemukan`
+        `Data reservasi dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
 
@@ -168,7 +181,7 @@ export const deleteReservationById = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil menghapus data reservasi dengan ID ${id}`
+      `Berhasil menghapus data reservasi dengan kode ${uniqueCode}`
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

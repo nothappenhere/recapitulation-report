@@ -14,32 +14,43 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  WalkInSchema,
-  defaultWalkInFormValues,
-  type TWalkIn,
+  ReservationSchema,
+  defaultReservationFormValues,
+  type TReservation,
 } from "@rzkyakbr/schemas";
 import {
   api,
+  formatPhoneNumber,
   formatRupiah,
   isWithinOperationalHours,
   mapRegionNames,
+  useAutoFinalSerial,
   useAutoPayment,
   useRegionSelector,
+  useVisitingHourSelect,
 } from "@rzkyakbr/libs";
-import { ArrowLeft, Banknote, Flag, Loader2, MapPinned } from "lucide-react";
+import {
+  SquareLibrary,
+  Banknote,
+  ClockIcon,
+  Flag,
+  Loader2,
+  MapPinned,
+  ArrowLeft,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
-import { Link, useNavigate } from "react-router";
 import { useMediaQuery } from "react-responsive";
-import type { AxiosError } from "axios";
+import { Link, useNavigate } from "react-router";
 import { SimpleField } from "@/components/form/SimpleField";
+import { SelectField } from "@/components/form/SelectField";
 import { DateField } from "@/components/form/DateField";
+import type { AxiosError } from "axios";
+import { useUser } from "@/hooks/UserContext";
 import { ComboboxField } from "@/components/form/ComboboxField";
 import { PhoneField } from "@/components/form/PhoneField";
 import { NumberFieldInput } from "@/components/form/NumberField";
-import { SelectField } from "@/components/form/SelectField";
-import { useUser } from "@/hooks/UserContext";
 
-export default function CreateWalkin() {
+export default function CreateGroupReservation() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 639 });
   const isTablet = useMediaQuery({ minWidth: 640, maxWidth: 1023 });
@@ -48,10 +59,13 @@ export default function CreateWalkin() {
   const { user } = useUser();
   const Agent = user?._id || null;
 
-  const form = useForm<TWalkIn>({
-    resolver: zodResolver(WalkInSchema),
-    defaultValues: defaultWalkInFormValues,
+  const form = useForm<TReservation>({
+    resolver: zodResolver(ReservationSchema),
+    defaultValues: defaultReservationFormValues,
   });
+
+  // * Hook untuk mengambil seluruh data waktu kunjungan museum
+  const { visitHours } = useVisitingHourSelect(form);
 
   // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
   const { countries, provinces, regencies, districts, villages } =
@@ -67,7 +81,7 @@ export default function CreateWalkin() {
   const downPayment = form.watch("downPayment");
 
   //* Submit handler create
-  const onSubmit = async (values: TWalkIn): Promise<void> => {
+  const onSubmit = async (values: TReservation): Promise<void> => {
     try {
       const {
         provinceName,
@@ -93,12 +107,14 @@ export default function CreateWalkin() {
         agent: Agent,
       };
 
-      const res = await api.post("/walk-in", payload);
-      const { walkInNumber } = res.data.data;
+      const res = await api.post("/reservation", payload);
+      const { reservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/dashboard/walk-in/print/${walkInNumber}`, { replace: true });
+      navigate(`/dashboard/group-reservation/print/${reservationNumber}`, {
+        replace: true,
+      });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -109,16 +125,16 @@ export default function CreateWalkin() {
   };
 
   return (
-    <Card className="m-5 shadow-lg rounded-md">
+    <Card>
       <CardHeader className="text-center">
-        <CardTitle>Pendataan Kunjungan</CardTitle>
+        <CardTitle>Pendataan Reservasi Rombongan</CardTitle>
         <CardDescription>
-          Isi formulir di bawah untuk mencatat kunjungan.
+          Isi formulir di bawah untuk mencatat reservasi rombongan.
         </CardDescription>
 
         <CardAction>
           <Button asChild>
-            <Link to="/dashboard/walk-in">
+            <Link to="/dashboard/group-reservation">
               <ArrowLeft />
               Kembali
             </Link>
@@ -138,17 +154,64 @@ export default function CreateWalkin() {
                   name="visitingDate"
                   label="Tanggal Kunjungan"
                   placeholder="Pilih tanggal kunjungan"
-                  tooltip="Tanggal kunjungan (hanya bisa memilih hari ini)."
-                  disabledForward
+                  tooltip="Tanggal kunjungan (tidak bisa memilih sebelum hari ini)."
                 />
 
+                {/* Waktu Kunjungan */}
+                <SelectField
+                  control={form.control}
+                  name="visitingHour"
+                  label="Waktu Kunjungan"
+                  placeholder="Pilih waktu kunjungan"
+                  icon={ClockIcon}
+                  options={visitHours.map(
+                    (vh: { _id: string; timeRange: string }) => ({
+                      value: vh._id,
+                      label: vh.timeRange,
+                      disabled: vh.timeRange.includes("Istirahat"),
+                    })
+                  )}
+                  tooltip="Tentukan jam kunjungan sesuai jadwal museum."
+                />
+
+                {/* Mekanisme Reservasi */}
+                <SelectField
+                  control={form.control}
+                  name="reservationMechanism"
+                  label="Mekanisme Reservasi"
+                  placeholder="Pilih mekanisme reservasi"
+                  icon={SquareLibrary}
+                  options={[
+                    { value: "Whatsapp", label: "Whatsapp" },
+                    { value: "Google Form", label: "Google Form" },
+                    { value: "Datang Langsung", label: "Datang Langsung" },
+                    { value: "Lainnya", label: "Lainnya..." },
+                  ]}
+                  tooltip="Pilih metode reservasi yang digunakan."
+                />
+              </div>
+
+              {/* ROW 2 */}
+              <div className="grid gap-3">
+                <SimpleField
+                  control={form.control}
+                  name="description"
+                  label="Deskripsi"
+                  placeholder="Masukan deskripsi"
+                  component={<Textarea className="rounded-xs" />}
+                  tooltip="Tambahkan keterangan tambahan terkait kunjungan (opsional)."
+                />
+              </div>
+
+              {/* ROW 3 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Nama Pemesan */}
                 <SimpleField
                   control={form.control}
                   name="ordererName"
                   label="Nama Pemesan"
                   placeholder="Masukan nama pemesan"
-                  tooltip="Nama pemesan yang berkunjungan."
+                  tooltip="Isi dengan nama pemesan yang mengatur kunjungan."
                 />
 
                 {/* Nomor Telepon */}
@@ -158,6 +221,15 @@ export default function CreateWalkin() {
                   label="Nomor Telepon"
                   placeholder="Masukan nomor telepon"
                   tooltip="Nomor telepon aktif yang dapat dihubungi."
+                />
+
+                {/* Nama Rombongan */}
+                <SimpleField
+                  control={form.control}
+                  name="groupName"
+                  label="Nama Rombongan"
+                  placeholder="Masukan nama rombongan"
+                  tooltip="Isi dengan nama rombongan atau identitas kelompok pengunjung."
                 />
               </div>
 
@@ -451,26 +523,21 @@ export default function CreateWalkin() {
                 </>
               )}
 
-              {visitorTotal > 19 && (
+              {visitorTotal < 19 && (
                 <h2 className="text-xl font-bold text-center max-w-10/12 mx-auto">
-                  Ketentuan Pembuatan Data Kunjungan
+                  Ketentuan Pembuatan Reservasi Rombongan
                   <br />
                   <span className="text-base font-normal">
-                    Jumlah maksimal pembelian tiket langsung adalah 19 orang.
-                    Untuk rombongan lebih dari itu, silakan melakukan reservasi
-                    terlebih dahulu beberapa hari sebelum kedatangan melalui
-                    konter tiket atau menghubungi nomor berikut:
-                  </span>
-                  <br />
-                  <span className="text-base font-normal">
-                    (022)-7213822 atau 0811-1111-9330.
+                    Jumlah minimal reservasi rombongan adalah 19 orang. Untuk
+                    rombongan kurang dari itu, silakan melakukan reservasi
+                    secara langsung melalui konter tiket yang tersedia.{" "}
                   </span>
                   <br />
                   <span className="text-base font-medium">Terima Kasih.</span>
                 </h2>
               )}
 
-              {/* ROW 3 */}
+              {/* ROW 5 */}
               <div className="grid gap-3">
                 {/* Alamat */}
                 <SimpleField
@@ -479,11 +546,11 @@ export default function CreateWalkin() {
                   label="Alamat"
                   placeholder="Masukan alamat"
                   component={<Textarea className="rounded-xs" />}
-                  tooltip="Masukkan alamat lengkap pemesan."
+                  tooltip="Masukkan alamat lengkap pemesan atau instansi asal rombongan."
                 />
               </div>
 
-              {/* ROW 4 */}
+              {/* ROW 6 */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Provinsi */}
                 <ComboboxField
@@ -570,7 +637,7 @@ export default function CreateWalkin() {
                 />
               </div>
 
-              {/* ROW 5 */}
+              {/* ROW 7 */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 {/* Metode Pembayaran */}
                 <SelectField
@@ -630,7 +697,7 @@ export default function CreateWalkin() {
                   disabled={
                     form.formState.isSubmitting ||
                     visitorTotal === 0 ||
-                    visitorTotal > 19 ||
+                    visitorTotal < 19 ||
                     !phoneNumber ||
                     paymentMethod === "-" ||
                     downPayment < totalPaymentAmount
@@ -642,7 +709,7 @@ export default function CreateWalkin() {
                       Loading...
                     </>
                   ) : (
-                    "Simpan"
+                    "Tambah Reservasi"
                   )}
                 </Button>
               )}
@@ -653,13 +720,13 @@ export default function CreateWalkin() {
 
       <CardFooter className="flex flex-col justify-center items-center gap-2">
         <h2 className="text-xl font-bold text-center">
-          Ketentuan Pembuatan Data Kunjungan
+          Ketentuan Pembuatan Reservasi Rombongan
         </h2>
 
         <div className="flex justify-center items-center">
           {!isWithinOperationalHours() && (
-            <span className="text-base font-normal text-center max-w-1/2 border p-4">
-              Pemesanan tiket hanya dapat dilakukan 30 menit sebelum jam
+            <span className="text-base font-normal text-center max-w-1/2 border py-4 px-3">
+              Pemesanan reservasi hanya dapat dilakukan 30 menit sebelum jam
               operasional Museum Geologi: 09:00 – 15:00 WIB.
             </span>
           )}

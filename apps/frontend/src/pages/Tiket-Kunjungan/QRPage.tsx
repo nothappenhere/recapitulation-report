@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { api, formatRupiah } from "@rzkyakbr/libs";
+import type { AxiosError } from "axios";
+import toast from "react-hot-toast";
+import { type WalkInFullTypes } from "@rzkyakbr/types";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Card,
@@ -10,29 +13,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { type WalkInFullTypes } from "@rzkyakbr/types";
 import { Button } from "@/components/ui/button";
 
 export default function QRPage() {
   const { uniqueCode } = useParams();
   const [walkInData, setWalkInData] = useState<WalkInFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (!uniqueCode) return;
+
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await api.get(`/walk-in/${uniqueCode}`);
         setWalkInData(res.data.data);
       } catch (err) {
-        window.location.href = "https://museum.geologi.esdm.go.id/";
+        console.log(err);
+        const error = err as AxiosError<{ message?: string }>;
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
+        toast.error(message);
+
+        // window.location.href = "https://museum.geologi.esdm.go.id/";
+        navigate("/visit", { replace: true });
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [uniqueCode]);
+  }, [navigate, uniqueCode]);
 
   if (loading || !walkInData) {
     return (
