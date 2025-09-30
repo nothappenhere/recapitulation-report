@@ -37,7 +37,7 @@ import { ComboboxField } from "@/components/form/ComboboxField";
 import { PhoneField } from "@/components/form/PhoneField";
 import { NumberFieldInput } from "@/components/form/NumberField";
 import { SelectField } from "@/components/form/SelectField";
-import { useUser } from "@/hooks/UserContext";
+import { useUser } from "@/hooks/use-user-context";
 
 export default function CreateWalkin() {
   const navigate = useNavigate();
@@ -60,6 +60,7 @@ export default function CreateWalkin() {
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
+  const foreignTotal = form.watch("foreignMemberTotal");
   const visitorTotal = form.watch("visitorMemberTotal");
   const phoneNumber = form.watch("phoneNumber");
   const totalPaymentAmount = form.watch("totalPaymentAmount");
@@ -85,11 +86,11 @@ export default function CreateWalkin() {
 
       const payload = {
         ...values,
-        province: provinceName,
-        regencyOrCity: regencyName,
-        district: districtName,
-        village: villageName,
-        country: countryName,
+        province: foreignTotal > 0 ? "-" : provinceName,
+        regencyOrCity: foreignTotal > 0 ? "-" : regencyName,
+        district: foreignTotal > 0 ? "-" : districtName,
+        village: foreignTotal > 0 ? "-" : villageName,
+        country: !foreignTotal ? "Indonesia" : countryName,
         agent: Agent,
       };
 
@@ -498,6 +499,7 @@ export default function CreateWalkin() {
                       label: prov.name,
                     })
                   )}
+                  disabled={!provinces.length || foreignTotal > 0}
                   tooltip="Pilih provinsi asal pemesan."
                 />
 
@@ -514,7 +516,7 @@ export default function CreateWalkin() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!regencies.length}
+                  disabled={!regencies.length || foreignTotal > 0}
                   tooltip="Pilih kabupaten/kota asal pemesan."
                 />
 
@@ -531,7 +533,7 @@ export default function CreateWalkin() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!districts.length}
+                  disabled={!districts.length || foreignTotal > 0}
                   tooltip="Pilih kecamatan asal pemesan."
                 />
 
@@ -548,7 +550,7 @@ export default function CreateWalkin() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!villages.length}
+                  disabled={!villages.length || foreignTotal > 0}
                   tooltip="Pilih kelurahan/desa asal pemesan."
                 />
 
@@ -566,6 +568,7 @@ export default function CreateWalkin() {
                     })
                   )}
                   tooltip="Pilih negara asal pemesan."
+                  disabled={foreignTotal === 0}
                   countrySelect
                 />
               </div>
@@ -582,6 +585,7 @@ export default function CreateWalkin() {
                   options={[
                     { label: "Tunai", value: "Tunai" },
                     { label: "QRIS", value: "QRIS" },
+                    { label: "Lainnya", value: "Lainnya" },
                   ]}
                   tooltip="Metode pembayaran tiket."
                 />
@@ -632,7 +636,7 @@ export default function CreateWalkin() {
                     visitorTotal === 0 ||
                     visitorTotal > 19 ||
                     !phoneNumber ||
-                    paymentMethod === "-" ||
+                    paymentMethod === "Lainnya" ||
                     downPayment < totalPaymentAmount
                   }
                 >

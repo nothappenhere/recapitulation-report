@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatRupiah } from "@rzkyakbr/libs";
 import { ColumnsActions } from "@/components/table/column-actions";
 import { useNavigate } from "react-router";
+import { useUser } from "@/hooks/use-user-context";
 
 type TicketPrice = {
   _id: string;
@@ -27,6 +28,8 @@ export function TicketPriceCard({
   ticketPrice,
   onDelete,
 }: TicketPriceCardProps) {
+  const { user } = useUser();
+  const role = user?.role || null;
   const navigate = useNavigate();
 
   return (
@@ -41,16 +44,16 @@ export function TicketPriceCard({
           {formatRupiah(ticketPrice.unitPrice)}
         </CardTitle>
 
-        <CardAction className="border rounded-sm">
-          <ColumnsActions
-            item={ticketPrice}
-            getId={(item: TicketPrice) => item._id}
-            onEdit={(item: TicketPrice) =>
-              navigate(`/dashboard/ticket-price/edit/${item._id}`)
-            }
-            onDelete={onDelete}
-          />
-        </CardAction>
+        {role === "Administrator" && (
+          <CardAction className="border rounded-sm">
+            <ColumnsActions
+              item={ticketPrice}
+              getId={(item: TicketPrice) => item._id}
+              onEdit={(item: TicketPrice) => navigate(`edit/${item._id}`)}
+              onDelete={onDelete}
+            />
+          </CardAction>
+        )}
       </CardHeader>
 
       <CardFooter className="flex-col items-start gap-1.5 text-sm">

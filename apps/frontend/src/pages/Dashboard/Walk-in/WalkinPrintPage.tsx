@@ -75,13 +75,17 @@ export default function WalkinPrintPage() {
               <CardTitle>Telp : 022-7213822</CardTitle>
               <CardTitle>Fax : 022-7213822</CardTitle>
               <CardTitle>Email : museum-geologi@esdm.go.id</CardTitle>
+              <CardTitle>Website : museum.geologi.esdm.go.id</CardTitle>
             </CardHeader>
 
             <CardContent className="border-y py-4 grid gap-2">
-              <InfoRow label="Kode Kunjungan" value={walkInData.walkInNumber} />
+              <InfoRow
+                label="Kode Kunjungan (Reservation code)"
+                value={walkInData.walkInNumber}
+              />
 
               <InfoRow
-                label="Tgl. Kunjungan"
+                label="Tgl. Kunjungan (Visiting Date)"
                 value={format(
                   new Date(walkInData.visitingDate),
                   `dd MMM yyyy`,
@@ -91,14 +95,17 @@ export default function WalkinPrintPage() {
                 )}
               />
               <InfoRow
-                label="Waktu Kunjungan"
+                label="Waktu Kunjungan (Visiting Hour)"
                 value={format(new Date(walkInData.visitingDate), `HH:mm:ss`, {
                   locale: id,
                 })}
               />
-              <InfoRow label="Nama Pemesan" value={walkInData.ordererName} />
               <InfoRow
-                label="No. Telepon"
+                label="Nama Pemesan (Orderer Name)"
+                value={walkInData.ordererName}
+              />
+              <InfoRow
+                label="No. Telepon (Phone Number)"
                 value={`${walkInData.phoneNumber}`}
               />
 
@@ -107,7 +114,7 @@ export default function WalkinPrintPage() {
                 value={`${walkInData.studentMemberTotal} pengunjung`}
               />
               <InfoRow
-                label="Harga Tiket"
+                label="Harga Tiket (Ticket Price)"
                 value={`${formatRupiah(walkInData.studentTotalAmount)}`}
               />
 
@@ -116,7 +123,7 @@ export default function WalkinPrintPage() {
                 value={`${walkInData.publicMemberTotal} pengunjung`}
               />
               <InfoRow
-                label="Harga Tiket"
+                label="Harga Tiket (Ticket Price)"
                 value={`${formatRupiah(walkInData.publicTotalAmount)}`}
               />
 
@@ -125,7 +132,7 @@ export default function WalkinPrintPage() {
                 value={`${walkInData.foreignMemberTotal} pengunjung`}
               />
               <InfoRow
-                label="Harga Tiket"
+                label="Harga Tiket (Ticket Price)"
                 value={`${formatRupiah(walkInData.foreignTotalAmount)}`}
               />
 
@@ -134,34 +141,46 @@ export default function WalkinPrintPage() {
                 value={`${walkInData.visitorMemberTotal} pengunjung`}
               />
               <InfoRow
-                label="Total Harga Tiket"
+                label="Total Harga Tiket (Ttl. Ticket Price)"
                 value={`${formatRupiah(walkInData.totalPaymentAmount)}`}
               />
 
               <InfoRow
-                label="Metode Pembayaran"
+                label="Metode Pembayaran (Payment Method)"
                 value={walkInData.paymentMethod}
               />
               <InfoRow
-                label="Status Pembayaran"
+                label="Status Pembayaran (Payment Status)"
                 value={walkInData.statusPayment}
               />
             </CardContent>
 
-            <p className="text-center"># Terima Kasih Atas Kunjungan Anda #</p>
+            <p className="text-center">
+              ~ Terima Kasih Atas Kunjungan Anda, <br />
+              Kami Harapkan Kunjungan Anda Kembali. ~
+            </p>
+
+            <div className="flex justify-center">
+              <img
+                src="/img/logo-smart-mg.png"
+                alt="Logo Smart Museum Geologi"
+                width={128}
+                height={128}
+              />
+            </div>
 
             {/* Tombol hanya muncul di layar */}
-            <CardFooter className="flex justify-between items-center print:hidden">
-              <Button asChild>
-                <Link to="/dashboard/walk-in">
-                  <ArrowLeft />
-                  Kembali
-                </Link>
-              </Button>
-
+            <CardFooter className="flex flex-col justify-between items-center gap-3 border-t border-dashed print:hidden">
               <Button variant="outline" onClick={() => window.print()}>
                 Print
                 <Printer />
+              </Button>
+
+              <Button asChild>
+                <Link to="/dashboard/walk-in">
+                  <ArrowLeft />
+                  Kembali ke Pencarian
+                </Link>
               </Button>
             </CardFooter>
           </Card>

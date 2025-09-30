@@ -26,17 +26,27 @@ import type { AxiosError } from "axios";
 import { SelectField } from "@/components/form/SelectField";
 import { SimpleField } from "@/components/form/SimpleField";
 import TicketPriceFormSkeleton from "@/components/skeleton/TicketPriceFormSkeleton";
+import { useUser } from "@/hooks/use-user-context";
 
 export default function CreateTicketPrice() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
 
+  const { user } = useUser();
+  const role = user?.role || null;
+
+  if (role !== "Administrator") {
+    toast.error("Anda tidak memiliki akses untuk mengunjungi halaman ini.");
+    navigate("/dashboard/ticket-price", { replace: true });
+  }
+
   const form = useForm<TTicketPrice>({
     resolver: zodResolver(TicketPriceSchema),
     defaultValues: defaultTicketPriceFormValues,
   });
 
+  //* Fetch kategori (untuk disabled select)
   useEffect(() => {
     const fetchTicketPrices = async () => {
       setLoading(true);
@@ -44,6 +54,12 @@ export default function CreateTicketPrice() {
       try {
         const res = await api.get("/ticket-price");
         const existing = res.data.data || [];
+
+        const items = res.data.data || [];
+        const categories = items.map(
+          (item: { category: string; unitPrice: number }) => item.category
+        );
+        setExistingCategories(categories);
 
         if (existing.length >= 4) {
           toast.error("Tidak bisa menambahkan lebih dari 4 kategori.");
@@ -65,31 +81,8 @@ export default function CreateTicketPrice() {
     fetchTicketPrices();
   }, [navigate]);
 
-  //* Fetch kategori (untuk disabled select)
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await api.get(`/ticket-price`);
-        const items = res.data.data || [];
-
-        const categories = items.map(
-          (item: { category: string; unitPrice: number }) => item.category
-        );
-        setExistingCategories(categories);
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        const message = error.response?.data?.message
-          ? `${error.response.data.message}!`
-          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
-        toast.error(message);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
   //* Submit handler: create
-  const onSubmit = async (values: TTicketPrice) => {
+  const onSubmit = async (values: TTicketPrice): Promise<void> => {
     try {
       const res = await api.post(`/ticket-price`, values);
       toast.success(`${res.data.message}.`);
@@ -120,12 +113,12 @@ export default function CreateTicketPrice() {
                 </CardDescription>
 
                 <CardAction>
-                  <Badge asChild className="py-1.5 hover:cursor-pointer">
+                  <Button asChild>
                     <Link to="/dashboard/ticket-price">
                       <ArrowLeft className="mr-0.5" />
                       Kembali
                     </Link>
-                  </Badge>
+                  </Button>
                 </CardAction>
               </CardHeader>
               <Separator />
@@ -182,13 +175,14 @@ export default function CreateTicketPrice() {
                             field.onChange(Number(rawValue));
                           }}
                           valueFormatter={(val) => formatRupiah(val || 0)}
-                          tooltip="Masukan harga dalam rupiah (contoh: 25.000)"
+                          tooltip="Masukan harga tiket untuk kategori/golongan ini."
                         />
                       </div>
 
                       {/* Submit Button */}
                       <Button
                         type="submit"
+                        className="rounded-xs"
                         disabled={form.formState.isSubmitting}
                       >
                         {form.formState.isSubmitting ? (

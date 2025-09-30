@@ -92,7 +92,7 @@ export default function ResetPasswordPage({
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
         {/* Logo Museum */}
-        <div className="flex items-center gap-2 self-center font-medium">
+        <div className="flex items-center gap-4 self-center font-medium">
           <div className="text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <Avatar>
               <AvatarImage src="/img/logo-mg.png" alt="Logo Museum Geologi" />
@@ -107,8 +107,8 @@ export default function ResetPasswordPage({
             <CardHeader className="text-center">
               <CardTitle className="text-xl">Reset kata sandi</CardTitle>
               <CardDescription>
-                Masukkan nama pengguna yang Anda gunakan saat mendaftar untuk
-                mereset kata sandi.
+                Masukkan username yang Anda gunakan saat mendaftar untuk mereset
+                kata sandi.
               </CardDescription>
             </CardHeader>
 
@@ -146,6 +146,7 @@ export default function ResetPasswordPage({
                                       type={showPassword ? "text" : "password"}
                                       required
                                       placeholder="Masukan password baru"
+                                      className="rounded-xs"
                                       {...field}
                                     />
                                     <Button
@@ -176,7 +177,7 @@ export default function ResetPasswordPage({
                       {accountExist ? (
                         <Button
                           type="submit"
-                          className="w-full"
+                          className="w-full rounded-xs"
                           disabled={form.formState.isSubmitting}
                         >
                           {form.formState.isSubmitting ? (
@@ -191,7 +192,7 @@ export default function ResetPasswordPage({
                       ) : (
                         <Button
                           type="button"
-                          className="w-full"
+                          className="w-full rounded-xs"
                           disabled={form.formState.isSubmitting}
                           onClick={(e) =>
                             handleVerifyUsername(e, form.getValues())

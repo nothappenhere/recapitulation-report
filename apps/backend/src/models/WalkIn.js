@@ -19,11 +19,11 @@ const walkInSchema = new mongoose.Schema(
     visitorMemberTotal: { type: Number, required: true, default: 0 },
 
     address: { type: String, required: true },
-    province: { type: String, required: true },
-    regencyOrCity: { type: String, required: true },
-    district: { type: String, required: true },
-    village: { type: String, required: true },
-    country: { type: String, required: true, default: "Indonesia" },
+    province: { type: String, default: "-" },
+    regencyOrCity: { type: String, default: "-" },
+    district: { type: String, default: "-" },
+    village: { type: String, default: "-" },
+    country: { type: String, default: "Indonesia" },
 
     studentTotalAmount: { type: Number, default: 0 },
     publicTotalAmount: { type: Number, default: 0 },
@@ -32,8 +32,8 @@ const walkInSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["Tunai", "QRIS", "-"],
-      default: "-",
+      enum: ["Tunai", "QRIS", "Lainnya"],
+      default: "Lainnya",
     },
     downPayment: { type: Number, default: 0 },
     changeAmount: { type: Number, default: 0 },
@@ -70,6 +70,25 @@ walkInSchema.pre("save", function (next) {
   // Mengatur total anggota group/kelompok
   this.visitorMemberTotal =
     this.studentMemberTotal + this.publicMemberTotal + this.foreignMemberTotal;
+
+  next();
+});
+
+// Middleware untuk menerapkan default value
+walkInSchema.pre("save", function (next) {
+  // Ganti semua string kosong dengan default jika ada
+  const fieldsWithDefault = [
+    "province",
+    "regencyOrCity",
+    "district",
+    "village",
+  ];
+
+  fieldsWithDefault.forEach((field) => {
+    if (this[field] === "") {
+      this[field] = "-";
+    }
+  });
 
   next();
 });

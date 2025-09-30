@@ -52,9 +52,9 @@ export function EventDialog({
   const allDay = form.watch("allDay");
 
   // Debug log to check what event is being passed
-  useEffect(() => {
-    console.log("EventDialog received event:", event);
-  }, [event]);
+  // useEffect(() => {
+  //   console.log("EventDialog received event:", event);
+  // }, [event]);
 
   //* Fetch jika sedang edit
   useEffect(() => {
@@ -73,18 +73,18 @@ export function EventDialog({
     }
   }, [event, form]);
 
-  const formatTimeForInput = (date: Date) => {
-    const hours = date.getHours().toString().padStart(2, "0");
-    const minutes = Math.floor(date.getMinutes() / 15) * 15;
-    return `${hours}:${minutes.toString().padStart(2, "0")}`;
-  };
+  // const formatTimeForInput = (date: Date) => {
+  //   const hours = date.getHours().toString().padStart(2, "0");
+  //   const minutes = Math.floor(date.getMinutes() / 15) * 15;
+  //   return `${hours}:${minutes.toString().padStart(2, "0")}`;
+  // };
 
   // Memoize time options so they're only calculated once
   const timeOptions = useMemo(() => {
     const options = [];
     for (let hour = StartHour; hour < EndHour; hour++) {
       // FIX: pakai <, bukan <=
-      for (let minute = 0; minute < 60; minute += 15) {
+      for (let minute = 0; minute < 60; minute += 10) {
         const formattedHour = hour.toString().padStart(2, "0");
         const formattedMinute = minute.toString().padStart(2, "0");
         const value = `${formattedHour}:${formattedMinute}`;
@@ -210,7 +210,7 @@ export function EventDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-r-none">
+      <DialogContent className="max-h-[90vh] overflow-y-scroll rounded-r-none">
         <DialogHeader>
           <DialogTitle>{event?._id ? "Edit Acara" : "Buat Acara"}</DialogTitle>
           <DialogDescription className="sr-only">
@@ -243,8 +243,8 @@ export function EventDialog({
                   control={form.control}
                   name="description"
                   label="Deskripsi"
-                  placeholder="Masukan deskripsi"
-                  component={<Textarea />}
+                  placeholder="Masukan deskripsi acara"
+                  component={<Textarea className="rounded-xs" />}
                   tooltip="Tambahkan detail tambahan tentang acara (opsional)."
                 />
               </div>
@@ -327,7 +327,7 @@ export function EventDialog({
                   control={form.control}
                   name="location"
                   label="Lokasi"
-                  placeholder="Masukan lokasi"
+                  placeholder="Masukan lokasi acara"
                   tooltip="Tempat acara diadakan, bisa berupa ruangan, alamat, atau lokasi umum."
                 />
               </div>

@@ -30,7 +30,6 @@ export default function QRPage() {
         const res = await api.get(`/walk-in/${uniqueCode}`);
         setWalkInData(res.data.data);
       } catch (err) {
-        console.log(err);
         const error = err as AxiosError<{ message?: string }>;
         const message = error.response?.data?.message
           ? `${error.response.data.message}!`

@@ -15,7 +15,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavUser } from "./nav-user";
-import { useUser } from "@/hooks/UserContext";
+import { useUser } from "@/hooks/use-user-context";
 import { Link, NavLink, useLocation } from "react-router";
 import { capitalizeFirstLetter } from "@/lib/utils";
 
@@ -35,7 +35,7 @@ type NavItem = {
 };
 
 const navConfig: NavConfig = {
-  administrator: [
+  Administrator: [
     {
       title: "Getting Started",
       url: "#",
@@ -50,7 +50,7 @@ const navConfig: NavConfig = {
       ],
     },
   ],
-  user: [
+  User: [
     {
       title: "Getting Started",
       url: "#",
@@ -139,7 +139,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               fullName: "Guest",
               username: "guest",
               role: "Guest",
-              avatar: "/avatars/default.jpg",
+              avatar: "/img/logo-mg.png",
             }
           }
         />

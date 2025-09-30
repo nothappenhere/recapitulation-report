@@ -4,12 +4,20 @@ type InfoRowProps = {
 };
 
 export function InfoRow({ label, value }: InfoRowProps) {
+  // Match label dalam format: "Bahasa Indonesia (Bahasa Inggris)"
+  const match = label.match(/^(.*?)\s*\((.*?)\)$/);
+
+  const labelIndo = match ? match[1] : label;
+  const labelEng = match ? match[2] : null;
+
   return (
-    <div className="grid grid-cols-[115px_1fr] gap-1">
-      <span className="break-words break-all whitespace-normal">{label}</span>
-      <span className="break-words break-all whitespace-normal">
-        : {value}
-      </span>
+    <div className="grid grid-cols-[115px_max-content_1fr] gap-x-1 gap-y-0.5 items-start">
+      <div className="flex flex-col">
+        <span>{labelIndo}</span>
+        {labelEng && <span className="italic text-[11px]">({labelEng})</span>}
+      </div>
+      <span>:</span>
+      <span>{value}</span>
     </div>
   );
 }

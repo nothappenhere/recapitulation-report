@@ -54,6 +54,7 @@ export default function CreateVisit() {
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
+  const foreignTotal = form.watch("foreignMemberTotal");
   const visitorTotal = form.watch("visitorMemberTotal");
   const phoneNumber = form.watch("phoneNumber");
 
@@ -76,11 +77,11 @@ export default function CreateVisit() {
 
       const payload = {
         ...values,
-        province: provinceName,
-        regencyOrCity: regencyName,
-        district: districtName,
-        village: villageName,
-        country: countryName,
+        province: foreignTotal > 0 ? "-" : provinceName,
+        regencyOrCity: foreignTotal > 0 ? "-" : regencyName,
+        district: foreignTotal > 0 ? "-" : districtName,
+        village: foreignTotal > 0 ? "-" : villageName,
+        country: !foreignTotal ? "Indonesia" : countryName,
       };
 
       const res = await api.post("/walk-in", payload);
@@ -480,6 +481,7 @@ export default function CreateVisit() {
                       label: prov.name,
                     })
                   )}
+                  disabled={!provinces.length || foreignTotal > 0}
                   tooltip="Pilih provinsi asal pemesan."
                 />
 
@@ -496,7 +498,7 @@ export default function CreateVisit() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!regencies.length}
+                  disabled={!regencies.length || foreignTotal > 0}
                   tooltip="Pilih kabupaten/kota asal pemesan."
                 />
 
@@ -513,7 +515,7 @@ export default function CreateVisit() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!districts.length}
+                  disabled={!districts.length || foreignTotal > 0}
                   tooltip="Pilih kecamatan asal pemesan."
                 />
 
@@ -530,7 +532,7 @@ export default function CreateVisit() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!villages.length}
+                  disabled={!villages.length || foreignTotal > 0}
                   tooltip="Pilih kelurahan/desa asal pemesan."
                 />
 
@@ -548,6 +550,7 @@ export default function CreateVisit() {
                     })
                   )}
                   tooltip="Pilih negara asal pemesan."
+                  disabled={foreignTotal === 0}
                   countrySelect
                 />
               </div>

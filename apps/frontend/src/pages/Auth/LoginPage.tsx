@@ -109,6 +109,7 @@ export default function LoginPage({
                                   type={showPassword ? "text" : "password"}
                                   required
                                   placeholder="Masukan password"
+                                  className="rounded-xs"
                                   {...field}
                                 />
                                 <Button
@@ -135,7 +136,7 @@ export default function LoginPage({
                     {/* Submit Button */}
                     <Button
                       type="submit"
-                      className="w-full"
+                      className="w-full rounded-xs"
                       disabled={form.formState.isSubmitting}
                     >
                       {form.formState.isSubmitting ? (

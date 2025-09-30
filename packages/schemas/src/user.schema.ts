@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const UserSchema = z.object({
+export const UserSchema = z.object({
   NIP: z.coerce.number().nonnegative("NIP tidak boleh kosong/negative!"),
   position: z.string().nonempty("Jabatan tidak boleh kosong!"),
   fullName: z
@@ -25,6 +25,7 @@ const UserSchema = z.object({
       "Passwords harus memiliki minimal 1 karakter spesial!"
     ),
 
+  biography: z.string().optional().default("-"),
   role: z
     .enum(["Administrator", "User"], "Role tidak boleh kosong!")
     .default("User"),
@@ -37,16 +38,14 @@ export const defaultLoginFormValues: TLogin = {
   password: "",
 };
 
-export const RegisterSchema = UserSchema;
+export const RegisterSchema = UserSchema.omit({ biography: true });
 export type TRegister = z.infer<typeof RegisterSchema>;
 export const defaultRegisterFormValues: TRegister = {
   NIP: 0,
   position: "",
   fullName: "",
-
   username: "",
   password: "",
-
   role: "User",
 };
 
@@ -65,3 +64,6 @@ export const defaultResetPasswordFormValues: TResetPassword = {
   username: "",
   password: "",
 };
+
+export const UserUpdateSchema = UserSchema.omit({ password: true });
+export type TUserUpdate = z.infer<typeof UserUpdateSchema>;

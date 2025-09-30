@@ -24,10 +24,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    biography: {
+      type: String,
+      default: "-",
+    },
     role: {
       type: String,
-      enum: ["administrator", "user"],
-      default: "user",
+      enum: ["Administrator", "User"],
+      default: "User",
       required: true,
     },
     lastLogin: {
@@ -36,5 +40,19 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Middleware untuk menerapkan default value
+userSchema.pre("save", function (next) {
+  // Ganti semua string kosong dengan default jika ada
+  const fieldsWithDefault = ["biography"];
+
+  fieldsWithDefault.forEach((field) => {
+    if (this[field] === "") {
+      this[field] = "-";
+    }
+  });
+
+  next();
+});
 
 export const User = mongoose.model("User", userSchema);

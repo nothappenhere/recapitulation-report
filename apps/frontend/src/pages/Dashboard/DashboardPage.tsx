@@ -13,11 +13,11 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { UserProvider } from "@/hooks/UserContext";
+import { UserProvider } from "@/hooks/use-user-context";
 import { slugToTitle } from "@rzkyakbr/libs";
 import { Link, Outlet, useLocation } from "react-router";
 
-export function DashboardPage() {
+export default function DashboardPage() {
   const location = useLocation();
   const allPaths = location.pathname.split("/").filter(Boolean);
   const paths = allPaths[0] === "dashboard" ? allPaths.slice(1) : allPaths;
@@ -50,7 +50,9 @@ export function DashboardPage() {
                         <BreadcrumbItem>
                           {isLast ? (
                             <BreadcrumbPage>
-                              {slugToTitle(segment)}
+                              {location.pathname.includes("edit")
+                                ? segment
+                                : slugToTitle(segment)}
                             </BreadcrumbPage>
                           ) : (
                             <BreadcrumbLink asChild>

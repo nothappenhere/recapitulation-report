@@ -5,12 +5,13 @@ import dotenv from "dotenv";
 
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/AuthRoutes.js";
-import ticketPriceRoutes from "./routes/ticketPriceRoutes.js";
-import visitHourRoutes from "./routes/visitHourRoutes.js";
-import regionRoutes from "./routes/regionRoutes.js";
-import reservationRoutes from "./routes/ReservationRoutes.js";
-import WalkinRoutes from "./routes/WalkinRoutes.js";
 import calendarEventRoutes from "./routes/calendarEventRoutes.js";
+import userManageRoutes from "./routes/userManageRoutes.js";
+import ticketPriceRoutes from "./routes/ticketPriceRoutes.js";
+import WalkinRoutes from "./routes/WalkinRoutes.js";
+import reservationRoutes from "./routes/ReservationRoutes.js";
+import regionRoutes from "./routes/regionRoutes.js";
+import visitHourRoutes from "./routes/visitHourRoutes.js";
 
 // import stokTiketRoutes from "./routes/stokTiketRoutes.js";
 // import kodeTiketRoutes from "./routes/kodeTiketRoutes.js";
@@ -36,12 +37,13 @@ app.use(express.urlencoded({ extended: false }));
 
 //* API Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/calendar-event", calendarEventRoutes);
+app.use("/api/user-manage", userManageRoutes);
 app.use("/api/ticket-price", ticketPriceRoutes);
+app.use("/api/walk-in", WalkinRoutes);
+app.use("/api/reservation", reservationRoutes);
 app.use("/api/region", regionRoutes);
 app.use("/api/visit-hour", visitHourRoutes);
-app.use("/api/reservation", reservationRoutes);
-app.use("/api/walk-in", WalkinRoutes);
-app.use("/api/calendar-event", calendarEventRoutes);
 
 // app.use("/api/stok-tiket", stokTiketRoutes);
 // app.use("/api/kode-tiket", kodeTiketRoutes);

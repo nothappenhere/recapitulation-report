@@ -27,9 +27,9 @@ function AlertDelete({ open, setOpen, onDelete }: AlertDeleteProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>Batal</AlertDialogCancel>
           <AlertDialogAction onClick={() => onDelete()}>
-            Continue
+            Lanjutkan
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

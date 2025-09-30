@@ -45,7 +45,7 @@ import { SimpleField } from "@/components/form/SimpleField";
 import { SelectField } from "@/components/form/SelectField";
 import { DateField } from "@/components/form/DateField";
 import type { AxiosError } from "axios";
-import { useUser } from "@/hooks/UserContext";
+import { useUser } from "@/hooks/use-user-context";
 import { ComboboxField } from "@/components/form/ComboboxField";
 import { PhoneField } from "@/components/form/PhoneField";
 import { NumberFieldInput } from "@/components/form/NumberField";
@@ -74,6 +74,7 @@ export default function CreateGroupReservation() {
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
+  const foreignTotal = form.watch("foreignMemberTotal");
   const visitorTotal = form.watch("visitorMemberTotal");
   const phoneNumber = form.watch("phoneNumber");
   const totalPaymentAmount = form.watch("totalPaymentAmount");
@@ -99,11 +100,11 @@ export default function CreateGroupReservation() {
 
       const payload = {
         ...values,
-        province: provinceName,
-        regencyOrCity: regencyName,
-        district: districtName,
-        village: villageName,
-        country: countryName,
+        province: foreignTotal > 0 ? "-" : provinceName,
+        regencyOrCity: foreignTotal > 0 ? "-" : regencyName,
+        district: foreignTotal > 0 ? "-" : districtName,
+        village: foreignTotal > 0 ? "-" : villageName,
+        country: !foreignTotal ? "Indonesia" : countryName,
         agent: Agent,
       };
 
@@ -192,18 +193,6 @@ export default function CreateGroupReservation() {
               </div>
 
               {/* ROW 2 */}
-              <div className="grid gap-3">
-                <SimpleField
-                  control={form.control}
-                  name="description"
-                  label="Deskripsi"
-                  placeholder="Masukan deskripsi"
-                  component={<Textarea className="rounded-xs" />}
-                  tooltip="Tambahkan keterangan tambahan terkait kunjungan (opsional)."
-                />
-              </div>
-
-              {/* ROW 3 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Nama Pemesan */}
                 <SimpleField
@@ -236,7 +225,7 @@ export default function CreateGroupReservation() {
               {/* Kondisional berdasarkan ukuran layar */}
               {isMobile && (
                 <>
-                  {/* ROW 2 (mobile-only) */}
+                  {/* ROW 3 (mobile-only) */}
                   <div className="grid grid-cols-1 gap-4">
                     {/* Jumlah Seluruh PELAJAR */}
                     <NumberFieldInput
@@ -331,7 +320,7 @@ export default function CreateGroupReservation() {
 
               {isTablet && (
                 <>
-                  {/* ROW 2 (tablet-only) */}
+                  {/* ROW 3 (tablet-only) */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                       {/* Jumlah Seluruh PELAJAR */}
@@ -430,7 +419,7 @@ export default function CreateGroupReservation() {
 
               {isDesktop && (
                 <>
-                  {/* ROW 2 (desktop only) */}
+                  {/* ROW 3 (desktop only) */}
                   <div className="grid grid-cols-4 gap-4">
                     {/* Jumlah Seluruh PELAJAR */}
                     <NumberFieldInput
@@ -523,6 +512,18 @@ export default function CreateGroupReservation() {
                 </>
               )}
 
+              {/* ROW 4 */}
+              <div className="grid gap-3">
+                <SimpleField
+                  control={form.control}
+                  name="description"
+                  label="Deskripsi"
+                  placeholder="Masukan deskripsi"
+                  component={<Textarea className="rounded-xs" />}
+                  tooltip="Tambahkan keterangan tambahan terkait kunjungan (opsional)."
+                />
+              </div>
+
               {visitorTotal < 19 && (
                 <h2 className="text-xl font-bold text-center max-w-10/12 mx-auto">
                   Ketentuan Pembuatan Reservasi Rombongan
@@ -565,6 +566,7 @@ export default function CreateGroupReservation() {
                       label: prov.name,
                     })
                   )}
+                  disabled={!provinces.length || foreignTotal > 0}
                   tooltip="Pilih provinsi asal pemesan."
                 />
 
@@ -581,7 +583,7 @@ export default function CreateGroupReservation() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!regencies.length}
+                  disabled={!regencies.length || foreignTotal > 0}
                   tooltip="Pilih kabupaten/kota asal pemesan."
                 />
 
@@ -598,7 +600,7 @@ export default function CreateGroupReservation() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!districts.length}
+                  disabled={!districts.length || foreignTotal > 0}
                   tooltip="Pilih kecamatan asal pemesan."
                 />
 
@@ -615,7 +617,7 @@ export default function CreateGroupReservation() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!villages.length}
+                  disabled={!villages.length || foreignTotal > 0}
                   tooltip="Pilih kelurahan/desa asal pemesan."
                 />
 
@@ -633,6 +635,7 @@ export default function CreateGroupReservation() {
                     })
                   )}
                   tooltip="Pilih negara asal pemesan."
+                  disabled={foreignTotal === 0}
                   countrySelect
                 />
               </div>
@@ -649,6 +652,7 @@ export default function CreateGroupReservation() {
                   options={[
                     { label: "Tunai", value: "Tunai" },
                     { label: "QRIS", value: "QRIS" },
+                    { label: "Lainnya", value: "Lainnya" },
                   ]}
                   tooltip="Metode pembayaran tiket."
                 />
@@ -699,7 +703,7 @@ export default function CreateGroupReservation() {
                     visitorTotal === 0 ||
                     visitorTotal < 19 ||
                     !phoneNumber ||
-                    paymentMethod === "-" ||
+                    paymentMethod === "Lainnya" ||
                     downPayment < totalPaymentAmount
                   }
                 >

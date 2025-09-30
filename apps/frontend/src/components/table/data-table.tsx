@@ -38,6 +38,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link, useLocation, useNavigate } from "react-router";
 import { formatRupiah } from "@rzkyakbr/libs";
+import { Label } from "../ui/label";
+import {
+  SelectItem,
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -45,6 +53,7 @@ interface DataTableProps<TData, TValue> {
   addTitle?: string;
   colSpan: number;
   onRefresh?: () => void;
+  setOpen: (open: boolean) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -53,6 +62,7 @@ export function DataTable<TData, TValue>({
   addTitle,
   colSpan,
   onRefresh,
+  setOpen,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -89,7 +99,11 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center justify-between py-4">
         {/* Search Filters */}
         <Input
-          placeholder="Cari berdasarkan Kode, Nama Pemesan, Tgl/Wkt Kunjungan, dll..."
+          placeholder={
+            location.pathname.includes("user-management")
+              ? "Cari berdasarkan NIP, Jabatan, Nama lengkap, Username, dll..."
+              : "Cari berdasarkan Kode, Nama Pemesan, Tgl/Wkt Kunjungan, dll..."
+          }
           value={globalFilter}
           onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-md"
@@ -224,14 +238,19 @@ export function DataTable<TData, TValue>({
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     className={`cursor-pointer ${rowClass}`}
-                    onClick={() =>
-                      navigate(
-                        `edit/${
-                          row.original.walkInNumber ||
-                          row.original.reservationNumber
-                        }`
-                      )
-                    }
+                    onClick={() => {
+                      if (location.pathname.includes("user-management")) {
+                        setOpen(true);
+                        // data={}
+                      } else {
+                        navigate(
+                          `edit/${
+                            row.original.walkInNumber ||
+                            row.original.reservationNumber
+                          }`
+                        );
+                      }
+                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
@@ -268,46 +287,48 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
 
-          <TableFooter>
-            <TableRow>
-              {table.getVisibleLeafColumns().map((column, idx) => {
-                const rows = table.getRowModel().rows;
+          {!location.pathname.includes("user-management") && (
+            <TableFooter>
+              <TableRow>
+                {table.getVisibleLeafColumns().map((column, idx) => {
+                  const rows = table.getRowModel().rows;
 
-                // kolom dengan meta.sum = true
-                if (column.columnDef.meta?.sum) {
-                  const total = rows.reduce((acc, row) => {
-                    const value = row.getValue<number>(column.id);
-                    return acc + (typeof value === "number" ? value : 0);
-                  }, 0);
+                  // kolom dengan meta.sum = true
+                  if (column.columnDef.meta?.sum) {
+                    const total = rows.reduce((acc, row) => {
+                      const value = row.getValue<number>(column.id);
+                      return acc + (typeof value === "number" ? value : 0);
+                    }, 0);
 
-                  return (
-                    <TableCell key={column.id} className="font-bold">
-                      {column.columnDef.meta?.isCurrency
-                        ? formatRupiah(total)
-                        : total}
-                    </TableCell>
-                  );
-                }
+                    return (
+                      <TableCell key={column.id} className="font-bold">
+                        {column.columnDef.meta?.isCurrency
+                          ? formatRupiah(total)
+                          : total}
+                      </TableCell>
+                    );
+                  }
 
-                // kolom pertama → label Total
-                if (idx === 0) {
-                  return (
-                    <TableCell
-                      key={column.id}
-                      className="font-bold"
-                      colSpan={colSpan}
-                    >
-                      Total
-                    </TableCell>
-                  );
-                }
+                  // kolom pertama → label Total
+                  if (idx === 0) {
+                    return (
+                      <TableCell
+                        key={column.id}
+                        className="font-bold"
+                        colSpan={colSpan}
+                      >
+                        Total
+                      </TableCell>
+                    );
+                  }
 
-                if (idx < colSpan) return null;
+                  if (idx < colSpan) return null;
 
-                return <TableCell key={column.id}>&ndash;</TableCell>;
-              })}
-            </TableRow>
-          </TableFooter>
+                  return <TableCell key={column.id}>&ndash;</TableCell>;
+                })}
+              </TableRow>
+            </TableFooter>
+          )}
         </Table>
       </div>
 
@@ -317,6 +338,29 @@ export function DataTable<TData, TValue>({
         <div className="text-muted-foreground flex-1 text-sm">
           {table.getFilteredSelectedRowModel().rows.length} dari{" "}
           {table.getFilteredRowModel().rows.length} baris yang dipilih.
+        </div>
+
+        <div className="hidden items-center gap-2 lg:flex">
+          <Label htmlFor="rows-per-page" className="text-sm font-medium">
+            Baris per halaman
+          </Label>
+          <Select
+            value={`${table.getState().pagination.pageSize}`}
+            onValueChange={(value) => {
+              table.setPageSize(Number(value));
+            }}
+          >
+            <SelectTrigger size="sm" className="w-16" id="rows-per-page">
+              <SelectValue placeholder={table.getState().pagination.pageSize} />
+            </SelectTrigger>
+            <SelectContent side="top">
+              {[10, 20, 30, 40, 50].map((pageSize) => (
+                <SelectItem key={pageSize} value={`${pageSize}`}>
+                  {pageSize}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Pagination Control */}

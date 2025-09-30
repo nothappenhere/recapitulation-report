@@ -80,12 +80,12 @@ export default function GroupReservationPrintPage() {
 
             <CardContent className="border-y py-4 grid gap-2">
               <InfoRow
-                label="Kode Reservasi"
+                label="Kode Kunjungan (Reservation code)"
                 value={reservationData.reservationNumber}
               />
 
               <InfoRow
-                label="Tgl. Kunjungan"
+                label="Tgl. Kunjungan (Visiting Date)"
                 value={format(
                   new Date(reservationData.visitingDate),
                   `dd MMM yyyy`,
@@ -95,15 +95,21 @@ export default function GroupReservationPrintPage() {
                 )}
               />
               <InfoRow
-                label="Waktu Kunjungan"
-                value={reservationData.visitingHour.timeRange}
+                label="Waktu Kunjungan (Visiting Hour)"
+                value={format(
+                  new Date(reservationData.visitingDate),
+                  `HH:mm:ss`,
+                  {
+                    locale: id,
+                  }
+                )}
               />
               <InfoRow
-                label="Nama Pemesan"
+                label="Nama Pemesan (Orderer Name)"
                 value={reservationData.ordererName}
               />
               <InfoRow
-                label="No. Telepon"
+                label="No. Telepon (Phone Number)"
                 value={`${reservationData.phoneNumber}`}
               />
 
@@ -112,7 +118,7 @@ export default function GroupReservationPrintPage() {
                 value={`${reservationData.studentMemberTotal} pengunjung`}
               />
               <InfoRow
-                label="Harga Tiket"
+                label="Harga Tiket (Ticket Price)"
                 value={`${formatRupiah(reservationData.studentTotalAmount)}`}
               />
 
@@ -121,7 +127,7 @@ export default function GroupReservationPrintPage() {
                 value={`${reservationData.publicMemberTotal} pengunjung`}
               />
               <InfoRow
-                label="Harga Tiket"
+                label="Harga Tiket (Ticket Price)"
                 value={`${formatRupiah(reservationData.publicTotalAmount)}`}
               />
 
@@ -130,7 +136,7 @@ export default function GroupReservationPrintPage() {
                 value={`${reservationData.foreignMemberTotal} pengunjung`}
               />
               <InfoRow
-                label="Harga Tiket"
+                label="Harga Tiket (Ticket Price)"
                 value={`${formatRupiah(reservationData.foreignTotalAmount)}`}
               />
 
@@ -139,34 +145,46 @@ export default function GroupReservationPrintPage() {
                 value={`${reservationData.visitorMemberTotal} pengunjung`}
               />
               <InfoRow
-                label="Total Harga Tiket"
+                label="Total Harga Tiket (Ttl. Ticket Price)"
                 value={`${formatRupiah(reservationData.totalPaymentAmount)}`}
               />
 
               <InfoRow
-                label="Metode Pembayaran"
+                label="Metode Pembayaran (Payment Method)"
                 value={reservationData.paymentMethod}
               />
               <InfoRow
-                label="Status Pembayaran"
+                label="Status Pembayaran (Payment Status)"
                 value={reservationData.statusPayment}
               />
             </CardContent>
 
-            <p className="text-center"># Terima Kasih Atas Kunjungan Anda #</p>
+            <p className="text-center">
+              ~ Terima Kasih Atas Kunjungan Anda, <br />
+              Kami Harapkan Kunjungan Anda Kembali. ~
+            </p>
+
+            <div className="flex justify-center">
+              <img
+                src="/img/logo-smart-mg.png"
+                alt="Logo Smart Museum Geologi"
+                width={128}
+                height={128}
+              />
+            </div>
 
             {/* Tombol hanya muncul di layar */}
-            <CardFooter className="flex justify-between items-center print:hidden">
-              <Button asChild>
-                <Link to="/dashboard/group-reservation">
-                  <ArrowLeft />
-                  Kembali
-                </Link>
-              </Button>
-
+            <CardFooter className="flex flex-col justify-between items-center gap-3 border-t border-dashed print:hidden">
               <Button variant="outline" onClick={() => window.print()}>
                 Print
                 <Printer />
+              </Button>
+
+              <Button asChild>
+                <Link to="/dashboard/group-reservation">
+                  <ArrowLeft />
+                  Kembali ke Pencarian
+                </Link>
               </Button>
             </CardFooter>
           </Card>

@@ -41,14 +41,11 @@ export const ReservationSchema = z.object({
     .default("Lainnya"),
 
   address: z.string().nonempty("Alamat tidak boleh kosong!"),
-  province: z.string().nonempty("Provinsi tidak boleh kosong!"),
-  regencyOrCity: z.string().nonempty("Kabupaten/Kota tidak boleh kosong!"),
-  district: z.string().nonempty("Kecamatan tidak boleh kosong!"),
-  village: z.string().nonempty("Kelurahan/Desa tidak boleh kosong!"),
-  country: z
-    .string()
-    .nonempty("Negara asal tidak boleh kosong!")
-    .default("Indonesia"),
+  province: z.string().optional().default("-"),
+  regencyOrCity: z.string().optional().default("-"),
+  district: z.string().optional().default("-"),
+  village: z.string().optional().default("-"),
+  country: z.string().optional().default("Indonesia"),
 
   studentTotalAmount: z.coerce
     .number()
@@ -64,9 +61,9 @@ export const ReservationSchema = z.object({
     .nonnegative("Jumlah total pembayaran tidak boleh negative!"),
 
   paymentMethod: z
-    .enum(["Tunai", "QRIS", "-"], "Metode pembayaran tidak boleh kosong!")
+    .enum(["Tunai", "QRIS", "Lainnya"], "Metode pembayaran tidak boleh kosong!")
     .optional()
-    .default("-"),
+    .default("Lainnya"),
   downPayment: z.coerce.number().optional().default(0),
   changeAmount: z.coerce.number().optional().default(0),
   statusPayment: z
@@ -100,14 +97,14 @@ export const defaultReservationFormValues: TReservation = {
   regencyOrCity: "",
   district: "",
   village: "",
-  country: "",
+  country: "Indonesia",
 
   studentTotalAmount: 0,
   publicTotalAmount: 0,
   foreignTotalAmount: 0,
   totalPaymentAmount: 0,
 
-  paymentMethod: "-",
+  paymentMethod: "Lainnya",
   downPayment: 0,
   changeAmount: 0,
   statusPayment: "Belum Bayar",

@@ -102,7 +102,7 @@ export function NavUser({ user }: NavUserProps) {
 
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link to={`profile/${user._id}`}>
+                <Link to={`profile/${user.username}`}>
                   <CircleUserRound />
                   Account
                 </Link>

@@ -39,11 +39,11 @@ const reservationSchema = new mongoose.Schema(
     },
 
     address: { type: String, required: true },
-    province: { type: String, required: true },
-    regencyOrCity: { type: String, required: true },
-    district: { type: String, required: true },
-    village: { type: String, required: true },
-    country: { type: String, required: true, default: "Indonesia" },
+    province: { type: String, default: "-" },
+    regencyOrCity: { type: String, default: "-" },
+    district: { type: String, default: "-" },
+    village: { type: String, default: "-" },
+    country: { type: String, default: "Indonesia" },
 
     studentTotalAmount: { type: Number, default: 0 },
     publicTotalAmount: { type: Number, default: 0 },
@@ -52,8 +52,8 @@ const reservationSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["Tunai", "QRIS", "-"],
-      default: "-",
+      enum: ["Tunai", "QRIS", "Lainnya"],
+      default: "Lainnya",
     },
     downPayment: { type: Number, default: 0 },
     changeAmount: { type: Number, default: 0 },
@@ -90,7 +90,13 @@ reservationSchema.pre("save", function (next) {
 // Middleware untuk menerapkan default value
 reservationSchema.pre("save", function (next) {
   // Ganti semua string kosong dengan default jika ada
-  const fieldsWithDefault = ["description"];
+  const fieldsWithDefault = [
+    "description",
+    "province",
+    "regencyOrCity",
+    "district",
+    "village",
+  ];
 
   fieldsWithDefault.forEach((field) => {
     if (this[field] === "") {
@@ -122,7 +128,7 @@ reservationSchema.pre("save", async function (next) {
 
       while (!unique && attempt < maxAttempts) {
         const randomCode = generateRandomCode();
-        const candidate = `MG-${randomCode}`;
+        const candidate = `MGR-${randomCode}`;
 
         const existing = await mongoose.models.Reservation.findOne({
           reservationNumber: candidate,
