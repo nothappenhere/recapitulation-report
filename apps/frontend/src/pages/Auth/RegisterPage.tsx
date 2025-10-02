@@ -41,7 +41,7 @@ export default function RegisterPage({
     try {
       const res = await api.post("/auth/register", {
         ...values,
-        role: "user",
+        // role: "Administrator",
       });
       form.reset();
 
@@ -91,7 +91,7 @@ export default function RegisterPage({
                         control={form.control}
                         type="number"
                         name="NIP"
-                        label="NIP"
+                        label="Nomor Induk Pegawai"
                         placeholder="Masukan NIP"
                       />
 
@@ -136,7 +136,6 @@ export default function RegisterPage({
                               <div className="relative">
                                 <Input
                                   type={showPassword ? "text" : "password"}
-                                  required
                                   placeholder="Masukan password"
                                   className="rounded-xs"
                                   {...field}

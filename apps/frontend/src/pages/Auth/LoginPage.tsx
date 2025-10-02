@@ -107,7 +107,6 @@ export default function LoginPage({
                               <div className="relative">
                                 <Input
                                   type={showPassword ? "text" : "password"}
-                                  required
                                   placeholder="Masukan password"
                                   className="rounded-xs"
                                   {...field}

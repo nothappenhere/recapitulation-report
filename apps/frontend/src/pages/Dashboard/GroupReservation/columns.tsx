@@ -19,7 +19,7 @@ export function useReservationColumns(
   return [
     createSelectColumn<GroupReservationFullTypes>(),
 
-    createColumn("reservationNumber", "Kode Reservasi"),
+    createColumn("groupReservationNumber", "Kode Reservasi"),
     createColumn("agent", "Petugas Reservasi", {
       cell: ({ row }) => {
         const agent = row.original.agent as unknown as {
@@ -108,9 +108,9 @@ export function useReservationColumns(
     }),
 
     createActionsColumn<GroupReservationFullTypes>(
-      (item) => navigate(`edit/${item.reservationNumber}`),
+      (item) => navigate(`edit/${item.groupReservationNumber}`),
       onDelete,
-      (item) => navigate(`print/${item.reservationNumber}`)
+      (item) => navigate(`print/${item.groupReservationNumber}`)
     ),
   ];
 }

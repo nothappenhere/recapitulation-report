@@ -5,7 +5,7 @@ import { sendResponse } from "../utils/sendResponse.js";
  * * @desc Mendapatkan seluruh data harga tiket
  * @route GET /api/ticket-price
  */
-export const getTicketPrices = async (req, res) => {
+export const getTicketPrices = async (_, res) => {
   try {
     const allTicketPrices = await TicketPrice.find();
 
@@ -24,21 +24,22 @@ export const getTicketPrices = async (req, res) => {
 };
 
 /**
- * * @desc Mendapatkan satu data harga tiket berdasarkan ID
- * @route GET /api/ticket-price/:id
- * @param id - ID dari harga tiket yang dicari
+ * * @desc Mendapatkan satu data harga tiket berdasarkan Kategori
+ * @route GET /api/ticket-price/:category
+ * @param category - Kategori dari harga tiket yang dicari
  */
-export const getTicketPriceById = async (req, res) => {
-  const { id } = req.params;
+export const getTicketPriceByCategory = async (req, res) => {
+  const { category } = req.params;
 
   try {
-    const ticketPrice = await TicketPrice.findById(id);
-    if (!ticketPrice) {
+    const ticketPrice = await TicketPrice.find({ category });
+
+    if (!ticketPrice || ticketPrice.length === 0) {
       return sendResponse(
         res,
         404,
         false,
-        `Data harga tiket dengan ID ${id} tidak ditemukan`
+        `Data harga tiket dengan kategori ${category} tidak ditemukan`
       );
     }
 
@@ -46,8 +47,8 @@ export const getTicketPriceById = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil mendapatkan data harga tiket dengan ID ${id}`,
-      ticketPrice
+      `Berhasil mendapatkan data harga tiket dengan kategori ${category}`,
+      ticketPrice[0]
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
@@ -80,37 +81,41 @@ export const createTicketPrice = async (req, res) => {
 };
 
 /**
- * * @desc Memperbarui data harga tiket berdasarkan ID
- * @route PUT /api/ticket-price/:id
- * @param id - ID dari harga tiket yang akan diperbarui
+ * * @desc Memperbarui data harga tiket berdasarkan Kategori
+ * @route PUT /api/ticket-price/:category
+ * @param category - Kategori dari harga tiket yang akan diperbarui
  */
-export const updateTicketPriceById = async (req, res) => {
-  const { id } = req.params;
-  const { category, unitPrice } = req.validatedData;
+export const updateTicketPriceByCategory = async (req, res) => {
+  const { category } = req.params;
+  // const { category, unitPrice } = req.validatedData;
 
   try {
-    const updated = await TicketPrice.findByIdAndUpdate(id, req.validatedData, {
-      new: true,
-      runValidators: true,
-    });
+    const updated = await TicketPrice.findOneAndUpdate(
+      { category },
+      { ...req.validatedData },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
-    if (!updated)
+    if (!updated || updated.length === 0)
       return sendResponse(
         res,
         404,
         false,
-        `Data harga tiket dengan ID ${id} tiket tidak ditemukan`
+        `Data harga tiket dengan kategori ${category} tiket tidak ditemukan`
       );
 
-    if (category !== undefined) updated.category = category;
-    if (unitPrice !== undefined) updated.unitPrice = unitPrice;
-    await updated.save();
+    // if (category !== undefined) updated.category = category;
+    // if (unitPrice !== undefined) updated.unitPrice = unitPrice;
+    // await updated.save();
 
     sendResponse(
       res,
       200,
       true,
-      `Berhasil memperbarui data harga tiket dengan ID ${id}`,
+      `Berhasil memperbarui data harga tiket dengan kategori ${category}`,
       updated
     );
   } catch (err) {
@@ -121,28 +126,29 @@ export const updateTicketPriceById = async (req, res) => {
 };
 
 /**
- * * @desc Menghapus data harga tiket berdasarkan ID
- * @route DELETE /api/ticket-price/:id
- * @param id - ID dari harga tiket yang akan dihapus
+ * * @desc Menghapus data harga tiket berdasarkan Kategori
+ * @route DELETE /api/ticket-price/:category
+ * @param category - Kategori dari harga tiket yang akan dihapus
  */
-export const deleteTicketPriceById = async (req, res) => {
-  const { id } = req.params;
+export const deleteTicketPriceByCategory = async (req, res) => {
+  const { category } = req.params;
 
   try {
-    const deleted = await TicketPrice.findByIdAndDelete(id);
-    if (!deleted)
+    const deleted = await TicketPrice.findOneAndDelete({ category });
+
+    if (!deleted || deleted.length === 0)
       return sendResponse(
         res,
         404,
         false,
-        `Data harga tiket dengan ID ${id} tidak ditemukan`
+        `Data harga tiket dengan kategori ${category} tidak ditemukan`
       );
 
     sendResponse(
       res,
       200,
       true,
-      `Berhasil menghapus data harga tiket dengan ID ${id}`
+      `Berhasil menghapus data harga tiket dengan kategori ${category}`
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

@@ -1,6 +1,6 @@
-import { sendResponse } from "../utils/sendResponse.js";
 import { Region } from "../models/Region.js";
 import { Country } from "../models/Country.js";
+import { sendResponse } from "../utils/sendResponse.js";
 
 /**
  * * @desc Mendapatkan seluruh data provinsi yang ada di Indonesia

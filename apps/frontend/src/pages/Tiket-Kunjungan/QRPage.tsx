@@ -71,7 +71,7 @@ export default function QRPage() {
           <div className="flex flex-col items-center gap-6">
             {/* QR Code */}
             <QRCodeSVG
-              value={walkInData.walkInNumber}
+              value={walkInData.walkinNumber}
               size={220}
               bgColor="#F8B500"
               fgColor="#000000"
@@ -88,7 +88,7 @@ export default function QRPage() {
             <div className="text-center space-y-1">
               <p className="text-sm text-muted-foreground">Kode Kunjungan</p>
               <p className="text-lg font-bold tracking-wide">
-                {walkInData.walkInNumber}
+                {walkInData.walkinNumber}
               </p>
             </div>
 

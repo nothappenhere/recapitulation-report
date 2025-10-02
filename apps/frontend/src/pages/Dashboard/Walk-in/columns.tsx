@@ -19,7 +19,7 @@ export function useWalkInColumns(
   return [
     createSelectColumn<WalkInFullTypes>(),
 
-    createColumn("walkInNumber", "Kode Kunjungan"),
+    createColumn("walkinNumber", "Kode Kunjungan"),
     createColumn("agent", "Petugas Tiket", {
       cell: ({ row }) => {
         const agent = row.original.agent as unknown as {
@@ -91,9 +91,9 @@ export function useWalkInColumns(
     }),
 
     createActionsColumn<WalkInFullTypes>(
-      (item) => navigate(`edit/${item.walkInNumber}`),
+      (item) => navigate(`edit/${item.walkinNumber}`),
       onDelete,
-      (item) => navigate(`print/${item.walkInNumber}`)
+      (item) => navigate(`print/${item.walkinNumber}`)
     ),
   ];
 }

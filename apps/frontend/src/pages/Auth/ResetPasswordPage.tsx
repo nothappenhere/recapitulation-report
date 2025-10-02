@@ -60,7 +60,6 @@ export default function ResetPasswordPage({
     try {
       const res = await api.post("/auth/verify-username", values);
       const { exist } = res.data.data;
-      form.reset();
 
       setAccountExist(exist);
       toast.success(`${res.data.message}.`);
@@ -144,7 +143,6 @@ export default function ResetPasswordPage({
                                   <div className="relative">
                                     <Input
                                       type={showPassword ? "text" : "password"}
-                                      required
                                       placeholder="Masukan password baru"
                                       className="rounded-xs"
                                       {...field}

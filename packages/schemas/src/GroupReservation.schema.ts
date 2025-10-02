@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ReservationSchema = z.object({
+export const GroupReservationSchema = z.object({
   visitingDate: z.coerce.date().refine((val) => !isNaN(val.getTime()), {
     message: "Tanggal kunjungan tidak boleh kosong!",
   }),
@@ -72,9 +72,9 @@ export const ReservationSchema = z.object({
     .default("Belum Bayar"),
 });
 
-export type TReservation = z.infer<typeof ReservationSchema>;
+export type TGroupReservation = z.infer<typeof GroupReservationSchema>;
 
-export const defaultReservationFormValues: TReservation = {
+export const defaultGroupReservationFormValues: TGroupReservation = {
   visitingDate: new Date(),
   visitingHour: "",
   reservationMechanism: "Lainnya",

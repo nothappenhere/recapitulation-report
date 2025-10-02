@@ -50,7 +50,7 @@ function TicketPricePage() {
     setLoading(true);
 
     try {
-      const res = await api.delete(`/ticket-price/${selectedItem._id}`);
+      const res = await api.delete(`/ticket-price/${selectedItem.category}`);
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((tp) => tp._id !== selectedItem._id));
     } catch (err) {
@@ -100,8 +100,8 @@ function TicketPricePage() {
                       Tidak ada daftar harga tiket.
                     </h3>
                     <p className="text-muted-foreground">
-                      Siap untuk mengatur harga tiket? Buat data pertama untuk
-                      memulai.
+                      Siap untuk mengatur harga tiket Museum Geologi? Buat data
+                      pertama untuk memulai.
                     </p>
                     <Button asChild>
                       <Link to="add">Tambah Harga Tiket</Link>
@@ -120,24 +120,30 @@ function TicketPricePage() {
                       Anda tidak memiliki akses untuk menambahkan harga tiket.
                       Silakan hubungi Administrator jika diperlukan.
                     </p>
-                  </div>
-                )
-              ) : data.length > 0 && data.length < 4 ? (
-                role === "Administrator" ? (
-                  <div className="flex items-center justify-center">
-                    <Button asChild className="my-1.5">
-                      <Link to="add">Tambah Harga Tiket</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center">
                     <Button onClick={fetchTicketPrices}>
                       <RefreshCw className="mt-0.5" />
                       Refresh
                     </Button>
                   </div>
                 )
+              ) : data.length > 0 && data.length < 4 ? (
+                role === "Administrator" && (
+                  <div className="flex items-center justify-center">
+                    <Button asChild className="my-1.5">
+                      <Link to="add">Tambah Harga Tiket</Link>
+                    </Button>
+                  </div>
+                )
               ) : null}
+
+              {role === "User" && data.length !== 0 && (
+                <div className="flex items-center justify-center">
+                  <Button onClick={fetchTicketPrices}>
+                    <RefreshCw className="mt-0.5" />
+                    Refresh
+                  </Button>
+                </div>
+              )}
 
               {selectedItem && (
                 <AlertDelete

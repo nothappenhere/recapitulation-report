@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { api, formatRupiah } from "@rzkyakbr/libs";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
-import { InfoRow } from "@/lib/InfoRow";
+import { InfoRow } from "@/components/InfoRow";
 import type { GroupReservationFullTypes } from "@rzkyakbr/types";
 import {
   Card,
@@ -33,7 +33,7 @@ export default function GroupReservationPrintPage() {
       setLoading(true);
 
       try {
-        const res = await api.get(`/reservation/${uniqueCode}`);
+        const res = await api.get(`/group-reservation/${uniqueCode}`);
         setReservationData(res.data.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
@@ -81,7 +81,7 @@ export default function GroupReservationPrintPage() {
             <CardContent className="border-y py-4 grid gap-2">
               <InfoRow
                 label="Kode Kunjungan (Reservation code)"
-                value={reservationData.reservationNumber}
+                value={reservationData.groupReservationNumber}
               />
 
               <InfoRow

@@ -53,7 +53,7 @@ interface DataTableProps<TData, TValue> {
   addTitle?: string;
   colSpan: number;
   onRefresh?: () => void;
-  setOpen: (open: boolean) => void;
+  setOpen?: (open: boolean) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -240,13 +240,13 @@ export function DataTable<TData, TValue>({
                     className={`cursor-pointer ${rowClass}`}
                     onClick={() => {
                       if (location.pathname.includes("user-management")) {
-                        setOpen(true);
+                        // setOpen(true);
                         // data={}
                       } else {
                         navigate(
                           `edit/${
-                            row.original.walkInNumber ||
-                            row.original.reservationNumber
+                            row.original.walkinNumber ||
+                            row.original.groupReservationNumber
                           }`
                         );
                       }

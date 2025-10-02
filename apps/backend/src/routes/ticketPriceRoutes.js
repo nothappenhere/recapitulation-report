@@ -1,11 +1,11 @@
 import express from "express";
 import {
   getTicketPrices,
-  getTicketPriceById,
+  getTicketPriceByCategory,
   createTicketPrice,
-  updateTicketPriceById,
-  deleteTicketPriceById,
-} from "../controllers/ticketPriceController.js";
+  updateTicketPriceByCategory,
+  deleteTicketPriceByCategory,
+} from "../controllers/TicketPriceController.js";
 import { validateSchema } from "../utils/validateSchema.js";
 import { TicketPriceSchema } from "@rzkyakbr/schemas";
 
@@ -18,11 +18,11 @@ const router = express.Router();
 router.get("/", getTicketPrices);
 
 /**
- * * @desc Mendapatkan satu data harga tiket berdasarkan ID
- * @route GET /api/ticket-price/:id
- * @param id - ID dari harga tiket yang dicari
+ * * @desc Mendapatkan satu data harga tiket berdasarkan Kategori
+ * @route GET /api/ticket-price/:category
+ * @param category - Kategori dari harga tiket yang dicari
  */
-router.get("/:id", getTicketPriceById);
+router.get("/:category", getTicketPriceByCategory);
 
 /**
  * * @desc Membuat data harga tiket baru
@@ -31,17 +31,17 @@ router.get("/:id", getTicketPriceById);
 router.post("/", validateSchema(TicketPriceSchema), createTicketPrice);
 
 /**
- * * @desc Memperbarui data harga tiket berdasarkan ID
- * @route PUT /api/ticket-price/:id
- * @param id - ID dari harga tiket yang akan diperbarui
+ * * @desc Memperbarui data harga tiket berdasarkan Kategori
+ * @route PUT /api/ticket-price/:category
+ * @param category - Kategori dari harga tiket yang akan diperbarui
  */
-router.put("/:id", validateSchema(TicketPriceSchema), updateTicketPriceById);
+router.put("/:category", validateSchema(TicketPriceSchema), updateTicketPriceByCategory);
 
 /**
- * * @desc Menghapus data harga tiket berdasarkan ID
- * @route DELETE /api/ticket-price/:id
- * @param id - ID dari harga tiket yang akan dihapus
+ * * @desc Menghapus data harga tiket berdasarkan Kategori
+ * @route DELETE /api/ticket-price/:category
+ * @param category - Kategori dari harga tiket yang akan dihapus
  */
-router.delete("/:id", deleteTicketPriceById);
+router.delete("/:category", deleteTicketPriceByCategory);
 
 export default router;

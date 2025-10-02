@@ -3,7 +3,7 @@ import type { Agent } from "./Agent.js";
 export type WalkInFullTypes = {
   _id: string;
   agent: Agent;
-  walkInNumber: string;
+  walkinNumber: string;
 
   visitingDate: string;
   ordererName: string;

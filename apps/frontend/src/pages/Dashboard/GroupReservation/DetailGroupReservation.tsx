@@ -15,17 +15,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ReservationSchema,
-  defaultReservationFormValues,
-  type TReservation,
+  GroupReservationSchema,
+  defaultGroupReservationFormValues,
+  type TGroupReservation,
 } from "@rzkyakbr/schemas";
 import {
   api,
-  formatPhoneNumber,
   formatRupiah,
   isWithinOperationalHours,
   mapRegionNames,
-  useAutoFinalSerial,
   useAutoPayment,
   useRegionSelector,
   useVisitingHourSelect,
@@ -68,9 +66,9 @@ export default function DetailGroupReservation() {
   const { user } = useUser();
   const Agent = user?._id || null;
 
-  const form = useForm<TReservation>({
-    resolver: zodResolver(ReservationSchema),
-    defaultValues: defaultReservationFormValues,
+  const form = useForm<TGroupReservation>({
+    resolver: zodResolver(GroupReservationSchema),
+    defaultValues: defaultGroupReservationFormValues,
   });
 
   // * Hook untuk mengambil seluruh data waktu kunjungan museum
@@ -91,10 +89,10 @@ export default function DetailGroupReservation() {
       setLoading(true);
 
       try {
-        const res = await api.get(`/reservation/${uniqueCode}`);
+        const res = await api.get(`/group-reservation/${uniqueCode}`);
         const reservationData = res.data.data;
 
-        const formData: TReservation = {
+        const formData: TGroupReservation = {
           ...reservationData,
           visitingDate: new Date(reservationData.visitingDate),
           visitingHour: reservationData.visitingHour._id,
@@ -149,7 +147,7 @@ export default function DetailGroupReservation() {
   const downPayment = form.watch("downPayment");
 
   //* Submit handler update
-  const onSubmit = async (values: TReservation): Promise<void> => {
+  const onSubmit = async (values: TGroupReservation): Promise<void> => {
     try {
       const {
         provinceName,
@@ -175,12 +173,12 @@ export default function DetailGroupReservation() {
         agent: Agent,
       };
 
-      const res = await api.put(`/reservation/${uniqueCode}`, payload);
-      const { reservationNumber } = res.data.data;
+      const res = await api.put(`/group-reservation/${uniqueCode}`, payload);
+      const { groupReservationNumber } = res.data.data;
       toast.success(`${res.data.message}`);
 
       form.reset();
-      navigate(`/dashboard/group-reservation/print/${reservationNumber}`, {
+      navigate(`/dashboard/group-reservation/print/${groupReservationNumber}`, {
         replace: true,
       });
     } catch (err) {
@@ -197,9 +195,9 @@ export default function DetailGroupReservation() {
     if (!uniqueCode) return;
 
     try {
-      const res = await api.delete(`/walk-in/${uniqueCode}`);
+      const res = await api.delete(`/group-reservation/${uniqueCode}`);
       toast.success(`${res.data.message}.`);
-      navigate("/dashboard/walk-in");
+      navigate("/dashboard/group-reservation");
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -854,7 +852,7 @@ export default function DetailGroupReservation() {
                           visitorTotal === 0 ||
                           visitorTotal < 19 ||
                           !phoneNumber ||
-                          paymentMethod === "-" ||
+                          paymentMethod === "Lainnya" ||
                           downPayment < totalPaymentAmount
                         }
                       >

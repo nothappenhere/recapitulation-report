@@ -30,8 +30,8 @@ import { useUser } from "@/hooks/use-user-context";
 import AlertDelete from "@/components/AlertDelete";
 
 export default function DetailTicketPrice() {
-  const { id } = useParams();
-  const isEditMode = Boolean(id);
+  const { category } = useParams();
+  const isEditMode = Boolean(category);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -57,9 +57,8 @@ export default function DetailTicketPrice() {
       try {
         setLoading(true);
 
-        const res = await api.get(`/ticket-price/${id}`);
+        const res = await api.get(`/ticket-price/${category}`);
         const ticketPriceData: TTicketPrice = res.data.data;
-
         form.reset(ticketPriceData);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
@@ -75,12 +74,12 @@ export default function DetailTicketPrice() {
     };
 
     fetchData();
-  }, [form, navigate, id, isEditMode]);
+  }, [form, navigate, category, isEditMode]);
 
   //* Submit handler: update
   const onSubmit = async (values: TTicketPrice): Promise<void> => {
     try {
-      const res = await api.put(`/ticket-price/${id}`, values);
+      const res = await api.put(`/ticket-price/${category}`, values);
       toast.success(`${res.data.message}.`);
 
       form.reset();
@@ -96,10 +95,10 @@ export default function DetailTicketPrice() {
 
   // TODO: Handler delete setelah dikonfirmasi
   const confirmDelete = useCallback(async () => {
-    if (!id) return;
+    if (!category) return;
 
     try {
-      const res = await api.delete(`/ticket-price/${id}`);
+      const res = await api.delete(`/ticket-price/${category}`);
       toast.success(`${res.data.message}.`);
       navigate("/dashboard/ticket-price");
     } catch (err) {
@@ -111,7 +110,7 @@ export default function DetailTicketPrice() {
     } finally {
       setDeleteOpen(false);
     }
-  }, [id, navigate]);
+  }, [category, navigate]);
 
   return (
     <>
@@ -131,7 +130,7 @@ export default function DetailTicketPrice() {
                 <CardHeader>
                   <CardTitle>Edit Data Harga Tiket</CardTitle>
                   <CardDescription>
-                    Ubah detail harga tiket dengan ID: {id}
+                    Ubah detail harga tiket dengan kategori: {category}
                   </CardDescription>
 
                   <CardAction className="flex flex-col gap-2">

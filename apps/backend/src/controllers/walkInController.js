@@ -1,4 +1,4 @@
-import { WalkIn } from "../models/Walkin.js";
+import { Walkin } from "../models/Walkin.js";
 import { sendResponse } from "../utils/sendResponse.js";
 
 /**
@@ -7,7 +7,7 @@ import { sendResponse } from "../utils/sendResponse.js";
  */
 export const getWalkIns = async (_, res) => {
   try {
-    const allWalkIns = await WalkIn.find()
+    const allWalkIns = await Walkin.find()
       .populate("agent", "fullName username")
       .sort({ createdAt: -1 });
 
@@ -34,8 +34,8 @@ export const getWalkInByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    // Cari satu data dengan walkInNumber
-    const walkIn = await WalkIn.find({ walkInNumber: uniqueCode }).populate(
+    // Cari satu data dengan walkinNumber
+    const walkIn = await Walkin.find({ walkinNumber: uniqueCode }).populate(
       "agent",
       "fullName username"
     );
@@ -72,7 +72,7 @@ export const createWalkIn = async (req, res) => {
   const { agent } = req.body;
 
   try {
-    const newWalkIn = new WalkIn({ ...req.validatedData, agent });
+    const newWalkIn = new Walkin({ ...req.validatedData, agent });
     await newWalkIn.save();
 
     sendResponse(
@@ -83,6 +83,7 @@ export const createWalkIn = async (req, res) => {
       newWalkIn
     );
   } catch (err) {
+    console.log(err);
     return sendResponse(res, 500, false, "Internal server error", null, {
       detail: err.message,
     });
@@ -100,8 +101,8 @@ export const updateWalkInByCode = async (req, res) => {
 
   try {
     // Pakai findOneAndUpdate agar update satu dokumen dan return data terbaru
-    const updated = await WalkIn.findOneAndUpdate(
-      { walkInNumber: uniqueCode },
+    const updated = await Walkin.findOneAndUpdate(
+      { walkinNumber: uniqueCode },
       { ...req.validatedData, agent },
       {
         new: true,
@@ -142,7 +143,7 @@ export const deleteWalkInByCode = async (req, res) => {
 
   try {
     // Pakai findOneAndDelete untuk hapus satu dokumen
-    const deleted = await WalkIn.findOneAndDelete({ walkInNumber: uniqueCode });
+    const deleted = await Walkin.findOneAndDelete({ walkinNumber: uniqueCode });
 
     if (!deleted || deleted.length === 0) {
       return sendResponse(

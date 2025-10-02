@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-const reservationSchema = new mongoose.Schema(
+const customReservationSchema = new mongoose.Schema(
   {
-    reservationNumber: { type: String, unique: true },
+    customReservationNumber: { type: String, unique: true },
     agent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -67,7 +67,7 @@ const reservationSchema = new mongoose.Schema(
 );
 
 // Middleware untuk auto-calculation
-reservationSchema.pre("save", function (next) {
+customReservationSchema.pre("save", function (next) {
   // Mengatur status pembayaran
   if (this.downPayment >= this.totalPaymentAmount) {
     this.statusPayment = "Lunas";
@@ -88,7 +88,7 @@ reservationSchema.pre("save", function (next) {
 });
 
 // Middleware untuk menerapkan default value
-reservationSchema.pre("save", function (next) {
+customReservationSchema.pre("save", function (next) {
   // Ganti semua string kosong dengan default jika ada
   const fieldsWithDefault = [
     "description",
@@ -107,9 +107,9 @@ reservationSchema.pre("save", function (next) {
   next();
 });
 
-// Middleware untuk generate reservationNumber acak 6 karakter (unik)
-reservationSchema.pre("save", async function (next) {
-  if (!this.reservationNumber) {
+// Middleware untuk generate customReservationNumber acak 6 karakter (unik)
+customReservationSchema.pre("save", async function (next) {
+  if (!this.customReservationNumber) {
     try {
       const generateRandomCode = () => {
         const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -130,12 +130,12 @@ reservationSchema.pre("save", async function (next) {
         const randomCode = generateRandomCode();
         const candidate = `MGR-${randomCode}`;
 
-        const existing = await mongoose.models.Reservation.findOne({
-          reservationNumber: candidate,
+        const existing = await mongoose.models.CustomReservation.findOne({
+          customReservationNumber: candidate,
         });
 
         if (!existing) {
-          this.reservationNumber = candidate;
+          this.customReservationNumber = candidate;
           unique = true;
         }
 
@@ -144,7 +144,7 @@ reservationSchema.pre("save", async function (next) {
 
       if (!unique) {
         throw new Error(
-          "Failed to generate unique reservationNumber after multiple attempts."
+          "Failed to generate unique customReservationNumber after multiple attempts."
         );
       }
 
@@ -157,4 +157,7 @@ reservationSchema.pre("save", async function (next) {
   }
 });
 
-export const Reservation = mongoose.model("Reservation", reservationSchema);
+export const CustomReservation = mongoose.model(
+  "CustomReservation",
+  customReservationSchema
+);

@@ -5,7 +5,7 @@ import {
   getDistricts,
   getVillages,
   getCountries,
-} from "../controllers/regionController.js";
+} from "../controllers/RegionController.js";
 
 const router = express.Router();
 

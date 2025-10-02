@@ -85,10 +85,10 @@ export default function CreateVisit() {
       };
 
       const res = await api.post("/walk-in", payload);
-      const { walkInNumber } = res.data.data;
+      const { walkinNumber } = res.data.data;
 
       form.reset();
-      navigate(`/visit/${walkInNumber}`, {
+      navigate(`/visit/${walkinNumber}`, {
         replace: true,
       });
     } catch (err) {

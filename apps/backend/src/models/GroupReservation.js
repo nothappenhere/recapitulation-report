@@ -1,22 +1,42 @@
 import mongoose from "mongoose";
 
-const walkinSchema = new mongoose.Schema(
+const groupReservationSchema = new mongoose.Schema(
   {
-    walkinNumber: { type: String, unique: true },
+    groupReservationNumber: { type: String, unique: true },
     agent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null,
+      required: true,
     },
 
     visitingDate: { type: Date, required: true },
+    visitingHour: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "VisitingHour",
+      required: true,
+    },
+    reservationMechanism: {
+      type: String,
+      enum: ["Whatsapp", "Google Form", "Datang Langsung", "Lainnya"],
+      default: "Lainnya",
+    },
+    description: { type: String, default: "-" },
+
     ordererName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
+    groupName: { type: String, required: true },
 
     studentMemberTotal: { type: Number, required: true, default: 0 },
     publicMemberTotal: { type: Number, required: true, default: 0 },
     foreignMemberTotal: { type: Number, required: true, default: 0 },
     visitorMemberTotal: { type: Number, required: true, default: 0 },
+
+    actualMemberTotal: { type: Number, default: 0 },
+    reservationStatus: {
+      type: String,
+      enum: ["Hadir", "Reschedule", "Batal Hadir", "Lainnya"],
+      default: "Lainnya",
+    },
 
     address: { type: String, required: true },
     province: { type: String, default: "-" },
@@ -42,19 +62,12 @@ const walkinSchema = new mongoose.Schema(
       enum: ["Lunas", "Belum Bayar"],
       default: "Belum Bayar",
     },
-
-    // initialStudentSerialNumber: { type: Number, default: 0 },
-    // finalStudentSerialNumber: { type: Number, default: 0 },
-    // initialPublicSerialNumber: { type: Number, default: 0 },
-    // finalPublicSerialNumber: { type: Number, default: 0 },
-    // initialForeignSerialNumber: { type: Number, default: 0 },
-    // finalForeignSerialNumber: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
 // Middleware untuk auto-calculation
-walkinSchema.pre("save", function (next) {
+groupReservationSchema.pre("save", function (next) {
   // Mengatur status pembayaran
   if (this.downPayment >= this.totalPaymentAmount) {
     this.statusPayment = "Lunas";
@@ -75,9 +88,10 @@ walkinSchema.pre("save", function (next) {
 });
 
 // Middleware untuk menerapkan default value
-walkinSchema.pre("save", function (next) {
+groupReservationSchema.pre("save", function (next) {
   // Ganti semua string kosong dengan default jika ada
   const fieldsWithDefault = [
+    "description",
     "province",
     "regencyOrCity",
     "district",
@@ -93,9 +107,9 @@ walkinSchema.pre("save", function (next) {
   next();
 });
 
-// Middleware untuk generate walkinNumber acak 6 karakter (unik)
-walkinSchema.pre("save", async function (next) {
-  if (!this.walkinNumber) {
+// Middleware untuk generate groupReservationNumber acak 6 karakter (unik)
+groupReservationSchema.pre("save", async function (next) {
+  if (!this.groupReservationNumber) {
     try {
       const generateRandomCode = () => {
         const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -114,14 +128,14 @@ walkinSchema.pre("save", async function (next) {
 
       while (!unique && attempt < maxAttempts) {
         const randomCode = generateRandomCode();
-        const candidate = `MG-${randomCode}`;
+        const candidate = `MGR-${randomCode}`;
 
-        const existing = await mongoose.models.Walkin.findOne({
-          walkinNumber: candidate,
+        const existing = await mongoose.models.GroupReservation.findOne({
+          groupReservationNumber: candidate,
         });
 
         if (!existing) {
-          this.walkinNumber = candidate;
+          this.groupReservationNumber = candidate;
           unique = true;
         }
 
@@ -130,7 +144,7 @@ walkinSchema.pre("save", async function (next) {
 
       if (!unique) {
         throw new Error(
-          "Failed to generate unique walkinNumber after multiple attempts."
+          "Failed to generate unique groupReservationNumber after multiple attempts."
         );
       }
 
@@ -143,4 +157,7 @@ walkinSchema.pre("save", async function (next) {
   }
 });
 
-export const Walkin = mongoose.model("Walkin", walkinSchema);
+export const GroupReservation = mongoose.model(
+  "GroupReservation",
+  groupReservationSchema
+);

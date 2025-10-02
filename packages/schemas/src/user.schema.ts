@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const UserSchema = z.object({
-  NIP: z.coerce.number().nonnegative("NIP tidak boleh kosong/negative!"),
+  NIP: z.string().nonempty("NIP tidak boleh kosong!"),
   position: z.string().nonempty("Jabatan tidak boleh kosong!"),
   fullName: z
     .string()
@@ -41,7 +41,7 @@ export const defaultLoginFormValues: TLogin = {
 export const RegisterSchema = UserSchema.omit({ biography: true });
 export type TRegister = z.infer<typeof RegisterSchema>;
 export const defaultRegisterFormValues: TRegister = {
-  NIP: 0,
+  NIP: "",
   position: "",
   fullName: "",
   username: "",

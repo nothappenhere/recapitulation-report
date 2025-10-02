@@ -1,5 +1,5 @@
-import { sendResponse } from "../utils/sendResponse.js";
 import { VisitingHour } from "../models/VisitingHour.js";
+import { sendResponse } from "../utils/sendResponse.js";
 
 /**
  * * @desc Mendapatkan seluruh data waktu kunjungan museum

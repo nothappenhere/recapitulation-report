@@ -5,7 +5,7 @@ import {
   createEvent,
   updateEventById,
   deleteEventById,
-} from "../controllers/calendarEventController.js";
+} from "../controllers/CalendarEventController.js";
 import { validateSchema } from "../utils/validateSchema.js";
 import { CalendarEventSchema } from "@rzkyakbr/schemas";
 

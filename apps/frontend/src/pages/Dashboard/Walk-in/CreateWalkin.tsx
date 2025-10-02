@@ -95,11 +95,11 @@ export default function CreateWalkin() {
       };
 
       const res = await api.post("/walk-in", payload);
-      const { walkInNumber } = res.data.data;
+      const { walkinNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/dashboard/walk-in/print/${walkInNumber}`, { replace: true });
+      navigate(`/dashboard/walk-in/print/${walkinNumber}`, { replace: true });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message

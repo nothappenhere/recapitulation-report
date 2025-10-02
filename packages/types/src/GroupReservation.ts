@@ -8,7 +8,7 @@ type VisitingHour = {
 export type GroupReservationFullTypes = {
   _id: string;
   agent: Agent;
-  reservationNumber: string;
+  groupReservationNumber: string;
 
   visitingDate: string;
   visitingHour: VisitingHour;

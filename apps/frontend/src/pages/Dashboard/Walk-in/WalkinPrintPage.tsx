@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { api, formatRupiah } from "@rzkyakbr/libs";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
-import { InfoRow } from "@/lib/InfoRow";
+import { InfoRow } from "@/components/InfoRow";
 import type { WalkInFullTypes } from "@rzkyakbr/types";
 import {
   Card,
@@ -81,7 +81,7 @@ export default function WalkinPrintPage() {
             <CardContent className="border-y py-4 grid gap-2">
               <InfoRow
                 label="Kode Kunjungan (Reservation code)"
-                value={walkInData.walkInNumber}
+                value={walkInData.walkinNumber}
               />
 
               <InfoRow

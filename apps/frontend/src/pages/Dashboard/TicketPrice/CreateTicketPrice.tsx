@@ -81,6 +81,8 @@ export default function CreateTicketPrice() {
     fetchTicketPrices();
   }, [navigate]);
 
+  const category = form.watch("category");
+
   //* Submit handler: create
   const onSubmit = async (values: TTicketPrice): Promise<void> => {
     try {
@@ -183,7 +185,9 @@ export default function CreateTicketPrice() {
                       <Button
                         type="submit"
                         className="rounded-xs"
-                        disabled={form.formState.isSubmitting}
+                        disabled={
+                          form.formState.isSubmitting || category === ""
+                        }
                       >
                         {form.formState.isSubmitting ? (
                           <>

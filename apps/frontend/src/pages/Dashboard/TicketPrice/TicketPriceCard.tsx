@@ -49,7 +49,7 @@ export function TicketPriceCard({
             <ColumnsActions
               item={ticketPrice}
               getId={(item: TicketPrice) => item._id}
-              onEdit={(item: TicketPrice) => navigate(`edit/${item._id}`)}
+              onEdit={(item: TicketPrice) => navigate(`edit/${item.category}`)}
               onDelete={onDelete}
             />
           </CardAction>

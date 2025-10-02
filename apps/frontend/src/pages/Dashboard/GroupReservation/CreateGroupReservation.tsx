@@ -14,13 +14,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ReservationSchema,
-  defaultReservationFormValues,
-  type TReservation,
+  GroupReservationSchema,
+  defaultGroupReservationFormValues,
+  type TGroupReservation,
 } from "@rzkyakbr/schemas";
 import {
   api,
-  formatPhoneNumber,
   formatRupiah,
   isWithinOperationalHours,
   mapRegionNames,
@@ -59,9 +58,9 @@ export default function CreateGroupReservation() {
   const { user } = useUser();
   const Agent = user?._id || null;
 
-  const form = useForm<TReservation>({
-    resolver: zodResolver(ReservationSchema),
-    defaultValues: defaultReservationFormValues,
+  const form = useForm<TGroupReservation>({
+    resolver: zodResolver(GroupReservationSchema),
+    defaultValues: defaultGroupReservationFormValues,
   });
 
   // * Hook untuk mengambil seluruh data waktu kunjungan museum
@@ -82,7 +81,7 @@ export default function CreateGroupReservation() {
   const downPayment = form.watch("downPayment");
 
   //* Submit handler create
-  const onSubmit = async (values: TReservation): Promise<void> => {
+  const onSubmit = async (values: TGroupReservation): Promise<void> => {
     try {
       const {
         provinceName,
@@ -108,12 +107,12 @@ export default function CreateGroupReservation() {
         agent: Agent,
       };
 
-      const res = await api.post("/reservation", payload);
-      const { reservationNumber } = res.data.data;
+      const res = await api.post("/group-reservation", payload);
+      const { groupReservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/dashboard/group-reservation/print/${reservationNumber}`, {
+      navigate(`/dashboard/group-reservation/print/${groupReservationNumber}`, {
         replace: true,
       });
     } catch (err) {

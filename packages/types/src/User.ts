@@ -5,6 +5,7 @@ export type UserFullTypes = {
   fullName: string;
   username: string;
   biography: string;
+  
   role: string;
   lastLogin: string;
 

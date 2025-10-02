@@ -81,7 +81,7 @@ export default function WalkinTable() {
     setLoading(true);
 
     try {
-      const res = await api.delete(`/walk-in/${selectedItem.walkInNumber}`);
+      const res = await api.delete(`/walk-in/${selectedItem.walkinNumber}`);
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
     } catch (err) {

@@ -162,11 +162,11 @@ export default function DetailWalkin() {
       };
 
       const res = await api.put(`/walk-in/${uniqueCode}`, payload);
-      const { walkInNumber } = res.data.data;
+      const { walkinNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/dashboard/walk-in/print/${walkInNumber}`, { replace: true });
+      navigate(`/dashboard/walk-in/print/${walkinNumber}`, { replace: true });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -629,7 +629,6 @@ export default function DetailWalkin() {
                         )}
                         disabled={!regencies.length}
                         tooltip="Pilih kabupaten/kota asal pemesan."
-                        disabled
                       />
 
                       {/* Kecamatan */}
@@ -647,7 +646,6 @@ export default function DetailWalkin() {
                         )}
                         disabled={!districts.length}
                         tooltip="Pilih kecamatan asal pemesan."
-                        disabled
                       />
 
                       {/* Kelurahan/Desa */}
@@ -665,7 +663,6 @@ export default function DetailWalkin() {
                         )}
                         disabled={!villages.length}
                         tooltip="Pilih kelurahan/desa asal pemesan."
-                        disabled
                       />
 
                       {/* Negara */}

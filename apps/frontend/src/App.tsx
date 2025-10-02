@@ -14,8 +14,8 @@ import DashboardPage from "./pages/Dashboard/DashboardPage";
 // Kalender
 import CalendarEventPage from "./pages/Dashboard/CalendarEventPage";
 // Pengelolaan Pengguna
-import UserTable from "./pages/Dashboard/User-Management/UserTable";
-import DetailUser from "./pages/Dashboard/User-Management/DetailUser";
+import UserTable from "./pages/Dashboard/UserManagement/UserTable";
+// import DetailUser from "./pages/Dashboard/UserManagement/DetailUser";
 // Harga Tiket
 import TicketPricePage from "./pages/Dashboard/TicketPrice/TicketPricePage";
 import CreateTicketPrice from "./pages/Dashboard/TicketPrice/CreateTicketPrice";
@@ -26,10 +26,10 @@ import CreateWalkin from "./pages/Dashboard/Walk-in/CreateWalkin";
 import DetailWalkin from "./pages/Dashboard/Walk-in/DetailWalkin";
 import WalkinPrintPage from "./pages/Dashboard/Walk-in/WalkinPrintPage";
 // Reservasi Rombongan
-import GroupReservationTable from "./pages/Dashboard/Group-Reservation/GroupReservationTable";
-import CreateGroupReservation from "./pages/Dashboard/Group-Reservation/CreateGroupReservation";
-import DetailGroupReservation from "./pages/Dashboard/Group-Reservation/DetailGroupReservation";
-import GroupReservationPrintPage from "./pages/Dashboard/Group-Reservation/GroupReservationPrintPage";
+import GroupReservationTable from "./pages/Dashboard/GroupReservation/GroupReservationTable";
+import CreateGroupReservation from "./pages/Dashboard/GroupReservation/CreateGroupReservation";
+import DetailGroupReservation from "./pages/Dashboard/GroupReservation/DetailGroupReservation";
+import GroupReservationPrintPage from "./pages/Dashboard/GroupReservation/GroupReservationPrintPage";
 
 function App() {
   return (
@@ -53,13 +53,6 @@ function App() {
 
           <Route path="user-management">
             <Route index element={<UserTable />} />
-            <Route path="add" element={<CreateWalkin />} />
-
-            {/* <Route
-              path="edit"
-              element={<Navigate to="/dashboard/user-management" replace />}
-            />
-            <Route path="edit/:username" element={<DetailUser />} /> */}
           </Route>
 
           <Route path="ticket-price">
@@ -70,7 +63,7 @@ function App() {
               path="edit"
               element={<Navigate to="/dashboard/ticket-price" replace />}
             />
-            <Route path="edit/:id" element={<DetailTicketPrice />} />
+            <Route path="edit/:category" element={<DetailTicketPrice />} />
           </Route>
 
           <Route path="walk-in">

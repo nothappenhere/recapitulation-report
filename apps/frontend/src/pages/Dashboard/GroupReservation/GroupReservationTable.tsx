@@ -22,7 +22,7 @@ export default function GroupReservationTable() {
     setLoading(true);
 
     try {
-      const res = await api.get("/reservation");
+      const res = await api.get("/group-reservation");
       setData(res.data.data);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
@@ -81,7 +81,7 @@ export default function GroupReservationTable() {
 
     try {
       const res = await api.delete(
-        `/reservation/${selectedItem.reservationNumber}`
+        `/group-reservation/${selectedItem.groupReservationNumber}`
       );
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
