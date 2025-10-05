@@ -12,28 +12,28 @@ import { GroupReservationSchema } from "@rzkyakbr/schemas";
 const router = express.Router();
 
 /**
- * * @desc Mendapatkan seluruh data reservasi
+ * * @desc Mendapatkan seluruh data reservasi rombongan
  * @route GET /api/group-reservation
  */
 router.get("/", getReservations);
 
 /**
- * * @desc Mendapatkan satu data reservasi berdasarkan Kode Unik
+ * * @desc Mendapatkan satu data reservasi rombongan berdasarkan Kode Unik
  * @route GET /api/group-reservation/:uniqueCode
- * @param uniqueCode - Kode Unik dari reservasi yang dicari
+ * @param uniqueCode - Kode Unik dari reservasi rombongan yang dicari
  */
 router.get("/:uniqueCode", getReservationByCode);
 
 /**
- * * @desc Membuat data reservasi baru
+ * * @desc Membuat data reservasi rombongan baru
  * @route POST /api/group-reservation
  */
 router.post("/", validateSchema(GroupReservationSchema), createReservation);
 
 /**
- * * @desc Memperbarui data reservasi berdasarkan Kode Unik
+ * * @desc Memperbarui data reservasi rombongan berdasarkan Kode Unik
  * @route PUT /api/group-reservation/:uniqueCode
- * @param uniqueCode - Kode Unik dari reservasi yang akan diperbarui
+ * @param uniqueCode - Kode Unik dari reservasi rombongan yang akan diperbarui
  */
 router.put(
   "/:uniqueCode",
@@ -42,9 +42,9 @@ router.put(
 );
 
 /**
- * * @desc Menghapus data reservasi berdasarkan Kode Unik
+ * * @desc Menghapus data reservasi rombongan berdasarkan Kode Unik
  * @route DELETE /api/group-reservation/:uniqueCode
- * @param uniqueCode - Kode Unik dari reservasi yang akan dihapus
+ * @param uniqueCode - Kode Unik dari reservasi rombongan yang akan dihapus
  */
 router.delete("/:uniqueCode", deleteReservationByCode);
 

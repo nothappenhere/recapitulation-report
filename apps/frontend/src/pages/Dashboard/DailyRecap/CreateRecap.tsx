@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -13,82 +14,110 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  WalkInSchema,
-  defaultWalkInFormValues,
-  type TWalkIn,
+  DailyRecapSchema,
+  defaultDailyRecapFormValues,
+  type TDailyRecap,
 } from "@rzkyakbr/schemas";
 import {
   api,
   formatRupiah,
   isWithinOperationalHours,
-  mapRegionNames,
+  useAutoFinalSerial,
   useAutoPayment,
-  useRegionSelector,
 } from "@rzkyakbr/libs";
-import { Flag, Loader2, MapPinned } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router";
 import { useMediaQuery } from "react-responsive";
-import type { AxiosError } from "axios";
+import { Link, useNavigate } from "react-router";
 import { SimpleField } from "@/components/form/SimpleField";
 import { DateField } from "@/components/form/DateField";
-import { ComboboxField } from "@/components/form/ComboboxField";
-import { PhoneField } from "@/components/form/PhoneField";
+import type { AxiosError } from "axios";
+import { useUser } from "@/hooks/use-user-context";
 import { NumberFieldInput } from "@/components/form/NumberField";
+import { RangeField } from "@/components/form/RangeField";
+import { useEffect, useState } from "react";
 
-export default function CreateVisit() {
+export default function CreateRecap() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 639 });
   const isTablet = useMediaQuery({ minWidth: 640, maxWidth: 1023 });
   const isDesktop = useMediaQuery({ minWidth: 1024 });
 
-  const form = useForm<TWalkIn>({
-    resolver: zodResolver(WalkInSchema),
-    defaultValues: defaultWalkInFormValues,
-  });
+  const [hasLastRecap, setHasLastRecap] = useState(false);
 
-  // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
-  const { countries, provinces, regencies, districts, villages } =
-    useRegionSelector(form);
+  const { user } = useUser();
+  const Agent = user?._id || null;
+
+  const form = useForm<TDailyRecap>({
+    resolver: zodResolver(DailyRecapSchema),
+    defaultValues: defaultDailyRecapFormValues,
+  });
 
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
-  const foreignTotal = form.watch("foreignMemberTotal");
-  const visitorTotal = form.watch("visitorMemberTotal");
-  const phoneNumber = form.watch("phoneNumber");
+  //* tolong berikan penjelasan singkat untuk fungsi ini...
+  useAutoFinalSerial(form.watch, form.setValue, {
+    student: true,
+    public: true,
+    foreign: true,
+  });
+
+  // Fetch last recap ketika halaman dibuka
+  useEffect(() => {
+    const fetchLastRecap = async () => {
+      try {
+        const res = await api.get("/daily-recap/last");
+        const last = res.data?.data;
+
+        if (last) {
+          setHasLastRecap(true);
+
+          form.setValue(
+            "initialStudentSerialNumber",
+            (last.finalStudentSerialNumber || 0) + 1
+          );
+          form.setValue(
+            "initialPublicSerialNumber",
+            (last.finalPublicSerialNumber || 0) + 1
+          );
+          form.setValue(
+            "initialForeignSerialNumber",
+            (last.finalForeignSerialNumber || 0) + 1
+          );
+        }
+      } catch (err) {
+        const error = err as AxiosError<{ message?: string }>;
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
+        toast.error(message);
+      }
+    };
+
+    fetchLastRecap();
+  }, [form]);
+
+  const initialStudentSerialNumber = form.watch("initialStudentSerialNumber");
+  const finalStudentSerialNumber = form.watch("finalStudentSerialNumber");
+  const initialPublicSerialNumber = form.watch("initialPublicSerialNumber");
+  const finalPublicSerialNumber = form.watch("finalPublicSerialNumber");
+  const initialForeignSerialNumber = form.watch("initialForeignSerialNumber");
+  const finalForeignSerialNumber = form.watch("finalForeignSerialNumber");
 
   //* Submit handler create
-  const onSubmit = async (values: TWalkIn): Promise<void> => {
+  const onSubmit = async (values: TDailyRecap): Promise<void> => {
     try {
-      const {
-        provinceName,
-        regencyName,
-        districtName,
-        villageName,
-        countryName,
-      } = mapRegionNames(values, {
-        provinces,
-        regencies,
-        districts,
-        villages,
-        countries,
-      });
-
       const payload = {
         ...values,
-        province: foreignTotal > 0 ? "-" : provinceName,
-        regencyOrCity: foreignTotal > 0 ? "-" : regencyName,
-        district: foreignTotal > 0 ? "-" : districtName,
-        village: foreignTotal > 0 ? "-" : villageName,
-        country: !foreignTotal ? "Indonesia" : countryName,
+        agent: Agent,
       };
 
-      const res = await api.post("/walk-in", payload);
-      const { walkinNumber } = res.data.data;
+      const res = await api.post("/daily-recap", payload);
+      toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/visit/${walkinNumber}`, {
+      navigate(`/dashboard/daily-recap`, {
         replace: true,
       });
     } catch (err) {
@@ -101,12 +130,21 @@ export default function CreateVisit() {
   };
 
   return (
-    <Card className="m-5 shadow-lg rounded-md">
+    <Card className="shadow-lg rounded-md">
       <CardHeader className="text-center">
-        <CardTitle>Pendataan Kunjungan</CardTitle>
+        <CardTitle>Pendataan Rekap Harian</CardTitle>
         <CardDescription>
-          Isi formulir di bawah untuk mencatat kunjungan.
+          Isi formulir di bawah untuk mencatat rekap harian.
         </CardDescription>
+
+        <CardAction>
+          <Button asChild>
+            <Link to="/dashboard/daily-recap">
+              <ArrowLeft />
+              Kembali
+            </Link>
+          </Button>
+        </CardAction>
       </CardHeader>
       <Separator />
       <CardContent>
@@ -114,40 +152,70 @@ export default function CreateVisit() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               {/* ROW 1 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Tanggal Kunjungan */}
+              <div className="grid gap-4">
+                {/* Tanggal Rekapitulasi */}
                 <DateField
                   control={form.control}
-                  name="visitingDate"
-                  label="Tanggal Kunjungan"
-                  placeholder="Pilih tanggal kunjungan"
-                  tooltip="Tanggal kunjungan (hanya bisa memilih hari ini)."
-                  disabledForward
+                  name="recapDate"
+                  label="Tanggal Rekapitulasi"
+                  placeholder="Pilih tanggal rekapitulasi"
+                  tooltip="Pilih tanggal laporan harian dibuat."
+                />
+              </div>
+
+              {/* ROW 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* No. Seri Pelajar */}
+                <RangeField
+                  control={form.control}
+                  minName="initialStudentSerialNumber"
+                  maxName="finalStudentSerialNumber"
+                  label="No. Seri Pelajar"
+                  placeholder={["Nomor seri awal", "Nomor seri akhir"]}
+                  tooltip="Nomor seri tiket kategori Pelajar. Nomor awal otomatis diisi berdasarkan data terakhir, sedangkan nomor akhir perlu Anda masukkan."
+                  disableMin={hasLastRecap}
                 />
 
-                {/* Nama Pemesan */}
+                {/* No. Seri Umum */}
+                <RangeField
+                  control={form.control}
+                  minName="initialPublicSerialNumber"
+                  maxName="finalPublicSerialNumber"
+                  label="No. Seri Umum"
+                  placeholder={["Nomor seri awal", "Nomor seri akhir"]}
+                  tooltip="Nomor seri tiket kategori Umum. Nomor awal otomatis diisi dari data terakhir, isi nomor akhir sesuai tiket yang dipakai."
+                  disableMin={hasLastRecap}
+                />
+
+                {/* No. Seri Asing */}
+                <RangeField
+                  control={form.control}
+                  minName="initialForeignSerialNumber"
+                  maxName="finalForeignSerialNumber"
+                  label="No. Seri Asing"
+                  placeholder={["Nomor seri awal", "Nomor seri akhir"]}
+                  tooltip="Nomor seri tiket kategori Asing. Nomor awal otomatis diisi dari data terakhir, isi nomor akhir sesuai tiket yang dipakai."
+                  disableMin={hasLastRecap}
+                />
+              </div>
+
+              {/* ROW 3 */}
+              <div className="grid gap-3">
+                {/* Deskripsi */}
                 <SimpleField
                   control={form.control}
-                  name="ordererName"
-                  label="Nama Pemesan"
-                  placeholder="Masukan nama pemesan"
-                  tooltip="Nama pemesan yang berkunjungan."
-                />
-
-                {/* Nomor Telepon */}
-                <PhoneField
-                  control={form.control}
-                  name="phoneNumber"
-                  label="Nomor Telepon"
-                  placeholder="Masukan nomor telepon"
-                  tooltip="Nomor telepon aktif yang dapat dihubungi."
+                  name="description"
+                  label="Deskripsi"
+                  placeholder="Tambahkan keterangan (opsional)"
+                  component={<Textarea className="rounded-xs" />}
+                  tooltip="Tambahkan catatan tambahan terkait rekap harian."
                 />
               </div>
 
               {/* Kondisional berdasarkan ukuran layar */}
               {isMobile && (
                 <>
-                  {/* ROW 2 (mobile-only) */}
+                  {/* ROW 4 (mobile-only) */}
                   <div className="grid grid-cols-1 gap-4">
                     {/* Jumlah Seluruh PELAJAR */}
                     <NumberFieldInput
@@ -155,9 +223,10 @@ export default function CreateVisit() {
                       name="studentMemberTotal"
                       label="Jumlah Pelajar"
                       placeholder="0"
-                      tooltip="Jumlah anggota pelajar."
+                      tooltip="Jumlah anggota pelajar (terhitung otomatis)."
                       minValue={0}
                       defaultValue={0}
+                      disabled
                     />
 
                     {/* Total Harga Keseluruhan PELAJAR (readonly) */}
@@ -177,9 +246,10 @@ export default function CreateVisit() {
                       name="publicMemberTotal"
                       label="Jumlah Umum"
                       placeholder="0"
-                      tooltip="Jumlah anggota umum."
+                      tooltip="Jumlah anggota umum (terhitung otomatis)."
                       minValue={0}
                       defaultValue={0}
+                      disabled
                     />
 
                     {/* Total Harga Keseluruhan UMUM (readonly) */}
@@ -199,9 +269,10 @@ export default function CreateVisit() {
                       name="foreignMemberTotal"
                       label="Jumlah Asing"
                       placeholder="0"
-                      tooltip="Jumlah anggota asing."
+                      tooltip="Jumlah anggota asing (terhitung otomatis)."
                       minValue={0}
                       defaultValue={0}
+                      disabled
                     />
 
                     {/* Total Harga Keseluruhan ASING (readonly) */}
@@ -221,16 +292,17 @@ export default function CreateVisit() {
                       name="visitorMemberTotal"
                       label="Total Seluruh Pengunjung"
                       placeholder="0"
-                      tooltip="Jumlah total pengunjung."
+                      tooltip="Jumlah  total pengunjung (terhitung otomatis)."
                       minValue={0}
                       defaultValue={0}
+                      disabled
                     />
 
                     {/* Total Harga Pembayaran (readonly) */}
                     <SimpleField
                       control={form.control}
                       name="totalPaymentAmount"
-                      label="Total Pembayaran Harga Tiket"
+                      label="Total Pendapatan Harga Tiket"
                       placeholder="Masukan total pembayaran"
                       tooltip="Jumlah total pembayaran."
                       valueFormatter={(val) => formatRupiah(val || 0)}
@@ -242,7 +314,7 @@ export default function CreateVisit() {
 
               {isTablet && (
                 <>
-                  {/* ROW 2 (tablet-only) */}
+                  {/* ROW 4 (tablet-only) */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                       {/* Jumlah Seluruh PELAJAR */}
@@ -251,9 +323,10 @@ export default function CreateVisit() {
                         name="studentMemberTotal"
                         label="Jumlah Pelajar"
                         placeholder="0"
-                        tooltip="Jumlah anggota pelajar."
+                        tooltip="Jumlah anggota pelajar (terhitung otomatis)."
                         minValue={0}
                         defaultValue={0}
+                        disabled
                       />
 
                       {/* Jumlah Anggota UMUM */}
@@ -262,9 +335,10 @@ export default function CreateVisit() {
                         name="publicMemberTotal"
                         label="Jumlah Umum"
                         placeholder="0"
-                        tooltip="Jumlah anggota umum."
+                        tooltip="Jumlah anggota umum (terhitung otomatis)."
                         minValue={0}
                         defaultValue={0}
+                        disabled
                       />
 
                       {/* Jumlah Anggota ASING */}
@@ -273,9 +347,10 @@ export default function CreateVisit() {
                         name="foreignMemberTotal"
                         label="Jumlah Asing"
                         placeholder="0"
-                        tooltip="Jumlah anggota asing."
+                        tooltip="Jumlah anggota asing (terhitung otomatis)."
                         minValue={0}
                         defaultValue={0}
+                        disabled
                       />
 
                       {/* Jumlah Seluruh Anggota */}
@@ -284,9 +359,10 @@ export default function CreateVisit() {
                         name="visitorMemberTotal"
                         label="Total Seluruh Pengunjung"
                         placeholder="0"
-                        tooltip="Jumlah total pengunjung."
+                        tooltip="Jumlah  total pengunjung (terhitung otomatis)."
                         minValue={0}
                         defaultValue={0}
+                        disabled
                       />
                     </div>
 
@@ -328,7 +404,7 @@ export default function CreateVisit() {
                       <SimpleField
                         control={form.control}
                         name="totalPaymentAmount"
-                        label="Total Pembayaran Harga Tiket"
+                        label="Total Pendapatan Harga Tiket"
                         placeholder="Masukan total pembayaran"
                         tooltip="Jumlah total pembayaran."
                         valueFormatter={(val) => formatRupiah(val || 0)}
@@ -341,7 +417,7 @@ export default function CreateVisit() {
 
               {isDesktop && (
                 <>
-                  {/* ROW 2 (desktop only) */}
+                  {/* ROW 4 (desktop only) */}
                   <div className="grid grid-cols-4 gap-4">
                     {/* Jumlah Seluruh PELAJAR */}
                     <NumberFieldInput
@@ -349,9 +425,10 @@ export default function CreateVisit() {
                       name="studentMemberTotal"
                       label="Jumlah Pelajar"
                       placeholder="0"
-                      tooltip="Jumlah anggota pelajar."
+                      tooltip="Jumlah anggota pelajar (terhitung otomatis)."
                       minValue={0}
                       defaultValue={0}
+                      disabled
                     />
 
                     {/* Jumlah Anggota UMUM */}
@@ -360,9 +437,10 @@ export default function CreateVisit() {
                       name="publicMemberTotal"
                       label="Jumlah Umum"
                       placeholder="0"
-                      tooltip="Jumlah anggota umum."
+                      tooltip="Jumlah anggota umum (terhitung otomatis)."
                       minValue={0}
                       defaultValue={0}
+                      disabled
                     />
 
                     {/* Jumlah Anggota ASING */}
@@ -371,9 +449,10 @@ export default function CreateVisit() {
                       name="foreignMemberTotal"
                       label="Jumlah Asing"
                       placeholder="0"
-                      tooltip="Jumlah anggota asing."
+                      tooltip="Jumlah anggota asing (terhitung otomatis)."
                       minValue={0}
                       defaultValue={0}
+                      disabled
                     />
 
                     {/* Jumlah Seluruh Anggota */}
@@ -382,9 +461,10 @@ export default function CreateVisit() {
                       name="visitorMemberTotal"
                       label="Total Seluruh Pengunjung"
                       placeholder="0"
-                      tooltip="Jumlah total pengunjung."
+                      tooltip="Jumlah  total pengunjung (terhitung otomatis)."
                       minValue={0}
                       defaultValue={0}
+                      disabled
                     />
 
                     {/* Total Harga Keseluruhan PELAJAR (readonly) */}
@@ -424,7 +504,7 @@ export default function CreateVisit() {
                     <SimpleField
                       control={form.control}
                       name="totalPaymentAmount"
-                      label="Total Pembayaran Harga Tiket"
+                      label="Total Pendapatan Harga Tiket"
                       placeholder="Masukan total pembayaran"
                       tooltip="Jumlah total pembayaran."
                       valueFormatter={(val) => formatRupiah(val || 0)}
@@ -434,137 +514,16 @@ export default function CreateVisit() {
                 </>
               )}
 
-              {visitorTotal > 19 && (
-                <h2 className="text-xl font-bold text-center max-w-10/12 mx-auto">
-                  Ketentuan Kunjungan
-                  <br />
-                  <span className="text-base font-normal">
-                    Jumlah maksimal pembelian tiket langsung adalah 19 orang.
-                    Untuk rombongan lebih dari itu, silakan melakukan reservasi
-                    terlebih dahulu beberapa hari sebelum kedatangan melalui
-                    konter tiket atau menghubungi nomor berikut:
-                  </span>
-                  <br />
-                  <span className="text-base font-normal">
-                    (022)-7213822 atau 0811-1111-9330.
-                  </span>
-                  <br />
-                  <span className="text-base font-medium">Terima Kasih.</span>
-                </h2>
-              )}
-
-              {/* ROW 3 */}
-              <div className="grid gap-3">
-                {/* Alamat */}
-                <SimpleField
-                  control={form.control}
-                  name="address"
-                  label="Alamat"
-                  placeholder="Masukan alamat"
-                  component={<Textarea className="rounded-xs" />}
-                  tooltip="Masukkan alamat lengkap pemesan."
-                />
-              </div>
-
-              {/* ROW 4 */}
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                {/* Provinsi */}
-                <ComboboxField
-                  control={form.control}
-                  name="province"
-                  label="Provinsi"
-                  placeholder="Pilih provinsi"
-                  icon={MapPinned}
-                  options={provinces.map(
-                    (prov: { code: string; name: string }) => ({
-                      value: prov.code,
-                      label: prov.name,
-                    })
-                  )}
-                  disabled={!provinces.length || foreignTotal > 0}
-                  tooltip="Pilih provinsi asal pemesan."
-                />
-
-                {/* Kabupaten/Kota */}
-                <ComboboxField
-                  control={form.control}
-                  name="regencyOrCity"
-                  label="Kabupaten/Kota"
-                  placeholder="Pilih kabupaten/kota"
-                  icon={MapPinned}
-                  options={regencies.map(
-                    (reg: { code: string; name: string }) => ({
-                      value: reg.code,
-                      label: reg.name,
-                    })
-                  )}
-                  disabled={!regencies.length || foreignTotal > 0}
-                  tooltip="Pilih kabupaten/kota asal pemesan."
-                />
-
-                {/* Kecamatan */}
-                <ComboboxField
-                  control={form.control}
-                  name="district"
-                  label="Kecamatan"
-                  placeholder="Pilih kecamatan"
-                  icon={MapPinned}
-                  options={districts.map(
-                    (dist: { code: string; name: string }) => ({
-                      value: dist.code,
-                      label: dist.name,
-                    })
-                  )}
-                  disabled={!districts.length || foreignTotal > 0}
-                  tooltip="Pilih kecamatan asal pemesan."
-                />
-
-                {/* Kelurahan/Desa */}
-                <ComboboxField
-                  control={form.control}
-                  name="village"
-                  label="Kelurahan/Desa"
-                  placeholder="Pilih kelurahan/desa"
-                  icon={MapPinned}
-                  options={villages.map(
-                    (vill: { code: string; name: string }) => ({
-                      value: vill.code,
-                      label: vill.name,
-                    })
-                  )}
-                  disabled={!villages.length || foreignTotal > 0}
-                  tooltip="Pilih kelurahan/desa asal pemesan."
-                />
-
-                {/* Negara */}
-                <ComboboxField
-                  control={form.control}
-                  name="country"
-                  label="Negara Asal "
-                  placeholder="Pilih negara asal "
-                  icon={Flag}
-                  options={countries.map(
-                    (country: { code: string; name: string }) => ({
-                      value: country.name,
-                      label: country.code,
-                    })
-                  )}
-                  tooltip="Pilih negara asal pemesan."
-                  disabled={foreignTotal === 0}
-                  countrySelect
-                />
-              </div>
-
               {/* Submit Button */}
-              {isWithinOperationalHours() && (
+              {!isWithinOperationalHours() && (
                 <Button
                   type="submit"
                   className="rounded-xs"
                   disabled={
                     form.formState.isSubmitting ||
-                    visitorTotal === 0 ||
-                    visitorTotal > 19 ||
-                    !phoneNumber
+                    finalStudentSerialNumber <= initialStudentSerialNumber ||
+                    finalPublicSerialNumber <= initialPublicSerialNumber ||
+                    finalForeignSerialNumber <= initialForeignSerialNumber
                   }
                 >
                   {form.formState.isSubmitting ? (
@@ -573,7 +532,7 @@ export default function CreateVisit() {
                       Loading...
                     </>
                   ) : (
-                    "Simpan"
+                    "Tambah Rekap Harian"
                   )}
                 </Button>
               )}
@@ -582,21 +541,26 @@ export default function CreateVisit() {
         </Form>
       </CardContent>
 
-      <CardFooter className="flex justify-center">
-        {!isWithinOperationalHours() && (
-          <h2 className="text-xl font-bold text-center">
-            Ketentuan Kunjungan
-            <br />
-            <span className="text-base font-normal">
-              Pemesanan tiket hanya dapat dilakukan 30 menit sebelum jam
-              operasional Museum Geologi:
-            </span>
-            <br />
-            <span className="text-base font-normal">09:00 – 15:00 WIB</span>
-            <br />
-            <span className="text-base font-medium">Terima Kasih.</span>
-          </h2>
-        )}
+      <CardFooter className="flex flex-col justify-center items-center gap-2">
+        <h2 className="text-xl font-bold text-center">
+          Ketentuan Pembuatan Rekap Harian
+        </h2>
+
+        <div className="flex justify-center items-center">
+          <span className="text-base font-normal text-center max-w-10/12 border py-4 px-3">
+            Rekap harian hanya dapat dilakukan setelah jam operasional Museum
+            Geologi: 09:00 – 15:00 WIB.
+          </span>
+
+          <span className="text-base font-normal text-center max-w-1/2 border p-4">
+            Silakan isi No. Seri Awal dan Akhir pada setiap kategori, serta No.
+            Seri Akhir{" "}
+            <span className="underline">tidak boleh kurang dari</span> No. Seri
+            Awal.
+          </span>
+        </div>
+
+        <span className="text-base font-medium">Terima Kasih.</span>
       </CardFooter>
     </Card>
   );

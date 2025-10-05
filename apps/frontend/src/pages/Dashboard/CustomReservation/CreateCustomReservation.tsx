@@ -14,9 +14,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  WalkInSchema,
-  defaultWalkInFormValues,
-  type TWalkIn,
+  CustomReservationSchema,
+  defaultCustomReservationFormValues,
+  type TCustomReservation,
 } from "@rzkyakbr/schemas";
 import {
   api,
@@ -25,21 +25,30 @@ import {
   mapRegionNames,
   useAutoPayment,
   useRegionSelector,
+  useVisitingHourSelect,
 } from "@rzkyakbr/libs";
-import { ArrowLeft, Banknote, Flag, Loader2, MapPinned } from "lucide-react";
+import {
+  SquareLibrary,
+  Banknote,
+  ClockIcon,
+  Flag,
+  Loader2,
+  MapPinned,
+  ArrowLeft,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
-import { Link, useNavigate } from "react-router";
 import { useMediaQuery } from "react-responsive";
-import type { AxiosError } from "axios";
+import { Link, useNavigate } from "react-router";
 import { SimpleField } from "@/components/form/SimpleField";
+import { SelectField } from "@/components/form/SelectField";
 import { DateField } from "@/components/form/DateField";
+import type { AxiosError } from "axios";
+import { useUser } from "@/hooks/use-user-context";
 import { ComboboxField } from "@/components/form/ComboboxField";
 import { PhoneField } from "@/components/form/PhoneField";
 import { NumberFieldInput } from "@/components/form/NumberField";
-import { SelectField } from "@/components/form/SelectField";
-import { useUser } from "@/hooks/use-user-context";
 
-export default function CreateWalkin() {
+export default function CreateCustomReservation() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 639 });
   const isTablet = useMediaQuery({ minWidth: 640, maxWidth: 1023 });
@@ -48,10 +57,13 @@ export default function CreateWalkin() {
   const { user } = useUser();
   const Agent = user?._id || null;
 
-  const form = useForm<TWalkIn>({
-    resolver: zodResolver(WalkInSchema),
-    defaultValues: defaultWalkInFormValues,
+  const form = useForm<TCustomReservation>({
+    resolver: zodResolver(CustomReservationSchema),
+    defaultValues: defaultCustomReservationFormValues,
   });
+
+  // * Hook untuk mengambil seluruh data waktu kunjungan museum
+  const { visitHours } = useVisitingHourSelect(form);
 
   // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
   const { countries, provinces, regencies, districts, villages } =
@@ -60,7 +72,7 @@ export default function CreateWalkin() {
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
-  const foreignTotal = form.watch("foreignMemberTotal");
+  const customTotal = form.watch("customMemberTotal");
   const visitorTotal = form.watch("visitorMemberTotal");
   const phoneNumber = form.watch("phoneNumber");
   const totalPaymentAmount = form.watch("totalPaymentAmount");
@@ -68,7 +80,7 @@ export default function CreateWalkin() {
   const downPayment = form.watch("downPayment");
 
   //* Submit handler create
-  const onSubmit = async (values: TWalkIn): Promise<void> => {
+  const onSubmit = async (values: TCustomReservation): Promise<void> => {
     try {
       const {
         provinceName,
@@ -86,20 +98,25 @@ export default function CreateWalkin() {
 
       const payload = {
         ...values,
-        province: foreignTotal > 0 ? "-" : provinceName,
-        regencyOrCity: foreignTotal > 0 ? "-" : regencyName,
-        district: foreignTotal > 0 ? "-" : districtName,
-        village: foreignTotal > 0 ? "-" : villageName,
-        country: !foreignTotal ? "Indonesia" : countryName,
+        province: customTotal > 0 ? "-" : provinceName,
+        regencyOrCity: customTotal > 0 ? "-" : regencyName,
+        district: customTotal > 0 ? "-" : districtName,
+        village: customTotal > 0 ? "-" : villageName,
+        country: !customTotal ? "Indonesia" : countryName,
         agent: Agent,
       };
 
-      const res = await api.post("/walk-in", payload);
-      const { walkinNumber } = res.data.data;
+      const res = await api.post("/custom-reservation", payload);
+      const { groupReservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/dashboard/walk-in/print/${walkinNumber}`, { replace: true });
+      navigate(
+        `/dashboard/custom-reservation/print/${groupReservationNumber}`,
+        {
+          replace: true,
+        }
+      );
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -112,14 +129,14 @@ export default function CreateWalkin() {
   return (
     <Card className="shadow-lg rounded-md">
       <CardHeader className="text-center">
-        <CardTitle>Pendataan Kunjungan</CardTitle>
+        <CardTitle>Pendataan Reservasi Khusus</CardTitle>
         <CardDescription>
-          Isi formulir di bawah untuk mencatat kunjungan.
+          Isi formulir di bawah untuk mencatat reservasi khusus.
         </CardDescription>
 
         <CardAction>
           <Button asChild>
-            <Link to="/dashboard/walk-in">
+            <Link to="/dashboard/custom-reservation">
               <ArrowLeft />
               Kembali
             </Link>
@@ -139,17 +156,52 @@ export default function CreateWalkin() {
                   name="visitingDate"
                   label="Tanggal Kunjungan"
                   placeholder="Pilih tanggal kunjungan"
-                  tooltip="Tanggal kunjungan (hanya bisa memilih hari ini)."
-                  disabledForward
+                  tooltip="Tanggal kunjungan (tidak bisa memilih sebelum hari ini)."
                 />
 
+                {/* Waktu Kunjungan */}
+                <SelectField
+                  control={form.control}
+                  name="visitingHour"
+                  label="Waktu Kunjungan"
+                  placeholder="Pilih waktu kunjungan"
+                  icon={ClockIcon}
+                  options={visitHours.map(
+                    (vh: { _id: string; timeRange: string }) => ({
+                      value: vh._id,
+                      label: vh.timeRange,
+                      disabled: vh.timeRange.includes("Istirahat"),
+                    })
+                  )}
+                  tooltip="Tentukan jam kunjungan sesuai jadwal museum."
+                />
+
+                {/* Mekanisme Reservasi */}
+                <SelectField
+                  control={form.control}
+                  name="reservationMechanism"
+                  label="Mekanisme Reservasi"
+                  placeholder="Pilih mekanisme reservasi"
+                  icon={SquareLibrary}
+                  options={[
+                    { value: "Whatsapp", label: "Whatsapp" },
+                    { value: "Google Form", label: "Google Form" },
+                    { value: "Datang Langsung", label: "Datang Langsung" },
+                    { value: "Lainnya", label: "Lainnya..." },
+                  ]}
+                  tooltip="Pilih metode reservasi yang digunakan."
+                />
+              </div>
+
+              {/* ROW 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Nama Pemesan */}
                 <SimpleField
                   control={form.control}
                   name="ordererName"
                   label="Nama Pemesan"
                   placeholder="Masukan nama pemesan"
-                  tooltip="Nama pemesan yang berkunjungan."
+                  tooltip="Isi dengan nama pemesan yang mengatur kunjungan."
                 />
 
                 {/* Nomor Telepon */}
@@ -160,12 +212,21 @@ export default function CreateWalkin() {
                   placeholder="Masukan nomor telepon"
                   tooltip="Nomor telepon aktif yang dapat dihubungi."
                 />
+
+                {/* Nama Rombongan */}
+                <SimpleField
+                  control={form.control}
+                  name="groupName"
+                  label="Nama Rombongan"
+                  placeholder="Masukan nama rombongan"
+                  tooltip="Isi dengan nama rombongan atau identitas kelompok pengunjung."
+                />
               </div>
 
               {/* Kondisional berdasarkan ukuran layar */}
               {isMobile && (
                 <>
-                  {/* ROW 2 (mobile-only) */}
+                  {/* ROW 3 (mobile-only) */}
                   <div className="grid grid-cols-1 gap-4">
                     {/* Jumlah Seluruh PELAJAR */}
                     <NumberFieldInput
@@ -214,7 +275,7 @@ export default function CreateWalkin() {
                     {/* Jumlah Anggota ASING */}
                     <NumberFieldInput
                       control={form.control}
-                      name="foreignMemberTotal"
+                      name="customMemberTotal"
                       label="Jumlah Asing"
                       placeholder="0"
                       tooltip="Jumlah anggota asing."
@@ -225,7 +286,7 @@ export default function CreateWalkin() {
                     {/* Total Harga Keseluruhan ASING (readonly) */}
                     <SimpleField
                       control={form.control}
-                      name="foreignTotalAmount"
+                      name="customTotalAmount"
                       label="Total Harga Tiket Asing"
                       placeholder="0"
                       tooltip="Total harga tiket kategori asing."
@@ -260,7 +321,7 @@ export default function CreateWalkin() {
 
               {isTablet && (
                 <>
-                  {/* ROW 2 (tablet-only) */}
+                  {/* ROW 3 (tablet-only) */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                       {/* Jumlah Seluruh PELAJAR */}
@@ -288,7 +349,7 @@ export default function CreateWalkin() {
                       {/* Jumlah Anggota ASING */}
                       <NumberFieldInput
                         control={form.control}
-                        name="foreignMemberTotal"
+                        name="customMemberTotal"
                         label="Jumlah Asing"
                         placeholder="0"
                         tooltip="Jumlah anggota asing."
@@ -334,7 +395,7 @@ export default function CreateWalkin() {
                       {/* Total Harga Keseluruhan ASING (readonly) */}
                       <SimpleField
                         control={form.control}
-                        name="foreignTotalAmount"
+                        name="customTotalAmount"
                         label="Total Harga Tiket Asing"
                         placeholder="0"
                         tooltip="Total harga tiket kategori asing."
@@ -359,7 +420,7 @@ export default function CreateWalkin() {
 
               {isDesktop && (
                 <>
-                  {/* ROW 2 (desktop only) */}
+                  {/* ROW 3 (desktop only) */}
                   <div className="grid grid-cols-4 gap-4">
                     {/* Jumlah Seluruh PELAJAR */}
                     <NumberFieldInput
@@ -386,7 +447,7 @@ export default function CreateWalkin() {
                     {/* Jumlah Anggota ASING */}
                     <NumberFieldInput
                       control={form.control}
-                      name="foreignMemberTotal"
+                      name="customMemberTotal"
                       label="Jumlah Asing"
                       placeholder="0"
                       tooltip="Jumlah anggota asing."
@@ -430,7 +491,7 @@ export default function CreateWalkin() {
                     {/* Total Harga Keseluruhan ASING (readonly) */}
                     <SimpleField
                       control={form.control}
-                      name="foreignTotalAmount"
+                      name="customTotalAmount"
                       label="Total Harga Tiket Asing"
                       placeholder="0"
                       tooltip="Total harga tiket kategori asing."
@@ -452,26 +513,19 @@ export default function CreateWalkin() {
                 </>
               )}
 
-              {visitorTotal > 19 && (
-                <h2 className="text-xl font-bold text-center max-w-10/12 mx-auto">
-                  Ketentuan Pembuatan Data Kunjungan
-                  <br />
-                  <span className="text-base font-normal">
-                    Jumlah maksimal pembelian tiket langsung adalah 19 orang.
-                    Untuk rombongan lebih dari itu, silakan melakukan reservasi
-                    terlebih dahulu beberapa hari sebelum kedatangan melalui
-                    konter tiket atau menghubungi nomor berikut:
-                  </span>
-                  <br />
-                  <span className="text-base font-normal">
-                    (022)-7213822 atau 0811-1111-9330.
-                  </span>
-                  <br />
-                  <span className="text-base font-medium">Terima Kasih.</span>
-                </h2>
-              )}
+              {/* ROW 4 */}
+              <div className="grid gap-3">
+                <SimpleField
+                  control={form.control}
+                  name="description"
+                  label="Deskripsi"
+                  placeholder="Tambahkan keterangan (opsional)"
+                  component={<Textarea className="rounded-xs" />}
+                  tooltip="Tambahkan catatan tambahan terkait kunjungan."
+                />
+              </div>
 
-              {/* ROW 3 */}
+              {/* ROW 5 */}
               <div className="grid gap-3">
                 {/* Alamat */}
                 <SimpleField
@@ -480,11 +534,11 @@ export default function CreateWalkin() {
                   label="Alamat"
                   placeholder="Masukan alamat"
                   component={<Textarea className="rounded-xs" />}
-                  tooltip="Masukkan alamat lengkap pemesan."
+                  tooltip="Masukkan alamat lengkap pemesan atau instansi asal rombongan."
                 />
               </div>
 
-              {/* ROW 4 */}
+              {/* ROW 6 */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Provinsi */}
                 <ComboboxField
@@ -499,7 +553,7 @@ export default function CreateWalkin() {
                       label: prov.name,
                     })
                   )}
-                  disabled={!provinces.length || foreignTotal > 0}
+                  disabled={!provinces.length || customTotal > 0}
                   tooltip="Pilih provinsi asal pemesan."
                 />
 
@@ -516,7 +570,7 @@ export default function CreateWalkin() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!regencies.length || foreignTotal > 0}
+                  disabled={!regencies.length || customTotal > 0}
                   tooltip="Pilih kabupaten/kota asal pemesan."
                 />
 
@@ -533,7 +587,7 @@ export default function CreateWalkin() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!districts.length || foreignTotal > 0}
+                  disabled={!districts.length || customTotal > 0}
                   tooltip="Pilih kecamatan asal pemesan."
                 />
 
@@ -550,7 +604,7 @@ export default function CreateWalkin() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!villages.length || foreignTotal > 0}
+                  disabled={!villages.length || customTotal > 0}
                   tooltip="Pilih kelurahan/desa asal pemesan."
                 />
 
@@ -568,12 +622,12 @@ export default function CreateWalkin() {
                     })
                   )}
                   tooltip="Pilih negara asal pemesan."
-                  disabled={foreignTotal === 0}
+                  disabled={customTotal === 0}
                   countrySelect
                 />
               </div>
 
-              {/* ROW 5 */}
+              {/* ROW 7 */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 {/* Metode Pembayaran */}
                 <SelectField
@@ -634,7 +688,7 @@ export default function CreateWalkin() {
                   disabled={
                     form.formState.isSubmitting ||
                     visitorTotal === 0 ||
-                    visitorTotal > 19 ||
+                    visitorTotal < 19 ||
                     !phoneNumber ||
                     paymentMethod === "Lainnya" ||
                     downPayment < totalPaymentAmount
@@ -646,7 +700,7 @@ export default function CreateWalkin() {
                       Loading...
                     </>
                   ) : (
-                    "Simpan"
+                    "Tambah Reservasi Khusus"
                   )}
                 </Button>
               )}
@@ -657,12 +711,12 @@ export default function CreateWalkin() {
 
       <CardFooter className="flex flex-col justify-center items-center gap-2">
         <h2 className="text-xl font-bold text-center">
-          Ketentuan Pembuatan Data Kunjungan
+          Ketentuan Pembuatan Reservasi Khusus
         </h2>
 
         <div className="flex justify-center items-center">
-          <span className="text-base font-normal text-center max-w-1/2 border p-4">
-            Pemesanan tiket hanya dapat dilakukan 30 menit sebelum jam
+          <span className="text-base font-normal text-center max-w-1/2 border py-4 px-3">
+            Pemesanan reservasi hanya dapat dilakukan 30 menit sebelum jam
             operasional Museum Geologi: 09:00 – 15:00 WIB.
           </span>
 

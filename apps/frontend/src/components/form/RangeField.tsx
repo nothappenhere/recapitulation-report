@@ -11,8 +11,8 @@ type RangeFieldProps<T extends FieldValues> = {
   placeholder: [string, string];
   type?: string;
   disabled?: boolean;
-  /** tooltip opsional untuk penjelasan singkat */
   tooltip?: string | React.ReactNode;
+  disableMin?: boolean;
 };
 
 export function RangeField<T extends FieldValues>({
@@ -23,6 +23,7 @@ export function RangeField<T extends FieldValues>({
   placeholder,
   type = "number",
   tooltip,
+  disableMin,
 }: RangeFieldProps<T>) {
   return (
     <ControlledField
@@ -35,24 +36,23 @@ export function RangeField<T extends FieldValues>({
         <div className="flex">
           {/* Input Min (aktif) */}
           <Input
-            className="flex-1 rounded-e-none [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:m-0"
+            className="flex-1 rounded-s-xs rounded-e-none [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:m-0"
             type={type}
             placeholder={placeholder[0]}
+            disabled={disableMin}
             {...minField}
           />
 
-          {/* Input Max (disabled tapi controlled) */}
+          {/* Input Max (aktif) */}
           <Controller
             control={control}
             name={maxName}
             render={({ field }) => (
               <Input
-                className="-ms-px flex-1 rounded-s-none [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:m-0"
+                className="-ms-px flex-1 rounded-s-none rounded-e-xs [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:m-0"
                 type={type}
                 placeholder={placeholder[1]}
-                value={field.value ?? ""}
-                disabled
-                readOnly
+                {...field}
               />
             )}
           />

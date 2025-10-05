@@ -83,7 +83,6 @@ export const createWalkIn = async (req, res) => {
       newWalkIn
     );
   } catch (err) {
-    console.log(err);
     return sendResponse(res, 500, false, "Internal server error", null, {
       detail: err.message,
     });

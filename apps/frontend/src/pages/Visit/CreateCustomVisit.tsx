@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -14,9 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  WalkInSchema,
-  defaultWalkInFormValues,
-  type TWalkIn,
+  CustomReservationSchema,
+  defaultCustomReservationFormValues,
+  type TCustomReservation,
 } from "@rzkyakbr/schemas";
 import {
   api,
@@ -26,9 +25,9 @@ import {
   useAutoPayment,
   useRegionSelector,
 } from "@rzkyakbr/libs";
-import { ArrowLeft, Banknote, Flag, Loader2, MapPinned } from "lucide-react";
+import { Flag, Loader2, MapPinned } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useMediaQuery } from "react-responsive";
 import type { AxiosError } from "axios";
 import { SimpleField } from "@/components/form/SimpleField";
@@ -36,21 +35,16 @@ import { DateField } from "@/components/form/DateField";
 import { ComboboxField } from "@/components/form/ComboboxField";
 import { PhoneField } from "@/components/form/PhoneField";
 import { NumberFieldInput } from "@/components/form/NumberField";
-import { SelectField } from "@/components/form/SelectField";
-import { useUser } from "@/hooks/use-user-context";
 
-export default function CreateWalkin() {
+export default function CreateCustomVisit() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 639 });
   const isTablet = useMediaQuery({ minWidth: 640, maxWidth: 1023 });
   const isDesktop = useMediaQuery({ minWidth: 1024 });
 
-  const { user } = useUser();
-  const Agent = user?._id || null;
-
-  const form = useForm<TWalkIn>({
-    resolver: zodResolver(WalkInSchema),
-    defaultValues: defaultWalkInFormValues,
+  const form = useForm<TCustomReservation>({
+    resolver: zodResolver(CustomReservationSchema),
+    defaultValues: defaultCustomReservationFormValues,
   });
 
   // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
@@ -60,15 +54,12 @@ export default function CreateWalkin() {
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
-  const foreignTotal = form.watch("foreignMemberTotal");
-  const visitorTotal = form.watch("visitorMemberTotal");
   const phoneNumber = form.watch("phoneNumber");
-  const totalPaymentAmount = form.watch("totalPaymentAmount");
-  const paymentMethod = form.watch("paymentMethod");
-  const downPayment = form.watch("downPayment");
+  const customTotal = form.watch("customMemberTotal");
+  const visitorTotal = form.watch("visitorMemberTotal");
 
   //* Submit handler create
-  const onSubmit = async (values: TWalkIn): Promise<void> => {
+  const onSubmit = async (values: TCustomReservation): Promise<void> => {
     try {
       const {
         provinceName,
@@ -86,20 +77,20 @@ export default function CreateWalkin() {
 
       const payload = {
         ...values,
-        province: foreignTotal > 0 ? "-" : provinceName,
-        regencyOrCity: foreignTotal > 0 ? "-" : regencyName,
-        district: foreignTotal > 0 ? "-" : districtName,
-        village: foreignTotal > 0 ? "-" : villageName,
-        country: !foreignTotal ? "Indonesia" : countryName,
-        agent: Agent,
+        province: customTotal > 0 ? "-" : provinceName,
+        regencyOrCity: customTotal > 0 ? "-" : regencyName,
+        district: customTotal > 0 ? "-" : districtName,
+        village: customTotal > 0 ? "-" : villageName,
+        country: !customTotal ? "Indonesia" : countryName,
       };
 
       const res = await api.post("/walk-in", payload);
       const { walkinNumber } = res.data.data;
-      toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/dashboard/walk-in/print/${walkinNumber}`, { replace: true });
+      navigate(`/visit/${walkinNumber}`, {
+        replace: true,
+      });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -110,21 +101,12 @@ export default function CreateWalkin() {
   };
 
   return (
-    <Card className="shadow-lg rounded-md">
+    <Card className="m-5 shadow-lg rounded-md">
       <CardHeader className="text-center">
-        <CardTitle>Pendataan Kunjungan</CardTitle>
+        <CardTitle>Pendataan Kunjungan Khusus</CardTitle>
         <CardDescription>
-          Isi formulir di bawah untuk mencatat kunjungan.
+          Isi formulir di bawah untuk mencatat kunjungan khusus.
         </CardDescription>
-
-        <CardAction>
-          <Button asChild>
-            <Link to="/dashboard/walk-in">
-              <ArrowLeft />
-              Kembali
-            </Link>
-          </Button>
-        </CardAction>
       </CardHeader>
       <Separator />
       <CardContent>
@@ -139,8 +121,7 @@ export default function CreateWalkin() {
                   name="visitingDate"
                   label="Tanggal Kunjungan"
                   placeholder="Pilih tanggal kunjungan"
-                  tooltip="Tanggal kunjungan (hanya bisa memilih hari ini)."
-                  disabledForward
+                  tooltip="Tanggal kunjungan."
                 />
 
                 {/* Nama Pemesan */}
@@ -167,68 +148,46 @@ export default function CreateWalkin() {
                 <>
                   {/* ROW 2 (mobile-only) */}
                   <div className="grid grid-cols-1 gap-4">
-                    {/* Jumlah Seluruh PELAJAR */}
-                    <NumberFieldInput
-                      control={form.control}
-                      name="studentMemberTotal"
-                      label="Jumlah Pelajar"
-                      placeholder="0"
-                      tooltip="Jumlah anggota pelajar."
-                      minValue={0}
-                      defaultValue={0}
-                    />
-
-                    {/* Total Harga Keseluruhan PELAJAR (readonly) */}
-                    <SimpleField
-                      control={form.control}
-                      name="studentTotalAmount"
-                      label="Total Harga Tiket Pelajar"
-                      placeholder="0"
-                      tooltip="Total harga tiket kategori pelajar."
-                      valueFormatter={(val) => formatRupiah(val || 0)}
-                      disabled
-                    />
-
-                    {/* Jumlah Anggota UMUM */}
+                    {/* Jumlah Anggota PEMANDU */}
                     <NumberFieldInput
                       control={form.control}
                       name="publicMemberTotal"
-                      label="Jumlah Umum"
+                      label="Jumlah Pemandu"
                       placeholder="0"
-                      tooltip="Jumlah anggota umum."
+                      tooltip="Jumlah anggota pemandu."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Total Harga Keseluruhan UMUM (readonly) */}
+                    {/* Total Harga Keseluruhan PEMANDU (readonly) */}
                     <SimpleField
                       control={form.control}
                       name="publicTotalAmount"
-                      label="Total Harga Tiket Umum"
+                      label="Total Harga Tiket Pemandu"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori umum."
+                      tooltip="Total harga tiket kategori pemandu."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
 
-                    {/* Jumlah Anggota ASING */}
+                    {/* Jumlah Anggota KHUSUS */}
                     <NumberFieldInput
                       control={form.control}
-                      name="foreignMemberTotal"
-                      label="Jumlah Asing"
+                      name="customMemberTotal"
+                      label="Jumlah Khusus"
                       placeholder="0"
-                      tooltip="Jumlah anggota asing."
+                      tooltip="Jumlah anggota khusus."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Total Harga Keseluruhan ASING (readonly) */}
+                    {/* Total Harga Keseluruhan KHUSUS (readonly) */}
                     <SimpleField
                       control={form.control}
-                      name="foreignTotalAmount"
-                      label="Total Harga Tiket Asing"
+                      name="customTotalAmount"
+                      label="Total Harga Tiket Khusus"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori asing."
+                      tooltip="Total harga tiket kategori khusus."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -263,35 +222,24 @@ export default function CreateWalkin() {
                   {/* ROW 2 (tablet-only) */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      {/* Jumlah Seluruh PELAJAR */}
-                      <NumberFieldInput
-                        control={form.control}
-                        name="studentMemberTotal"
-                        label="Jumlah Pelajar"
-                        placeholder="0"
-                        tooltip="Jumlah anggota pelajar."
-                        minValue={0}
-                        defaultValue={0}
-                      />
-
-                      {/* Jumlah Anggota UMUM */}
+                      {/* Jumlah Anggota PEMANDU */}
                       <NumberFieldInput
                         control={form.control}
                         name="publicMemberTotal"
-                        label="Jumlah Umum"
+                        label="Jumlah Pemandu"
                         placeholder="0"
-                        tooltip="Jumlah anggota umum."
+                        tooltip="Jumlah anggota pemandu."
                         minValue={0}
                         defaultValue={0}
                       />
 
-                      {/* Jumlah Anggota ASING */}
+                      {/* Jumlah Anggota KHUSUS */}
                       <NumberFieldInput
                         control={form.control}
-                        name="foreignMemberTotal"
-                        label="Jumlah Asing"
+                        name="customMemberTotal"
+                        label="Jumlah Khusus"
                         placeholder="0"
-                        tooltip="Jumlah anggota asing."
+                        tooltip="Jumlah anggota khusus."
                         minValue={0}
                         defaultValue={0}
                       />
@@ -309,35 +257,24 @@ export default function CreateWalkin() {
                     </div>
 
                     <div className="flex flex-col gap-4">
-                      {/* Total Harga Keseluruhan PELAJAR (readonly) */}
-                      <SimpleField
-                        control={form.control}
-                        name="studentTotalAmount"
-                        label="Total Harga Tiket Pelajar"
-                        placeholder="0"
-                        tooltip="Total harga tiket kategori pelajar."
-                        valueFormatter={(val) => formatRupiah(val || 0)}
-                        disabled
-                      />
-
-                      {/* Total Harga Keseluruhan UMUM (readonly) */}
+                      {/* Total Harga Keseluruhan PEMANDU (readonly) */}
                       <SimpleField
                         control={form.control}
                         name="publicTotalAmount"
-                        label="Total Harga Tiket Umum"
+                        label="Total Harga Tiket Pemandu"
                         placeholder="0"
-                        tooltip="Total harga tiket kategori umum."
+                        tooltip="Total harga tiket kategori pemandu."
                         valueFormatter={(val) => formatRupiah(val || 0)}
                         disabled
                       />
 
-                      {/* Total Harga Keseluruhan ASING (readonly) */}
+                      {/* Total Harga Keseluruhan KHUSUS (readonly) */}
                       <SimpleField
                         control={form.control}
-                        name="foreignTotalAmount"
-                        label="Total Harga Tiket Asing"
+                        name="customTotalAmount"
+                        label="Total Harga Tiket Khusus"
                         placeholder="0"
-                        tooltip="Total harga tiket kategori asing."
+                        tooltip="Total harga tiket kategori khusus."
                         valueFormatter={(val) => formatRupiah(val || 0)}
                         disabled
                       />
@@ -360,36 +297,25 @@ export default function CreateWalkin() {
               {isDesktop && (
                 <>
                   {/* ROW 2 (desktop only) */}
-                  <div className="grid grid-cols-4 gap-4">
-                    {/* Jumlah Seluruh PELAJAR */}
-                    <NumberFieldInput
-                      control={form.control}
-                      name="studentMemberTotal"
-                      label="Jumlah Pelajar"
-                      placeholder="0"
-                      tooltip="Jumlah anggota pelajar."
-                      minValue={0}
-                      defaultValue={0}
-                    />
-
-                    {/* Jumlah Anggota UMUM */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Jumlah Anggota PEMANDU */}
                     <NumberFieldInput
                       control={form.control}
                       name="publicMemberTotal"
-                      label="Jumlah Umum"
+                      label="Jumlah Pemandu"
                       placeholder="0"
-                      tooltip="Jumlah anggota umum."
+                      tooltip="Jumlah anggota pemandu."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Jumlah Anggota ASING */}
+                    {/* Jumlah Anggota KHUSUS */}
                     <NumberFieldInput
                       control={form.control}
-                      name="foreignMemberTotal"
-                      label="Jumlah Asing"
+                      name="customMemberTotal"
+                      label="Jumlah Khusus"
                       placeholder="0"
-                      tooltip="Jumlah anggota asing."
+                      tooltip="Jumlah anggota khusus."
                       minValue={0}
                       defaultValue={0}
                     />
@@ -405,35 +331,24 @@ export default function CreateWalkin() {
                       defaultValue={0}
                     />
 
-                    {/* Total Harga Keseluruhan PELAJAR (readonly) */}
-                    <SimpleField
-                      control={form.control}
-                      name="studentTotalAmount"
-                      label="Total Harga Tiket Pelajar"
-                      placeholder="0"
-                      tooltip="Total harga tiket kategori pelajar."
-                      valueFormatter={(val) => formatRupiah(val || 0)}
-                      disabled
-                    />
-
-                    {/* Total Harga Keseluruhan UMUM (readonly) */}
+                    {/* Total Harga Keseluruhan PEMANDU (readonly) */}
                     <SimpleField
                       control={form.control}
                       name="publicTotalAmount"
-                      label="Total Harga Tiket Umum"
+                      label="Total Harga Tiket Pemandu"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori umum."
+                      tooltip="Total harga tiket kategori pemandu."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
 
-                    {/* Total Harga Keseluruhan ASING (readonly) */}
+                    {/* Total Harga Keseluruhan KHUSUS (readonly) */}
                     <SimpleField
                       control={form.control}
-                      name="foreignTotalAmount"
-                      label="Total Harga Tiket Asing"
+                      name="customTotalAmount"
+                      label="Total Harga Tiket Khusus"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori asing."
+                      tooltip="Total harga tiket kategori khusus."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -450,25 +365,6 @@ export default function CreateWalkin() {
                     />
                   </div>
                 </>
-              )}
-
-              {visitorTotal > 19 && (
-                <h2 className="text-xl font-bold text-center max-w-10/12 mx-auto">
-                  Ketentuan Pembuatan Data Kunjungan
-                  <br />
-                  <span className="text-base font-normal">
-                    Jumlah maksimal pembelian tiket langsung adalah 19 orang.
-                    Untuk rombongan lebih dari itu, silakan melakukan reservasi
-                    terlebih dahulu beberapa hari sebelum kedatangan melalui
-                    konter tiket atau menghubungi nomor berikut:
-                  </span>
-                  <br />
-                  <span className="text-base font-normal">
-                    (022)-7213822 atau 0811-1111-9330.
-                  </span>
-                  <br />
-                  <span className="text-base font-medium">Terima Kasih.</span>
-                </h2>
               )}
 
               {/* ROW 3 */}
@@ -499,7 +395,7 @@ export default function CreateWalkin() {
                       label: prov.name,
                     })
                   )}
-                  disabled={!provinces.length || foreignTotal > 0}
+                  disabled={!provinces.length}
                   tooltip="Pilih provinsi asal pemesan."
                 />
 
@@ -516,7 +412,7 @@ export default function CreateWalkin() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!regencies.length || foreignTotal > 0}
+                  disabled={!regencies.length}
                   tooltip="Pilih kabupaten/kota asal pemesan."
                 />
 
@@ -533,7 +429,7 @@ export default function CreateWalkin() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!districts.length || foreignTotal > 0}
+                  disabled={!districts.length}
                   tooltip="Pilih kecamatan asal pemesan."
                 />
 
@@ -550,7 +446,7 @@ export default function CreateWalkin() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!villages.length || foreignTotal > 0}
+                  disabled={!villages.length}
                   tooltip="Pilih kelurahan/desa asal pemesan."
                 />
 
@@ -568,61 +464,7 @@ export default function CreateWalkin() {
                     })
                   )}
                   tooltip="Pilih negara asal pemesan."
-                  disabled={foreignTotal === 0}
                   countrySelect
-                />
-              </div>
-
-              {/* ROW 5 */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                {/* Metode Pembayaran */}
-                <SelectField
-                  control={form.control}
-                  name="paymentMethod"
-                  label="Metode Pembayaran"
-                  placeholder="Pilih metode pembayaran"
-                  icon={Banknote}
-                  options={[
-                    { label: "Tunai", value: "Tunai" },
-                    { label: "QRIS", value: "QRIS" },
-                    { label: "Lainnya", value: "Lainnya" },
-                  ]}
-                  tooltip="Metode pembayaran tiket."
-                />
-
-                {/* Uang Pembayaran */}
-                <SimpleField
-                  control={form.control}
-                  name="downPayment"
-                  label="Uang Pembayaran"
-                  placeholder="Masukan uang pembayaran"
-                  onChangeOverride={(e, field) => {
-                    const rawValue = e.target.value.replace(/[^\d]/g, "");
-                    field.onChange(Number(rawValue));
-                  }}
-                  valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah uang yang dibayarkan."
-                />
-
-                {/* Uang Kembalian (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  name="changeAmount"
-                  label="Uang Kembalian"
-                  placeholder="Masukan uang kembalian"
-                  disabled
-                  valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah uang kembalian jika pembayaran melebihi total yang ditentukan."
-                />
-
-                {/* Status Pembayaran (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  name="statusPayment"
-                  label="Status Pembayaran"
-                  placeholder="Masukan status pembayaran"
-                  disabled
-                  tooltip="Status pembayaran terisi otomatis (Lunas atau Belum Bayar)."
                 />
               </div>
 
@@ -634,10 +476,7 @@ export default function CreateWalkin() {
                   disabled={
                     form.formState.isSubmitting ||
                     visitorTotal === 0 ||
-                    visitorTotal > 19 ||
-                    !phoneNumber ||
-                    paymentMethod === "Lainnya" ||
-                    downPayment < totalPaymentAmount
+                    !phoneNumber
                   }
                 >
                   {form.formState.isSubmitting ? (
@@ -655,25 +494,21 @@ export default function CreateWalkin() {
         </Form>
       </CardContent>
 
-      <CardFooter className="flex flex-col justify-center items-center gap-2">
-        <h2 className="text-xl font-bold text-center">
-          Ketentuan Pembuatan Data Kunjungan
-        </h2>
-
-        <div className="flex justify-center items-center">
-          <span className="text-base font-normal text-center max-w-1/2 border p-4">
-            Pemesanan tiket hanya dapat dilakukan 30 menit sebelum jam
-            operasional Museum Geologi: 09:00 – 15:00 WIB.
-          </span>
-
-          <span className="text-base font-normal text-center max-w-1/2 border p-4">
-            Silakan pilih Metode Pembayaran, serta Uang Pembayaran{" "}
-            <span className="underline">tidak boleh kurang dari</span> Total
-            Pembayaran Harga Tiket.
-          </span>
-        </div>
-
-        <span className="text-base font-medium">Terima Kasih.</span>
+      <CardFooter className="flex justify-center">
+        {!isWithinOperationalHours() && (
+          <h2 className="text-xl font-bold text-center">
+            Ketentuan Kunjungan
+            <br />
+            <span className="text-base font-normal">
+              Pemesanan tiket hanya dapat dilakukan 30 menit sebelum jam
+              operasional Museum Geologi:
+            </span>
+            <br />
+            <span className="text-base font-normal">09:00 – 15:00 WIB</span>
+            <br />
+            <span className="text-base font-medium">Terima Kasih.</span>
+          </h2>
+        )}
       </CardFooter>
     </Card>
   );

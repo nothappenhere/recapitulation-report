@@ -743,7 +743,7 @@ export default function DetailWalkin() {
                         className="rounded-xs"
                         disabled={
                           form.formState.isSubmitting ||
-                          paymentMethod === "-" ||
+                          paymentMethod === "Lainnya" ||
                           downPayment < totalPaymentAmount
                         }
                       >
@@ -768,12 +768,10 @@ export default function DetailWalkin() {
               </h2>
 
               <div className="flex justify-center items-center">
-                {!isWithinOperationalHours() && (
-                  <span className="text-base font-normal text-center max-w-1/2 border py-4 px-3">
-                    Pembaruan kunjungan hanya dapat dilakukan 30 menit sebelum
-                    jam operasional Museum Geologi: 09:00 – 15:00 WIB.
-                  </span>
-                )}
+                <span className="text-base font-normal text-center max-w-1/2 border py-4 px-3">
+                  Pembaruan kunjungan hanya dapat dilakukan 30 menit sebelum jam
+                  operasional Museum Geologi: 09:00 – 15:00 WIB.
+                </span>
 
                 <span className="text-base font-normal text-center max-w-1/2 border p-4">
                   Silakan pilih Metode Pembayaran, serta Uang Pembayaran{" "}

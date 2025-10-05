@@ -2,7 +2,7 @@ import { GroupReservation } from "../models/GroupReservation.js";
 import { sendResponse } from "../utils/sendResponse.js";
 
 /**
- * * @desc Mendapatkan seluruh data reservasi
+ * * @desc Mendapatkan seluruh data reservasi rombongan
  * @route GET /api/group-reservation
  */
 export const getReservations = async (_, res) => {
@@ -16,7 +16,7 @@ export const getReservations = async (_, res) => {
       res,
       200,
       true,
-      "Berhasil mendapatkan seluruh data reservasi",
+      "Berhasil mendapatkan seluruh data reservasi rombongan",
       allReservations
     );
   } catch (err) {
@@ -27,9 +27,9 @@ export const getReservations = async (_, res) => {
 };
 
 /**
- * * @desc Mendapatkan satu data reservasi berdasarkan Kode Unik
+ * * @desc Mendapatkan satu data reservasi rombongan berdasarkan Kode Unik
  * @route GET /api/group-reservation/:uniqueCode
- * @param uniqueCode - Kode Unik dari reservasi yang dicari
+ * @param uniqueCode - Kode Unik dari reservasi rombongan yang dicari
  */
 export const getReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
@@ -48,7 +48,7 @@ export const getReservationByCode = async (req, res) => {
         res,
         404,
         false,
-        `Data reservasi dengan kode ${uniqueCode} tidak ditemukan`
+        `Data reservasi rombongan dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
 
@@ -56,7 +56,7 @@ export const getReservationByCode = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil mendapatkan data reservasi dengan kode ${uniqueCode}`,
+      `Berhasil mendapatkan data reservasi rombongan dengan kode ${uniqueCode}`,
       reservation[0]
     );
   } catch (err) {
@@ -67,7 +67,7 @@ export const getReservationByCode = async (req, res) => {
 };
 
 /**
- * * @desc Membuat data reservasi baru
+ * * @desc Membuat data reservasi rombongan baru
  * @route POST /api/group-reservation
  */
 export const createReservation = async (req, res) => {
@@ -101,7 +101,7 @@ export const createReservation = async (req, res) => {
       res,
       201,
       true,
-      "Berhasil membuat data reservasi baru",
+      "Berhasil membuat data reservasi rombongan baru",
       newReservation
     );
   } catch (err) {
@@ -112,9 +112,9 @@ export const createReservation = async (req, res) => {
 };
 
 /**
- * * @desc Memperbarui data reservasi berdasarkan Kode Unik
+ * * @desc Memperbarui data reservasi rombongan berdasarkan Kode Unik
  * @route PUT /api/group-reservation/:uniqueCode
- * @param uniqueCode - Kode Unik dari reservasi yang akan diperbarui
+ * @param uniqueCode - Kode Unik dari reservasi rombongan yang akan diperbarui
  */
 export const updateReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
@@ -136,7 +136,7 @@ export const updateReservationByCode = async (req, res) => {
         res,
         404,
         false,
-        `Data reservasi dengan kode ${uniqueCode} tidak ditemukan`
+        `Data reservasi rombongan dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
 
@@ -144,7 +144,7 @@ export const updateReservationByCode = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil memperbarui data reservasi dengan kode ${uniqueCode}`,
+      `Berhasil memperbarui data reservasi rombongan dengan kode ${uniqueCode}`,
       updated
     );
   } catch (err) {
@@ -155,9 +155,9 @@ export const updateReservationByCode = async (req, res) => {
 };
 
 /**
- * * @desc Menghapus data reservasi berdasarkan Kode Unik
+ * * @desc Menghapus data reservasi rombongan berdasarkan Kode Unik
  * @route DELETE /api/group-reservation/:uniqueCode
- * @param uniqueCode - Kode Unik dari reservasi yang akan dihapus
+ * @param uniqueCode - Kode Unik dari reservasi rombongan yang akan dihapus
  */
 export const deleteReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
@@ -173,7 +173,7 @@ export const deleteReservationByCode = async (req, res) => {
         res,
         404,
         false,
-        `Data reservasi dengan kode ${uniqueCode} tidak ditemukan`
+        `Data reservasi rombongan dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
 
@@ -181,7 +181,7 @@ export const deleteReservationByCode = async (req, res) => {
       res,
       200,
       true,
-      `Berhasil menghapus data reservasi dengan kode ${uniqueCode}`
+      `Berhasil menghapus data reservasi rombongan dengan kode ${uniqueCode}`
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

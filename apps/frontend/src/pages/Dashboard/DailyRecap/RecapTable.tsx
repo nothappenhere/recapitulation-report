@@ -1,28 +1,29 @@
 import { useCallback, useEffect, useState } from "react";
-import { type GroupReservationFullTypes } from "@rzkyakbr/types";
+import { type DailyRecapFullTypes } from "@rzkyakbr/types";
 import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
-import { useGroupReservationColumns } from "./columns";
+import { useDailyRecapColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
 
-export default function GroupReservationTable() {
-  const [data, setData] = useState<GroupReservationFullTypes[]>([]);
+export default function RecapTable() {
+  const [data, setData] = useState<DailyRecapFullTypes[]>([]);
   const [loading, setLoading] = useState(false);
 
   // * Untuk AlertDelete
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [selectedItem, setSelectedItem] =
-    useState<GroupReservationFullTypes | null>(null);
+  const [selectedItem, setSelectedItem] = useState<DailyRecapFullTypes | null>(
+    null
+  );
 
   // TODO: Ambil data dari API
   const fetchReservations = useCallback(async () => {
     setLoading(true);
 
     try {
-      const res = await api.get("/group-reservation");
+      const res = await api.get("/daily-recap");
       setData(res.data.data);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
@@ -80,9 +81,7 @@ export default function GroupReservationTable() {
     setLoading(true);
 
     try {
-      const res = await api.delete(
-        `/group-reservation/${selectedItem.groupReservationNumber}`
-      );
+      const res = await api.delete(`/daily-recap/${selectedItem.recapNumber}`);
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
     } catch (err) {
@@ -99,13 +98,13 @@ export default function GroupReservationTable() {
   }, [selectedItem]);
 
   // TODO: Handler ketika klik tombol Delete (tampilkan alert)
-  const handleDeleteClick = useCallback((item: GroupReservationFullTypes) => {
+  const handleDeleteClick = useCallback((item: DailyRecapFullTypes) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);
 
   // TODO: Oper ke kolom
-  const columns = useGroupReservationColumns(handleDeleteClick);
+  const columns = useDailyRecapColumns(handleDeleteClick);
 
   return (
     <div className="container mx-auto">
@@ -116,8 +115,8 @@ export default function GroupReservationTable() {
           <DataTable
             columns={columns}
             data={loading ? [] : data}
-            addTitle="Tambah Reservasi"
-            colSpan={13}
+            addTitle="Tambah Rekap"
+            colSpan={5}
             onRefresh={fetchReservations}
           />
 

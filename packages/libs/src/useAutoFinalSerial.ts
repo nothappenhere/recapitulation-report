@@ -1,5 +1,34 @@
 import { useEffect } from "react";
 
+function useSerialCategory(
+  watch: any,
+  setValue: any,
+  { initial, final, total }: { initial: string; final: string; total: string }
+) {
+  const initialValue = watch(initial);
+  const finalValue = watch(final);
+
+  useEffect(() => {
+    if (!initialValue || !finalValue) {
+      setValue(total, 0);
+      return;
+    }
+
+    const start = Number(initialValue);
+    const end = Number(finalValue);
+
+    if (isNaN(start) || isNaN(end) || end < start) {
+      setValue(total, 0);
+      return;
+    }
+
+    // 🔑 kalau ingin inklusif → (end - start + 1)
+    const count = end - start;
+
+    setValue(total, count);
+  }, [initialValue, finalValue, setValue, total]);
+}
+
 export function useAutoFinalSerial(
   watch: any,
   setValue: any,
@@ -7,7 +36,6 @@ export function useAutoFinalSerial(
     student?: boolean;
     public?: boolean;
     foreign?: boolean;
-    custom?: boolean;
   } = {}
 ) {
   const categoryMap = {
@@ -26,37 +54,15 @@ export function useAutoFinalSerial(
       final: "finalForeignSerialNumber",
       total: "foreignMemberTotal",
     },
-    custom: {
-      initial: "initialCustomSerialNumber",
-      final: "finalCustomSerialNumber",
-      total: "customMemberTotal",
-    },
   } as const;
 
-  (Object.keys(categories) as (keyof typeof categoryMap)[]).forEach((key) => {
-    if (!categories[key]) return;
-
-    const { initial, final, total } = categoryMap[key];
-
-    const initialValue = watch(initial) || ""; // simpan sebagai string
-    const totalValue = Number(watch(total)) || 0;
-
-    useEffect(() => {
-      if (!initialValue || !totalValue) {
-        setValue(final, "");
-        return;
-      }
-
-      // hitung dengan number
-      const numericFinal = Number(initialValue) + totalValue - 1;
-
-      // padding supaya panjang sama dengan input awal
-      const paddedFinal = String(numericFinal).padStart(
-        String(initialValue).length,
-        "0"
-      );
-
-      setValue(final, paddedFinal);
-    }, [initialValue, totalValue]);
-  });
+  if (categories.student) {
+    useSerialCategory(watch, setValue, categoryMap.student);
+  }
+  if (categories.public) {
+    useSerialCategory(watch, setValue, categoryMap.public);
+  }
+  if (categories.foreign) {
+    useSerialCategory(watch, setValue, categoryMap.foreign);
+  }
 }

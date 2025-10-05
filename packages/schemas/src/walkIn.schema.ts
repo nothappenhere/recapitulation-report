@@ -50,31 +50,6 @@ export const WalkInSchema = z.object({
     .enum(["Lunas", "Belum Bayar"], "Status pembayaran tidak boleh kosong!")
     .optional()
     .default("Belum Bayar"),
-
-  // initialStudentSerialNumber: z.coerce
-  //   .number()
-  //   .nonnegative("Nomor awal pelajar tidak boleh negative!")
-  //   .default(0),
-  // finalStudentSerialNumber: z.coerce
-  //   .number()
-  //   .nonnegative("Nomor akhir pelajar tidak boleh negative!")
-  //   .default(0),
-  // initialPublicSerialNumber: z.coerce
-  //   .number()
-  //   .nonnegative("Nomor awal umum tidak boleh negative!")
-  //   .default(0),
-  // finalPublicSerialNumber: z.coerce
-  //   .number()
-  //   .nonnegative("Nomor akhir umum tidak boleh negative!")
-  //   .default(0),
-  // initialForeignSerialNumber: z.coerce
-  //   .number()
-  //   .nonnegative("Nomor awal asing tidak boleh negative!")
-  //   .default(0),
-  // finalForeignSerialNumber: z.coerce
-  //   .number()
-  //   .nonnegative("Nomor akhir asing tidak boleh negative!")
-  //   .default(0),
 });
 
 export type TWalkIn = z.infer<typeof WalkInSchema>;
@@ -105,11 +80,4 @@ export const defaultWalkInFormValues: TWalkIn = {
   downPayment: 0,
   changeAmount: 0,
   statusPayment: "Belum Bayar",
-
-  // initialStudentSerialNumber: 0,
-  // finalStudentSerialNumber: 0,
-  // initialPublicSerialNumber: 0,
-  // finalPublicSerialNumber: 0,
-  // initialForeignSerialNumber: 0,
-  // finalForeignSerialNumber: 0,
 };

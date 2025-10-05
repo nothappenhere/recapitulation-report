@@ -1,65 +1,39 @@
 import mongoose from "mongoose";
 
-const walkinSchema = new mongoose.Schema(
+const dailyRecapSchema = new mongoose.Schema(
   {
-    walkinNumber: { type: String, unique: true },
+    recapNumber: { type: String, unique: true },
     agent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null,
+      required: true,
     },
 
-    visitingDate: { type: Date, required: true },
-    ordererName: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
+    recapDate: { type: Date, required: true },
+    description: { type: String, default: "-" },
 
     studentMemberTotal: { type: Number, required: true, default: 0 },
     publicMemberTotal: { type: Number, required: true, default: 0 },
     foreignMemberTotal: { type: Number, required: true, default: 0 },
     visitorMemberTotal: { type: Number, required: true, default: 0 },
 
-    address: { type: String, required: true },
-    province: { type: String, default: "-" },
-    regencyOrCity: { type: String, default: "-" },
-    district: { type: String, default: "-" },
-    village: { type: String, default: "-" },
-    country: { type: String, default: "Indonesia" },
-
     studentTotalAmount: { type: Number, default: 0 },
     publicTotalAmount: { type: Number, default: 0 },
     foreignTotalAmount: { type: Number, default: 0 },
     totalPaymentAmount: { type: Number, default: 0 },
 
-    paymentMethod: {
-      type: String,
-      enum: ["Tunai", "QRIS", "Lainnya"],
-      default: "Lainnya",
-    },
-    downPayment: { type: Number, default: 0 },
-    changeAmount: { type: Number, default: 0 },
-    statusPayment: {
-      type: String,
-      enum: ["Lunas", "Belum Bayar"],
-      default: "Belum Bayar",
-    },
+    initialStudentSerialNumber: { type: Number, required: true, default: 0 },
+    finalStudentSerialNumber: { type: Number, required: true, default: 0 },
+    initialPublicSerialNumber: { type: Number, required: true, default: 0 },
+    finalPublicSerialNumber: { type: Number, required: true, default: 0 },
+    initialForeignSerialNumber: { type: Number, required: true, default: 0 },
+    finalForeignSerialNumber: { type: Number, required: true, default: 0 },
   },
   { timestamps: true }
 );
 
 // Middleware untuk auto-calculation
-walkinSchema.pre("save", function (next) {
-  // Mengatur status pembayaran
-  if (this.downPayment >= this.totalPaymentAmount) {
-    this.statusPayment = "Lunas";
-  } else {
-    this.statusPayment = "Belum Bayar";
-  }
-
-  // Menghitung kembalian
-  if (this.downPayment >= this.paymentAmount) {
-    this.changeAmount = this.downPayment - this.paymentAmount;
-  }
-
+dailyRecapSchema.pre("save", function (next) {
   // Mengatur total anggota group/kelompok
   this.visitorMemberTotal =
     this.studentMemberTotal + this.publicMemberTotal + this.foreignMemberTotal;
@@ -68,14 +42,9 @@ walkinSchema.pre("save", function (next) {
 });
 
 // Middleware untuk menerapkan default value
-walkinSchema.pre("save", function (next) {
+dailyRecapSchema.pre("save", function (next) {
   // Ganti semua string kosong dengan default jika ada
-  const fieldsWithDefault = [
-    "province",
-    "regencyOrCity",
-    "district",
-    "village",
-  ];
+  const fieldsWithDefault = ["description"];
 
   fieldsWithDefault.forEach((field) => {
     if (this[field] === "") {
@@ -86,9 +55,9 @@ walkinSchema.pre("save", function (next) {
   next();
 });
 
-// Middleware untuk generate walkinNumber acak 6 karakter (unik)
-walkinSchema.pre("save", async function (next) {
-  if (!this.walkinNumber) {
+// Middleware untuk generate recapNumber acak 6 karakter (unik)
+dailyRecapSchema.pre("save", async function (next) {
+  if (!this.recapNumber) {
     try {
       const generateRandomCode = () => {
         const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -107,14 +76,14 @@ walkinSchema.pre("save", async function (next) {
 
       while (!unique && attempt < maxAttempts) {
         const randomCode = generateRandomCode();
-        const candidate = `MG-${randomCode}`;
+        const candidate = `MGDR-${randomCode}`;
 
-        const existing = await mongoose.models.Walkin.findOne({
-          walkinNumber: candidate,
+        const existing = await mongoose.models.GroupReservation.findOne({
+          recapNumber: candidate,
         });
 
         if (!existing) {
-          this.walkinNumber = candidate;
+          this.recapNumber = candidate;
           unique = true;
         }
 
@@ -123,7 +92,7 @@ walkinSchema.pre("save", async function (next) {
 
       if (!unique) {
         throw new Error(
-          "Failed to generate unique walkinNumber after multiple attempts."
+          "Failed to generate unique recapNumber after multiple attempts."
         );
       }
 
@@ -136,4 +105,4 @@ walkinSchema.pre("save", async function (next) {
   }
 });
 
-export const Walkin = mongoose.model("Walkin", walkinSchema);
+export const DailyRecap = mongoose.model("DailyRecap", dailyRecapSchema);

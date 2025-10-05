@@ -107,7 +107,7 @@ export default function CreateTicketPrice() {
       ) : (
         <div className="flex justify-center items-center mt-14">
           <div className="w-full max-w-sm">
-            <Card>
+            <Card className="shadow-lg rounded-md">
               <CardHeader>
                 <CardTitle>Pendataan Harga Tiket</CardTitle>
                 <CardDescription>

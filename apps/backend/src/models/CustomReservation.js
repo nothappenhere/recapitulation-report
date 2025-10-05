@@ -22,13 +22,20 @@ const customReservationSchema = new mongoose.Schema(
     },
     description: { type: String, default: "-" },
 
+    attachment: {
+      originalName: { type: String },
+      fileName: { type: String }, // nama di server
+      mimeType: { type: String },
+      size: { type: Number },
+      path: { type: String }, // path lokal (bisa digunakan untuk hapus/download)
+    },
+
     ordererName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
     groupName: { type: String, required: true },
 
-    studentMemberTotal: { type: Number, required: true, default: 0 },
     publicMemberTotal: { type: Number, required: true, default: 0 },
-    foreignMemberTotal: { type: Number, required: true, default: 0 },
+    customMemberTotal: { type: Number, required: true, default: 0 },
     visitorMemberTotal: { type: Number, required: true, default: 0 },
 
     actualMemberTotal: { type: Number, default: 0 },
@@ -45,9 +52,8 @@ const customReservationSchema = new mongoose.Schema(
     village: { type: String, default: "-" },
     country: { type: String, default: "Indonesia" },
 
-    studentTotalAmount: { type: Number, default: 0 },
     publicTotalAmount: { type: Number, default: 0 },
-    foreignTotalAmount: { type: Number, default: 0 },
+    customTotalAmount: { type: Number, default: 0 },
     totalPaymentAmount: { type: Number, default: 0 },
 
     paymentMethod: {
@@ -81,8 +87,7 @@ customReservationSchema.pre("save", function (next) {
   }
 
   // Mengatur total anggota group/kelompok
-  this.visitorMemberTotal =
-    this.studentMemberTotal + this.publicMemberTotal + this.foreignMemberTotal;
+  this.visitorMemberTotal = this.publicMemberTotal + this.customMemberTotal;
 
   next();
 });

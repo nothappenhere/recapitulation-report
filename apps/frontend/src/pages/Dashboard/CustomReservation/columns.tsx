@@ -1,4 +1,4 @@
-import { type GroupReservationFullTypes } from "@rzkyakbr/types";
+import { type CustomReservationFullTypes } from "@rzkyakbr/types";
 import { type ColumnDef } from "@tanstack/react-table";
 import { formatRupiah } from "@rzkyakbr/libs";
 import { Badge } from "@/components/ui/badge";
@@ -11,15 +11,15 @@ import {
 } from "@/components/table/column-factory";
 import { useNavigate } from "react-router";
 
-export function useGroupReservationColumns(
-  onDelete: (item: GroupReservationFullTypes) => void
-): ColumnDef<GroupReservationFullTypes>[] {
+export function useCustomReservationColumns(
+  onDelete: (item: CustomReservationFullTypes) => void
+): ColumnDef<CustomReservationFullTypes>[] {
   const navigate = useNavigate();
 
   return [
-    createSelectColumn<GroupReservationFullTypes>(),
+    createSelectColumn<CustomReservationFullTypes>(),
 
-    createColumn("groupReservationNumber", "Kode Reservasi"),
+    createColumn("customReservationNumber", "Kode Reservasi"),
     createColumn("agent", "Petugas Reservasi", {
       cell: ({ row }) => {
         const agent = row.original.agent as unknown as {
@@ -54,13 +54,6 @@ export function useGroupReservationColumns(
     createColumn("reservationStatus", "Status Reservasi"),
     createColumn("description", "Deskripsi"),
 
-    createColumn("studentMemberTotal", "Jumlah Pelajar", {
-      meta: { sum: true, label: "Jumlah Pelajar" },
-    }),
-    createColumn("studentTotalAmount", "Harga Tiket Pelajar", {
-      meta: { sum: true, isCurrency: true, label: "Harga Tiket Pelajar" },
-      cell: ({ row }) => formatRupiah(row.getValue("studentTotalAmount")),
-    }),
     createColumn("publicMemberTotal", "Jumlah Umum", {
       meta: { sum: true, label: "Jumlah Umum" },
     }),
@@ -68,11 +61,11 @@ export function useGroupReservationColumns(
       meta: { sum: true, isCurrency: true, label: "Harga Tiket Umum" },
       cell: ({ row }) => formatRupiah(row.getValue("publicTotalAmount")),
     }),
-    createColumn("foreignMemberTotal", "Jumlah Asing", {
-      meta: { sum: true, label: "Jumlah Asing" },
+    createColumn("customMemberTotal", "Jumlah Khusus", {
+      meta: { sum: true, label: "Jumlah Khusus" },
     }),
-    createColumn("foreignTotalAmount", "Harga Tiket Asing", {
-      meta: { sum: true, isCurrency: true, label: "Harga Tiket Asing" },
+    createColumn("customTotalAmount", "Harga Tiket Khusus", {
+      meta: { sum: true, isCurrency: true, label: "Harga Tiket Khusus" },
       cell: ({ row }) => formatRupiah(row.getValue("foreignTotalAmount")),
     }),
     createColumn("visitorMemberTotal", "Total Pengunjung", {
@@ -107,10 +100,10 @@ export function useGroupReservationColumns(
       },
     }),
 
-    createActionsColumn<GroupReservationFullTypes>(
-      (item) => navigate(`edit/${item.groupReservationNumber}`),
+    createActionsColumn<CustomReservationFullTypes>(
+      (item) => navigate(`edit/${item.customReservationNumber}`),
       onDelete,
-      (item) => navigate(`print/${item.groupReservationNumber}`)
+      (item) => navigate(`print/${item.customReservationNumber}`)
     ),
   ];
 }

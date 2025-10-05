@@ -18,7 +18,7 @@ export const CustomReservationSchema = z.object({
   phoneNumber: z.string().nonempty("Nomor telepon tidak boleh kosong!"),
   groupName: z.string().nonempty("Nama Rombongan tidak boleh kosong!"),
 
-  guideMemberTotal: z.coerce
+  publicMemberTotal: z.coerce
     .number()
     .nonnegative("Jumlah pemandu tidak boleh negative!"),
   customMemberTotal: z.coerce
@@ -44,7 +44,7 @@ export const CustomReservationSchema = z.object({
   village: z.string().optional().default("-"),
   country: z.string().optional().default("Indonesia"),
 
-  guideTotalAmount: z.coerce
+  publicTotalAmount: z.coerce
     .number()
     .nonnegative("Jumlah total pembayaran pemandu tidak boleh negative!"),
   customTotalAmount: z.coerce
@@ -78,7 +78,7 @@ export const defaultCustomReservationFormValues: TCustomReservation = {
   phoneNumber: "",
   groupName: "",
 
-  guideMemberTotal: 0,
+  publicMemberTotal: 0,
   customMemberTotal: 0,
   visitorMemberTotal: 0,
 
@@ -92,7 +92,7 @@ export const defaultCustomReservationFormValues: TCustomReservation = {
   village: "",
   country: "Indonesia",
 
-  guideTotalAmount: 0,
+  publicTotalAmount: 0,
   customTotalAmount: 0,
   totalPaymentAmount: 0,
 

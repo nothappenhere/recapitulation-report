@@ -53,7 +53,6 @@ interface DataTableProps<TData, TValue> {
   addTitle?: string;
   colSpan: number;
   onRefresh?: () => void;
-  setOpen?: (open: boolean) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -62,7 +61,6 @@ export function DataTable<TData, TValue>({
   addTitle,
   colSpan,
   onRefresh,
-  setOpen,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -102,11 +100,13 @@ export function DataTable<TData, TValue>({
           placeholder={
             location.pathname.includes("user-management")
               ? "Cari berdasarkan NIP, Jabatan, Nama lengkap, Username, dll..."
-              : "Cari berdasarkan Kode, Nama Pemesan, Tgl/Wkt Kunjungan, dll..."
+              : location.pathname.includes("daily-recap")
+              ? "Cari berdasarkan Kode, Nama Petugas, Tgl/Wkt Rekap, dll..."
+              : "Cari berdasarkan Kode, Nama Petugas/Pemesan, Tgl/Wkt Kunjungan, dll..."
           }
           value={globalFilter}
           onChange={(event) => setGlobalFilter(event.target.value)}
-          className="max-w-md"
+          className="max-w-lg"
           autoFocus
         />
 
@@ -239,14 +239,12 @@ export function DataTable<TData, TValue>({
                     data-state={row.getIsSelected() && "selected"}
                     className={`cursor-pointer ${rowClass}`}
                     onClick={() => {
-                      if (location.pathname.includes("user-management")) {
-                        // setOpen(true);
-                        // data={}
-                      } else {
+                      if (!location.pathname.includes("user-management")) {
                         navigate(
                           `edit/${
                             row.original.walkinNumber ||
-                            row.original.groupReservationNumber
+                            row.original.groupReservationNumber ||
+                            row.original.recapNumber
                           }`
                         );
                       }

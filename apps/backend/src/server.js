@@ -10,6 +10,8 @@ import UserManageRoutes from "./routes/UserManageRoutes.js";
 import TicketPriceRoutes from "./routes/TicketPriceRoutes.js";
 import WalkinRoutes from "./routes/WalkinRoutes.js";
 import GroupReservationRoutes from "./routes/GroupReservationRoutes.js";
+import CustomReservationRoutes from "./routes/CustomReservationRoutes.js";
+import DailyRecapRoutes from "./routes/DailyRecapRoutes.js";
 import RegionRoutes from "./routes/RegionRoutes.js";
 import VisitingHourRoutes from "./routes/VisitingHourRoutes.js";
 
@@ -35,6 +37,8 @@ app.use("/api/user-manage", UserManageRoutes);
 app.use("/api/ticket-price", TicketPriceRoutes);
 app.use("/api/walk-in", WalkinRoutes);
 app.use("/api/group-reservation", GroupReservationRoutes);
+app.use("/api/custom-reservation", CustomReservationRoutes);
+app.use("/api/daily-recap", DailyRecapRoutes);
 app.use("/api/region", RegionRoutes);
 app.use("/api/visit-hour", VisitingHourRoutes);
 

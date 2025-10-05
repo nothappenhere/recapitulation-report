@@ -23,7 +23,6 @@ import {
   formatRupiah,
   isWithinOperationalHours,
   mapRegionNames,
-  useAutoFinalSerial,
   useAutoPayment,
   useRegionSelector,
   useVisitingHourSelect,
@@ -125,7 +124,7 @@ export default function CreateGroupReservation() {
   };
 
   return (
-    <Card>
+    <Card className="shadow-lg rounded-md">
       <CardHeader className="text-center">
         <CardTitle>Pendataan Reservasi Rombongan</CardTitle>
         <CardDescription>
@@ -517,9 +516,9 @@ export default function CreateGroupReservation() {
                   control={form.control}
                   name="description"
                   label="Deskripsi"
-                  placeholder="Masukan deskripsi"
+                  placeholder="Tambahkan keterangan (opsional)"
                   component={<Textarea className="rounded-xs" />}
-                  tooltip="Tambahkan keterangan tambahan terkait kunjungan (opsional)."
+                  tooltip="Tambahkan catatan tambahan terkait kunjungan."
                 />
               </div>
 
@@ -712,7 +711,7 @@ export default function CreateGroupReservation() {
                       Loading...
                     </>
                   ) : (
-                    "Tambah Reservasi"
+                    "Tambah Reservasi Rombongan"
                   )}
                 </Button>
               )}
@@ -727,12 +726,10 @@ export default function CreateGroupReservation() {
         </h2>
 
         <div className="flex justify-center items-center">
-          {!isWithinOperationalHours() && (
-            <span className="text-base font-normal text-center max-w-1/2 border py-4 px-3">
-              Pemesanan reservasi hanya dapat dilakukan 30 menit sebelum jam
-              operasional Museum Geologi: 09:00 – 15:00 WIB.
-            </span>
-          )}
+          <span className="text-base font-normal text-center max-w-1/2 border py-4 px-3">
+            Pemesanan reservasi hanya dapat dilakukan 30 menit sebelum jam
+            operasional Museum Geologi: 09:00 – 15:00 WIB.
+          </span>
 
           <span className="text-base font-normal text-center max-w-1/2 border p-4">
             Silakan pilih Metode Pembayaran, serta Uang Pembayaran{" "}
