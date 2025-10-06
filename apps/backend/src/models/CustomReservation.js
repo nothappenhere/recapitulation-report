@@ -6,7 +6,7 @@ const customReservationSchema = new mongoose.Schema(
     agent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null,
     },
 
     visitingDate: { type: Date, required: true },
@@ -15,20 +15,18 @@ const customReservationSchema = new mongoose.Schema(
       ref: "VisitingHour",
       required: true,
     },
-    reservationMechanism: {
-      type: String,
-      enum: ["Whatsapp", "Google Form", "Datang Langsung", "Lainnya"],
-      default: "Lainnya",
-    },
     description: { type: String, default: "-" },
 
-    attachment: {
-      originalName: { type: String },
-      fileName: { type: String }, // nama di server
-      mimeType: { type: String },
-      size: { type: Number },
-      path: { type: String }, // path lokal (bisa digunakan untuk hapus/download)
-    },
+    attachments: [
+      {
+        originalName: String,
+        encoding: String,
+        mimeType: String,
+        fileName: String,
+        size: Number,
+        path: String,
+      },
+    ],
 
     ordererName: { type: String, required: true },
     phoneNumber: { type: String, required: true },

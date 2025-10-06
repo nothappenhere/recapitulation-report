@@ -32,10 +32,8 @@ export const getUserByUsername = async (req, res) => {
   const { username } = req.params;
 
   try {
-    // Cari satu data dengan Username
-    const oneUser = await User.find({ username: username });
+    const oneUser = await User.findOne({ username: username });
 
-    // Karena response API `data` adalah array, pastikan ada data dan ambil objek pertama
     if (!oneUser || oneUser.length === 0) {
       return sendResponse(
         res,
@@ -50,7 +48,7 @@ export const getUserByUsername = async (req, res) => {
       200,
       true,
       `Berhasil mendapatkan data pengguna dengan username ${username}`,
-      oneUser[0]
+      oneUser
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

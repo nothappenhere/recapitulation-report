@@ -96,13 +96,7 @@ export default function GroupReservationPrintPage() {
               />
               <InfoRow
                 label="Waktu Kunjungan (Visiting Hour)"
-                value={format(
-                  new Date(reservationData.visitingDate),
-                  `HH:mm:ss`,
-                  {
-                    locale: id,
-                  }
-                )}
+                value={`${reservationData.visitingHour.timeRange}`}
               />
               <InfoRow
                 label="Nama Pemesan (Orderer Name)"

@@ -35,14 +35,12 @@ export const getReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    // Cari satu data dengan ReservationNumber
-    const reservation = await GroupReservation.find({
+    const reservation = await GroupReservation.findOne({
       groupReservationNumber: uniqueCode,
     })
       .populate("agent", "fullName username")
       .populate("visitingHour", "timeRange");
 
-    // Karena response API `data` adalah array, pastikan ada data dan ambil objek pertama
     if (!reservation || reservation.length === 0) {
       return sendResponse(
         res,
@@ -57,7 +55,7 @@ export const getReservationByCode = async (req, res) => {
       200,
       true,
       `Berhasil mendapatkan data reservasi rombongan dengan kode ${uniqueCode}`,
-      reservation[0]
+      reservation
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

@@ -6,8 +6,9 @@ import RegisterPage from "./pages/Auth/RegisterPage";
 import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
 // Visit Page
 import CreateDirectVisit from "./pages/Visit/CreateDirectVisit";
+import DirectQRPage from "./pages/Visit/DirectQRPage";
 import CreateCustomVisit from "./pages/Visit/CreateCustomVisit";
-import QRPage from "./pages/Visit/QRPage";
+import CustomQRPage from "./pages/Visit/CustomQRPage";
 
 // Dashboard
 import DashboardPage from "./pages/Dashboard/DashboardPage";
@@ -18,25 +19,22 @@ import UserTable from "./pages/Dashboard/UserManagement/UserTable";
 // import DetailUser from "./pages/Dashboard/UserManagement/DetailUser";
 // Harga Tiket
 import TicketPricePage from "./pages/Dashboard/TicketPrice/TicketPricePage";
-import CreateTicketPrice from "./pages/Dashboard/TicketPrice/CreateTicketPrice";
-import DetailTicketPrice from "./pages/Dashboard/TicketPrice/DetailTicketPrice";
+import TicketPriceForm from "./pages/Dashboard/TicketPrice/TicketPriceForm";
 // Reservasi Langsung
-import WalkinTable from "./pages/Dashboard/Walk-in/WalkinTable";
-import CreateWalkin from "./pages/Dashboard/Walk-in/CreateWalkin";
-import DetailWalkin from "./pages/Dashboard/Walk-in/DetailWalkin";
+import WalkinPage from "./pages/Dashboard/Walk-in/WalkinPage";
+import WalkinForm from "./pages/Dashboard/Walk-in/WalkinForm";
 import WalkinPrintPage from "./pages/Dashboard/Walk-in/WalkinPrintPage";
 // Reservasi Rombongan
-import GroupReservationTable from "./pages/Dashboard/GroupReservation/GroupReservationTable";
-import CreateGroupReservation from "./pages/Dashboard/GroupReservation/CreateGroupReservation";
-import DetailGroupReservation from "./pages/Dashboard/GroupReservation/DetailGroupReservation";
+import GroupReservationPage from "./pages/Dashboard/GroupReservation/GroupReservationPage";
+import GroupReservationForm from "./pages/Dashboard/GroupReservation/GroupReservationForm";
 import GroupReservationPrintPage from "./pages/Dashboard/GroupReservation/GroupReservationPrintPage";
 // Reservasi Khusus
-import CustomReservationTable from "./pages/Dashboard/CustomReservation/CustomReservationTable";
-import CreateCustomReservation from "./pages/Dashboard/CustomReservation/CreateCustomReservation";
+import CustomReservationPage from "./pages/Dashboard/CustomReservation/CustomReservationPage";
+import CustomReservationForm from "./pages/Dashboard/CustomReservation/CustomReservationForm";
+import CustomReservationPrintPage from "./pages/Dashboard/CustomReservation/CustomReservationPrintPage";
 // Rekapitulasi Harian
-import RecapTable from "./pages/Dashboard/DailyRecap/RecapTable";
-import CreateRecap from "./pages/Dashboard/DailyRecap/CreateRecap";
-import DetailRecap from "./pages/Dashboard/DailyRecap/DetailRecap";
+import DailyRecapPage from "./pages/Dashboard/DailyRecap/DailyRecapPage";
+import DailyRecapForm from "./pages/Dashboard/DailyRecap/DailyRecapForm";
 
 function App() {
   return (
@@ -52,12 +50,14 @@ function App() {
         <Route path="/visit">
           <Route index element={<Navigate to="direct" replace />} />
 
-          <Route path="direct" element={<CreateCustomVisit />}>
-            <Route path=":uniqueCode" element={<QRPage />} />
+          <Route path="direct">
+            <Route index element={<CreateDirectVisit />} />
+            <Route path=":uniqueCode" element={<DirectQRPage />} />
           </Route>
 
-          <Route path="custom" element={<CreateCustomVisit />}>
-            <Route path=":uniqueCode" element={<QRPage />} />
+          <Route path="custom">
+            <Route index element={<CreateCustomVisit />} />
+            <Route path=":uniqueCode" element={<CustomQRPage />} />
           </Route>
         </Route>
 
@@ -72,25 +72,25 @@ function App() {
           {/* Harga Tiket */}
           <Route path="ticket-price">
             <Route index element={<TicketPricePage />} />
-            <Route path="add" element={<CreateTicketPrice />} />
+            <Route path="add" element={<TicketPriceForm />} />
 
             <Route
               path="edit"
               element={<Navigate to="/dashboard/ticket-price" replace />}
             />
-            <Route path="edit/:category" element={<DetailTicketPrice />} />
+            <Route path="edit/:category" element={<TicketPriceForm />} />
           </Route>
 
           {/* Reservasi Langsung */}
           <Route path="walk-in">
-            <Route index element={<WalkinTable />} />
-            <Route path="add" element={<CreateWalkin />} />
+            <Route index element={<WalkinPage />} />
+            <Route path="add" element={<WalkinForm />} />
 
             <Route
               path="edit"
               element={<Navigate to="/dashboard/walk-in" replace />}
             />
-            <Route path="edit/:uniqueCode" element={<DetailWalkin />} />
+            <Route path="edit/:uniqueCode" element={<WalkinForm />} />
 
             <Route
               path="print"
@@ -101,17 +101,14 @@ function App() {
 
           {/* Reservasi Rombongan */}
           <Route path="group-reservation">
-            <Route index element={<GroupReservationTable />} />
-            <Route path="add" element={<CreateGroupReservation />} />
+            <Route index element={<GroupReservationPage />} />
+            <Route path="add" element={<GroupReservationForm />} />
 
             <Route
               path="edit"
               element={<Navigate to="/dashboard/group-reservation" replace />}
             />
-            <Route
-              path="edit/:uniqueCode"
-              element={<DetailGroupReservation />}
-            />
+            <Route path="edit/:uniqueCode" element={<GroupReservationForm />} />
 
             <Route
               path="print"
@@ -125,8 +122,8 @@ function App() {
 
           {/* Reservasi Khusus */}
           <Route path="custom-reservation">
-            <Route index element={<CustomReservationTable />} />
-            <Route path="add" element={<CreateCustomReservation />} />
+            <Route index element={<CustomReservationPage />} />
+            <Route path="add" element={<CustomReservationForm />} />
 
             <Route
               path="edit"
@@ -134,7 +131,7 @@ function App() {
             />
             <Route
               path="edit/:uniqueCode"
-              element={<DetailGroupReservation />}
+              element={<CustomReservationForm />}
             />
 
             <Route
@@ -143,20 +140,20 @@ function App() {
             />
             <Route
               path="print/:uniqueCode"
-              element={<GroupReservationPrintPage />}
+              element={<CustomReservationPrintPage />}
             />
           </Route>
 
           {/* Rekapitulasi Harian */}
           <Route path="daily-recap">
-            <Route index element={<RecapTable />} />
-            <Route path="add" element={<CreateRecap />} />
+            <Route index element={<DailyRecapPage />} />
+            <Route path="add" element={<DailyRecapForm />} />
 
             <Route
               path="edit"
               element={<Navigate to="/dashboard/daily-recap" replace />}
             />
-            <Route path="edit/:uniqueCode" element={<DetailRecap />} />
+            <Route path="edit/:uniqueCode" element={<DailyRecapForm />} />
           </Route>
         </Route>
       </Routes>

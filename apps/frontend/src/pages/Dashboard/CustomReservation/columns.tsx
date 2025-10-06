@@ -50,7 +50,6 @@ export function useCustomReservationColumns(
     createColumn("address", "Alamat"),
     createColumn("country", "Negara Asal"),
 
-    createColumn("reservationMechanism", "Mekanisme Reservasi"),
     createColumn("reservationStatus", "Status Reservasi"),
     createColumn("description", "Deskripsi"),
 
@@ -66,7 +65,7 @@ export function useCustomReservationColumns(
     }),
     createColumn("customTotalAmount", "Harga Tiket Khusus", {
       meta: { sum: true, isCurrency: true, label: "Harga Tiket Khusus" },
-      cell: ({ row }) => formatRupiah(row.getValue("foreignTotalAmount")),
+      cell: ({ row }) => formatRupiah(row.getValue("customTotalAmount")),
     }),
     createColumn("visitorMemberTotal", "Total Pengunjung", {
       meta: { sum: true, label: "Total Pengunjung" },

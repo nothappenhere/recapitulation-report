@@ -8,18 +8,16 @@ import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
 
-export default function RecapTable() {
+export default function DailyRecapPage() {
   const [data, setData] = useState<DailyRecapFullTypes[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // * Untuk AlertDelete
-  const [isDeleteOpen, setDeleteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<DailyRecapFullTypes | null>(
     null
   );
+  const [loading, setLoading] = useState(false);
+  const [isDeleteOpen, setDeleteOpen] = useState(false);
 
-  // TODO: Ambil data dari API
-  const fetchReservations = useCallback(async () => {
+  //* Fetch data for displaying table
+  const fetchDailyRecaps = useCallback(async () => {
     setLoading(true);
 
     try {
@@ -37,16 +35,16 @@ export default function RecapTable() {
   }, []);
 
   useEffect(() => {
-    fetchReservations();
-  }, [fetchReservations]);
+    fetchDailyRecaps();
+  }, [fetchDailyRecaps]);
 
-  // jalankan polling
+  //* Conduct a poll
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     const startPolling = () => {
-      fetchReservations(); // langsung fetch begitu tab aktif
-      interval = setInterval(fetchReservations, 60000);
+      fetchDailyRecaps(); // langsung fetch begitu tab aktif
+      interval = setInterval(fetchDailyRecaps, 60000);
     };
 
     const stopPolling = () => {
@@ -73,9 +71,9 @@ export default function RecapTable() {
       stopPolling();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [fetchReservations]);
+  }, [fetchDailyRecaps]);
 
-  // TODO: Handler delete setelah dikonfirmasi
+  //* Delete handler: delete data after confirmation
   const confirmDelete = useCallback(async () => {
     if (!selectedItem) return;
     setLoading(true);
@@ -97,13 +95,13 @@ export default function RecapTable() {
     }
   }, [selectedItem]);
 
-  // TODO: Handler ketika klik tombol Delete (tampilkan alert)
+  //* Handler when the Delete button is clicked (display alert)
   const handleDeleteClick = useCallback((item: DailyRecapFullTypes) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);
 
-  // TODO: Oper ke kolom
+  //* Operate to the column
   const columns = useDailyRecapColumns(handleDeleteClick);
 
   return (
@@ -117,7 +115,7 @@ export default function RecapTable() {
             data={loading ? [] : data}
             addTitle="Tambah Rekap"
             colSpan={5}
-            onRefresh={fetchReservations}
+            onRefresh={fetchDailyRecaps}
           />
 
           <AlertDelete

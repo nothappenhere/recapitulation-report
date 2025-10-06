@@ -20,7 +20,7 @@ export function useWalkInColumns(
     createSelectColumn<WalkInFullTypes>(),
 
     createColumn("walkinNumber", "Kode Kunjungan"),
-    createColumn("agent", "Petugas Tiket", {
+    createColumn("agent", "Petugas Reservasi", {
       cell: ({ row }) => {
         const agent = row.original.agent as unknown as {
           fullName: string;

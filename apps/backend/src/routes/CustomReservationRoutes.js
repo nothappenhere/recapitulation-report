@@ -39,7 +39,7 @@ router.get("/:uniqueCode", getCustomReservationByCode);
  */
 router.post(
   "/",
-  upload.single("attachment"),
+  upload.array("attachments", 5),
   validateSchema(CustomReservationSchema),
   createCustomReservation
 );
@@ -51,7 +51,6 @@ router.post(
  */
 router.put(
   "/:uniqueCode",
-  upload.single("attachment"),
   validateSchema(CustomReservationSchema),
   updateCustomReservationByCode
 );

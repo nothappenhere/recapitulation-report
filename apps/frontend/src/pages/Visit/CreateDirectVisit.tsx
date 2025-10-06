@@ -47,6 +47,11 @@ export default function CreateDirectVisit() {
     defaultValues: defaultWalkInFormValues,
   });
 
+  //* for submit button validation purposes
+  const foreignTotal = form.watch("foreignMemberTotal");
+  const visitorTotal = form.watch("visitorMemberTotal");
+  const phoneNumber = form.watch("phoneNumber");
+
   // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
   const { countries, provinces, regencies, districts, villages } =
     useRegionSelector(form);
@@ -54,11 +59,7 @@ export default function CreateDirectVisit() {
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
-  const foreignTotal = form.watch("foreignMemberTotal");
-  const visitorTotal = form.watch("visitorMemberTotal");
-  const phoneNumber = form.watch("phoneNumber");
-
-  //* Submit handler create
+  //* Submit handler: create
   const onSubmit = async (values: TWalkIn): Promise<void> => {
     try {
       const {
@@ -88,7 +89,7 @@ export default function CreateDirectVisit() {
       const { walkinNumber } = res.data.data;
 
       form.reset();
-      navigate(`/visit/${walkinNumber}`, {
+      navigate(`${walkinNumber}`, {
         replace: true,
       });
     } catch (err) {
@@ -103,9 +104,9 @@ export default function CreateDirectVisit() {
   return (
     <Card className="m-5 shadow-lg rounded-md">
       <CardHeader className="text-center">
-        <CardTitle>Pendataan Kunjungan</CardTitle>
+        <CardTitle>Pendataan Kunjungan Langsung</CardTitle>
         <CardDescription>
-          Isi formulir di bawah untuk mencatat kunjungan.
+          Isi formulir di bawah untuk mencatat kunjungan langsung.
         </CardDescription>
       </CardHeader>
       <Separator />

@@ -1,0 +1,302 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+import {
+  Controller,
+  useFormContext,
+  type Control,
+  type FieldValues,
+  type Path,
+} from "react-hook-form";
+import { useFileUpload, formatBytes } from "@/hooks/use-file-upload";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  FileIcon,
+  UploadIcon,
+  UploadCloudIcon,
+  Trash2Icon,
+  DownloadIcon,
+  AlertCircleIcon,
+  ImageIcon,
+  VideoIcon,
+  FileTextIcon,
+  FileSpreadsheetIcon,
+  FileArchiveIcon,
+  HeadphonesIcon,
+} from "lucide-react";
+
+type FileUploadFieldProps<T extends FieldValues> = {
+  control: Control<T>;
+  name: Path<T>;
+  label?: string;
+  accept: string;
+  maxSize?: number;
+  maxFiles?: number;
+  initialFiles?: {
+    name: string;
+    size: number;
+    type: string;
+    url: string;
+    id: string;
+  }[];
+};
+
+const getFileIcon = (file: { file: File | { type: string; name: string } }) => {
+  const fileType = file.file instanceof File ? file.file.type : file.file.type;
+  const fileName = file.file instanceof File ? file.file.name : file.file.name;
+
+  if (
+    fileType.includes("pdf") ||
+    fileName.endsWith(".pdf") ||
+    fileType.includes("word") ||
+    fileName.endsWith(".doc")
+  ) {
+    return <FileTextIcon className="size-4 opacity-60" />;
+  } else if (
+    fileType.includes("zip") ||
+    fileType.includes("archive") ||
+    fileName.endsWith(".zip")
+  ) {
+    return <FileArchiveIcon className="size-4 opacity-60" />;
+  } else if (
+    fileType.includes("excel") ||
+    fileName.endsWith(".xls") ||
+    fileName.endsWith(".xlsx")
+  ) {
+    return <FileSpreadsheetIcon className="size-4 opacity-60" />;
+  } else if (fileType.includes("video/")) {
+    return <VideoIcon className="size-4 opacity-60" />;
+  } else if (fileType.includes("audio/")) {
+    return <HeadphonesIcon className="size-4 opacity-60" />;
+  } else if (fileType.startsWith("image/")) {
+    return <ImageIcon className="size-4 opacity-60" />;
+  }
+  return <FileIcon className="size-4 opacity-60" />;
+};
+
+export function FileUploadField<T extends FieldValues>({
+  control,
+  name,
+  label = "Upload files",
+  accept,
+  maxSize = 5 * 1024 * 1024,
+  maxFiles = 5,
+  initialFiles = [],
+}: FileUploadFieldProps<T>) {
+  const { setValue } = useFormContext();
+
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field, fieldState }) => {
+        const [
+          { files, isDragging, errors },
+          {
+            handleDragEnter,
+            handleDragLeave,
+            handleDragOver,
+            handleDrop,
+            openFileDialog,
+            removeFile,
+            clearFiles,
+            getInputProps,
+          },
+        ] = useFileUpload({
+          multiple: true,
+          accept,
+          maxFiles,
+          maxSize,
+          initialFiles,
+          onFilesChange: (newFiles) => {
+            const actualFiles = newFiles.map((f) => f.file);
+            setValue(name, actualFiles, { shouldValidate: true });
+          },
+        });
+
+        return (
+          <div className="flex flex-col gap-2">
+            {files.length === 0 && (
+              <>
+                {/* Drop area */}
+                <div
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  data-dragging={isDragging || undefined}
+                  data-files={files.length > 0 || undefined}
+                  className="flex min-h-56 flex-col items-center justify-center rounded-xs border border-black border-dashed p-4 transition-colors duration-200 ease-in-out data-[dragging=true]:bg-blue-50 data-[dragging=true]:border-blue-500"
+                >
+                  <input
+                    {...getInputProps()}
+                    className="sr-only"
+                    aria-label={label}
+                  />
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="bg-background mb-2 flex size-11 items-center justify-center rounded-full border">
+                      <FileIcon className="size-4 opacity-60" />
+                    </div>
+                    <p className="mb-1.5 text-sm font-medium">{label}</p>
+                    <p className="text-muted-foreground text-xs">
+                      Maksimal {maxFiles} file ∙ Hingga {formatBytes(maxSize)}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-4 rounded-sm"
+                      onClick={openFileDialog}
+                    >
+                      <UploadIcon
+                        className="-ms-1 opacity-60"
+                        aria-hidden="true"
+                      />
+                      Pilih berkas
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* File list */}
+            {files.length > 0 && (
+              <>
+                {/* Table with files */}
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm font-medium">
+                    Berkas Nota Dinas Permohonan Pengajuan Tarif Khusus (
+                    {files.length})
+                  </h3>
+                  <div className="flex gap-2">
+                    <input
+                      {...getInputProps()}
+                      className="sr-only"
+                      aria-label={label}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-sm border border-neutral-400"
+                      size="sm"
+                      onClick={openFileDialog}
+                    >
+                      <UploadCloudIcon
+                        className="-ms-0.5 size-3.5 opacity-60"
+                        aria-hidden="true"
+                      />
+                      Tambah berkas
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-sm border border-neutral-400"
+                      size="sm"
+                      onClick={clearFiles}
+                    >
+                      <Trash2Icon
+                        className="-ms-0.5 size-3.5 opacity-60"
+                        aria-hidden="true"
+                      />
+                      Hapus semua
+                    </Button>
+                  </div>
+                </div>
+                <div className="bg-background overflow-hidden rounded-xs border">
+                  <Table>
+                    <TableHeader className="text-xs">
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="h-9 py-2">Name</TableHead>
+                        <TableHead className="h-9 py-2">Type</TableHead>
+                        <TableHead className="h-9 py-2">Size</TableHead>
+                        <TableHead className="h-9 w-0 py-2">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className="text-[13px]">
+                      {files.map((file) => (
+                        <TableRow key={file.id}>
+                          <TableCell className="max-w-48 py-2 font-medium">
+                            <span className="flex items-center gap-2">
+                              <span className="shrink-0">
+                                {getFileIcon(file)}
+                              </span>{" "}
+                              <span className="truncate">{file.file.name}</span>
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground py-2">
+                            {file.file.type.split("/")[1]?.toUpperCase() ||
+                              "UNKNOWN"}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground py-2">
+                            {formatBytes(file.file.size)}
+                          </TableCell>
+                          <TableCell className="py-2 text-right whitespace-nowrap">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="text-muted-foreground hover:text-foreground size-8 hover:bg-transparent"
+                              aria-label={`Download ${file.file.name}`}
+                              onClick={() =>
+                                window.open(file.preview, "_blank")
+                              }
+                            >
+                              <DownloadIcon className="size-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="text-muted-foreground hover:text-foreground size-8 hover:bg-transparent"
+                              aria-label={`Remove ${file.file.name}`}
+                              onClick={() => removeFile(file.id)}
+                            >
+                              <Trash2Icon className="size-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
+            )}
+
+            {/* Errors */}
+            {/* {errors.length > 0 && (
+              <div
+                className="text-destructive flex items-center gap-1 text-xs"
+                role="alert"
+              >
+                <AlertCircleIcon className="size-3" />
+                <span>{errors[0]}</span>
+              </div>
+            )} */}
+
+            {errors.length > 0 && (
+              <ul className="text-destructive text-xs space-y-1">
+                {errors.map((err, idx) => (
+                  <li key={idx} className="flex items-center gap-1">
+                    <AlertCircleIcon className="size-3" />
+                    <span>{err}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {fieldState.error && (
+              <p className="text-destructive text-xs">
+                {fieldState.error.message}
+              </p>
+            )}
+          </div>
+        );
+      }}
+    />
+  );
+}

@@ -62,6 +62,7 @@ export function useAutoPayment(apiUrl: string, watch: any, setValue: any) {
   const studentTotal = Number(watch("studentMemberTotal")) || 0;
   const publicTotal = Number(watch("publicMemberTotal")) || 0;
   const foreignTotal = Number(watch("foreignMemberTotal")) || 0;
+  const customTotal = Number(watch("customMemberTotal")) || 0;
   const downPayment = Number(watch("downPayment")) || 0;
 
   // Kalkulasi otomatis total pembayaran, kembalian, dan status
@@ -69,7 +70,7 @@ export function useAutoPayment(apiUrl: string, watch: any, setValue: any) {
     if (loading || error) return;
 
     // Hitung total seluruh anggota
-    const totalMember = studentTotal + publicTotal + foreignTotal;
+    const totalMember = studentTotal + publicTotal + foreignTotal + customTotal;
     setValue("visitorMemberTotal", totalMember);
 
     // Hitung total seluruh harga
@@ -97,6 +98,7 @@ export function useAutoPayment(apiUrl: string, watch: any, setValue: any) {
     studentTotal,
     publicTotal,
     foreignTotal,
+    customTotal,
     downPayment,
     prices,
     loading,

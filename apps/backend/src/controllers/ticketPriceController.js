@@ -32,7 +32,7 @@ export const getTicketPriceByCategory = async (req, res) => {
   const { category } = req.params;
 
   try {
-    const ticketPrice = await TicketPrice.find({ category });
+    const ticketPrice = await TicketPrice.findOne({ category });
 
     if (!ticketPrice || ticketPrice.length === 0) {
       return sendResponse(
@@ -48,7 +48,7 @@ export const getTicketPriceByCategory = async (req, res) => {
       200,
       true,
       `Berhasil mendapatkan data harga tiket dengan kategori ${category}`,
-      ticketPrice[0]
+      ticketPrice
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

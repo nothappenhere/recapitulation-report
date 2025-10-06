@@ -1,29 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
-import { type WalkInFullTypes } from "@rzkyakbr/types";
+import { type CustomReservationFullTypes } from "@rzkyakbr/types";
 import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
-import { useWalkInColumns } from "./columns";
+import { useCustomReservationColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
 
-export default function WalkinTable() {
-  const [data, setData] = useState<WalkInFullTypes[]>([]);
+export default function CustomReservationPage() {
+  const [data, setData] = useState<CustomReservationFullTypes[]>([]);
+  const [selectedItem, setSelectedItem] =
+    useState<CustomReservationFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // * Untuk AlertDelete
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<WalkInFullTypes | null>(
-    null
-  );
 
-  // TODO: Ambil data dari API
-  const fetchWalkIns = useCallback(async () => {
+  //* Fetch data for displaying table
+  const fetchReservations = useCallback(async () => {
     setLoading(true);
 
     try {
-      const res = await api.get("/walk-in");
+      const res = await api.get("/custom-reservation");
       setData(res.data.data);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
@@ -37,16 +34,16 @@ export default function WalkinTable() {
   }, []);
 
   useEffect(() => {
-    fetchWalkIns();
-  }, [fetchWalkIns]);
+    fetchReservations();
+  }, [fetchReservations]);
 
-  // jalankan polling
+  //* Conduct a poll
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     const startPolling = () => {
-      fetchWalkIns(); // langsung fetch begitu tab aktif
-      interval = setInterval(fetchWalkIns, 60000);
+      fetchReservations(); // langsung fetch begitu tab aktif
+      interval = setInterval(fetchReservations, 60000);
     };
 
     const stopPolling = () => {
@@ -73,15 +70,17 @@ export default function WalkinTable() {
       stopPolling();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [fetchWalkIns]);
+  }, [fetchReservations]);
 
-  // TODO: Handler delete setelah dikonfirmasi
+  //* Delete handler: delete data after confirmation
   const confirmDelete = useCallback(async () => {
     if (!selectedItem) return;
     setLoading(true);
 
     try {
-      const res = await api.delete(`/walk-in/${selectedItem.walkinNumber}`);
+      const res = await api.delete(
+        `/custom-reservation/${selectedItem.customReservationNumber}`
+      );
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
     } catch (err) {
@@ -97,14 +96,14 @@ export default function WalkinTable() {
     }
   }, [selectedItem]);
 
-  // TODO: Handler ketika klik tombol Delete (tampilkan alert)
-  const handleDeleteClick = useCallback((item: WalkInFullTypes) => {
+  //* Handler when the Delete button is clicked (display alert)
+  const handleDeleteClick = useCallback((item: CustomReservationFullTypes) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);
 
-  // TODO: Oper ke kolom
-  const columns = useWalkInColumns(handleDeleteClick);
+  //* Operate to the column
+  const columns = useCustomReservationColumns(handleDeleteClick);
 
   return (
     <div className="container mx-auto">
@@ -115,9 +114,9 @@ export default function WalkinTable() {
           <DataTable
             columns={columns}
             data={loading ? [] : data}
-            addTitle="Tambah Kunjungan"
-            colSpan={8}
-            onRefresh={fetchWalkIns}
+            addTitle="Tambah Reservasi"
+            colSpan={13}
+            onRefresh={fetchReservations}
           />
 
           <AlertDelete

@@ -1,28 +1,27 @@
 import { useCallback, useEffect, useState } from "react";
-import { type GroupReservationFullTypes } from "@rzkyakbr/types";
+import { type WalkInFullTypes } from "@rzkyakbr/types";
 import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
-import { useGroupReservationColumns } from "./columns";
+import { useWalkInColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
 
-export default function GroupReservationTable() {
-  const [data, setData] = useState<GroupReservationFullTypes[]>([]);
+export default function WalkinPage() {
+  const [data, setData] = useState<WalkInFullTypes[]>([]);
+  const [selectedItem, setSelectedItem] = useState<WalkInFullTypes | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
-
-  // * Untuk AlertDelete
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [selectedItem, setSelectedItem] =
-    useState<GroupReservationFullTypes | null>(null);
 
-  // TODO: Ambil data dari API
-  const fetchReservations = useCallback(async () => {
+  //* Fetch data for displaying table
+  const fetchWalkIns = useCallback(async () => {
     setLoading(true);
 
     try {
-      const res = await api.get("/group-reservation");
+      const res = await api.get("/walk-in");
       setData(res.data.data);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
@@ -36,16 +35,16 @@ export default function GroupReservationTable() {
   }, []);
 
   useEffect(() => {
-    fetchReservations();
-  }, [fetchReservations]);
+    fetchWalkIns();
+  }, [fetchWalkIns]);
 
-  // jalankan polling
+  //* Conduct a poll
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     const startPolling = () => {
-      fetchReservations(); // langsung fetch begitu tab aktif
-      interval = setInterval(fetchReservations, 60000);
+      fetchWalkIns(); // langsung fetch begitu tab aktif
+      interval = setInterval(fetchWalkIns, 60000);
     };
 
     const stopPolling = () => {
@@ -72,17 +71,15 @@ export default function GroupReservationTable() {
       stopPolling();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [fetchReservations]);
+  }, [fetchWalkIns]);
 
-  // TODO: Handler delete setelah dikonfirmasi
+  //* Delete handler: delete data after confirmation
   const confirmDelete = useCallback(async () => {
     if (!selectedItem) return;
     setLoading(true);
 
     try {
-      const res = await api.delete(
-        `/group-reservation/${selectedItem.groupReservationNumber}`
-      );
+      const res = await api.delete(`/walk-in/${selectedItem.walkinNumber}`);
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
     } catch (err) {
@@ -98,14 +95,14 @@ export default function GroupReservationTable() {
     }
   }, [selectedItem]);
 
-  // TODO: Handler ketika klik tombol Delete (tampilkan alert)
-  const handleDeleteClick = useCallback((item: GroupReservationFullTypes) => {
+  //* Handler when the Delete button is clicked (display alert)
+  const handleDeleteClick = useCallback((item: WalkInFullTypes) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);
 
-  // TODO: Oper ke kolom
-  const columns = useGroupReservationColumns(handleDeleteClick);
+  //* Operate to the column
+  const columns = useWalkInColumns(handleDeleteClick);
 
   return (
     <div className="container mx-auto">
@@ -116,9 +113,9 @@ export default function GroupReservationTable() {
           <DataTable
             columns={columns}
             data={loading ? [] : data}
-            addTitle="Tambah Reservasi"
-            colSpan={13}
-            onRefresh={fetchReservations}
+            addTitle="Tambah Kunjungan"
+            colSpan={8}
+            onRefresh={fetchWalkIns}
           />
 
           <AlertDelete

@@ -47,6 +47,7 @@ import { useUser } from "@/hooks/use-user-context";
 import { ComboboxField } from "@/components/form/ComboboxField";
 import { PhoneField } from "@/components/form/PhoneField";
 import { NumberFieldInput } from "@/components/form/NumberField";
+import { FileUploadField } from "@/components/form/FileUploadField";
 
 export default function CreateCustomReservation() {
   const navigate = useNavigate();
@@ -72,6 +73,8 @@ export default function CreateCustomReservation() {
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
+  const attachments = form.watch("attachments");
+  const guideTotal = form.watch("publicMemberTotal");
   const customTotal = form.watch("customMemberTotal");
   const visitorTotal = form.watch("visitorMemberTotal");
   const phoneNumber = form.watch("phoneNumber");
@@ -96,23 +99,59 @@ export default function CreateCustomReservation() {
         countries,
       });
 
-      const payload = {
-        ...values,
-        province: customTotal > 0 ? "-" : provinceName,
-        regencyOrCity: customTotal > 0 ? "-" : regencyName,
-        district: customTotal > 0 ? "-" : districtName,
-        village: customTotal > 0 ? "-" : villageName,
-        country: !customTotal ? "Indonesia" : countryName,
-        agent: Agent,
-      };
+      const formData = new FormData();
 
-      const res = await api.post("/custom-reservation", payload);
-      const { groupReservationNumber } = res.data.data;
+      // Append semua data biasa
+      formData.append("visitingDate", values.visitingDate.toString());
+      formData.append("visitingHour", values.visitingHour);
+      formData.append("description", values.description || "-");
+
+      formData.append("ordererName", values.ordererName);
+      formData.append("phoneNumber", values.phoneNumber);
+      formData.append("groupName", values.groupName);
+
+      formData.append("publicMemberTotal", String(values.publicMemberTotal));
+      formData.append("customMemberTotal", String(values.customMemberTotal));
+      formData.append("visitorMemberTotal", String(values.visitorMemberTotal));
+      formData.append("actualMemberTotal", String(values.actualMemberTotal));
+
+      formData.append("reservationStatus", values.reservationStatus);
+
+      formData.append("address", values.address);
+      formData.append("province", customTotal > 0 ? "-" : provinceName);
+      formData.append("regencyOrCity", customTotal > 0 ? "-" : regencyName);
+      formData.append("district", customTotal > 0 ? "-" : districtName);
+      formData.append("village", customTotal > 0 ? "-" : villageName);
+      formData.append("country", !customTotal ? "Indonesia" : countryName);
+
+      formData.append("publicTotalAmount", String(values.publicTotalAmount));
+      formData.append("customTotalAmount", String(values.customTotalAmount));
+      formData.append("totalPaymentAmount", String(values.totalPaymentAmount));
+      formData.append("downPayment", String(values.downPayment));
+      formData.append("changeAmount", String(values.changeAmount));
+
+      formData.append("paymentMethod", values.paymentMethod);
+      formData.append("statusPayment", values.statusPayment);
+
+      formData.append("agent", String(Agent));
+
+      if (values.attachments && values.attachments.length > 0) {
+        values.attachments.forEach((file: File) => {
+          formData.append("attachments", file);
+        });
+      }
+
+      const res = await api.post("/custom-reservation", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      const { customReservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
 
       form.reset();
       navigate(
-        `/dashboard/custom-reservation/print/${groupReservationNumber}`,
+        `/dashboard/custom-reservation/print/${customReservationNumber}`,
         {
           replace: true,
         }
@@ -149,7 +188,7 @@ export default function CreateCustomReservation() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               {/* ROW 1 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Tanggal Kunjungan */}
                 <DateField
                   control={form.control}
@@ -174,22 +213,6 @@ export default function CreateCustomReservation() {
                     })
                   )}
                   tooltip="Tentukan jam kunjungan sesuai jadwal museum."
-                />
-
-                {/* Mekanisme Reservasi */}
-                <SelectField
-                  control={form.control}
-                  name="reservationMechanism"
-                  label="Mekanisme Reservasi"
-                  placeholder="Pilih mekanisme reservasi"
-                  icon={SquareLibrary}
-                  options={[
-                    { value: "Whatsapp", label: "Whatsapp" },
-                    { value: "Google Form", label: "Google Form" },
-                    { value: "Datang Langsung", label: "Datang Langsung" },
-                    { value: "Lainnya", label: "Lainnya..." },
-                  ]}
-                  tooltip="Pilih metode reservasi yang digunakan."
                 />
               </div>
 
@@ -226,70 +249,48 @@ export default function CreateCustomReservation() {
               {/* Kondisional berdasarkan ukuran layar */}
               {isMobile && (
                 <>
-                  {/* ROW 3 (mobile-only) */}
+                  {/* ROW 2 (mobile-only) */}
                   <div className="grid grid-cols-1 gap-4">
-                    {/* Jumlah Seluruh PELAJAR */}
-                    <NumberFieldInput
-                      control={form.control}
-                      name="studentMemberTotal"
-                      label="Jumlah Pelajar"
-                      placeholder="0"
-                      tooltip="Jumlah anggota pelajar."
-                      minValue={0}
-                      defaultValue={0}
-                    />
-
-                    {/* Total Harga Keseluruhan PELAJAR (readonly) */}
-                    <SimpleField
-                      control={form.control}
-                      name="studentTotalAmount"
-                      label="Total Harga Tiket Pelajar"
-                      placeholder="0"
-                      tooltip="Total harga tiket kategori pelajar."
-                      valueFormatter={(val) => formatRupiah(val || 0)}
-                      disabled
-                    />
-
-                    {/* Jumlah Anggota UMUM */}
+                    {/* Jumlah Anggota PEMANDU */}
                     <NumberFieldInput
                       control={form.control}
                       name="publicMemberTotal"
-                      label="Jumlah Umum"
+                      label="Jumlah Pemandu"
                       placeholder="0"
-                      tooltip="Jumlah anggota umum."
+                      tooltip="Jumlah anggota pemandu."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Total Harga Keseluruhan UMUM (readonly) */}
+                    {/* Total Harga Keseluruhan PEMANDU (readonly) */}
                     <SimpleField
                       control={form.control}
                       name="publicTotalAmount"
-                      label="Total Harga Tiket Umum"
+                      label="Total Harga Tiket Pemandu"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori umum."
+                      tooltip="Total harga tiket kategori pemandu."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
 
-                    {/* Jumlah Anggota ASING */}
+                    {/* Jumlah Anggota KHUSUS */}
                     <NumberFieldInput
                       control={form.control}
                       name="customMemberTotal"
-                      label="Jumlah Asing"
+                      label="Jumlah Khusus"
                       placeholder="0"
-                      tooltip="Jumlah anggota asing."
+                      tooltip="Jumlah anggota khusus."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Total Harga Keseluruhan ASING (readonly) */}
+                    {/* Total Harga Keseluruhan KHUSUS (readonly) */}
                     <SimpleField
                       control={form.control}
                       name="customTotalAmount"
-                      label="Total Harga Tiket Asing"
+                      label="Total Harga Tiket Khusus"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori asing."
+                      tooltip="Total harga tiket kategori khusus."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -321,38 +322,27 @@ export default function CreateCustomReservation() {
 
               {isTablet && (
                 <>
-                  {/* ROW 3 (tablet-only) */}
+                  {/* ROW 2 (tablet-only) */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      {/* Jumlah Seluruh PELAJAR */}
-                      <NumberFieldInput
-                        control={form.control}
-                        name="studentMemberTotal"
-                        label="Jumlah Pelajar"
-                        placeholder="0"
-                        tooltip="Jumlah anggota pelajar."
-                        minValue={0}
-                        defaultValue={0}
-                      />
-
-                      {/* Jumlah Anggota UMUM */}
+                      {/* Jumlah Anggota PEMANDU */}
                       <NumberFieldInput
                         control={form.control}
                         name="publicMemberTotal"
-                        label="Jumlah Umum"
+                        label="Jumlah Pemandu"
                         placeholder="0"
-                        tooltip="Jumlah anggota umum."
+                        tooltip="Jumlah anggota pemandu."
                         minValue={0}
                         defaultValue={0}
                       />
 
-                      {/* Jumlah Anggota ASING */}
+                      {/* Jumlah Anggota KHUSUS */}
                       <NumberFieldInput
                         control={form.control}
                         name="customMemberTotal"
-                        label="Jumlah Asing"
+                        label="Jumlah Khusus"
                         placeholder="0"
-                        tooltip="Jumlah anggota asing."
+                        tooltip="Jumlah anggota khusus."
                         minValue={0}
                         defaultValue={0}
                       />
@@ -370,35 +360,24 @@ export default function CreateCustomReservation() {
                     </div>
 
                     <div className="flex flex-col gap-4">
-                      {/* Total Harga Keseluruhan PELAJAR (readonly) */}
-                      <SimpleField
-                        control={form.control}
-                        name="studentTotalAmount"
-                        label="Total Harga Tiket Pelajar"
-                        placeholder="0"
-                        tooltip="Total harga tiket kategori pelajar."
-                        valueFormatter={(val) => formatRupiah(val || 0)}
-                        disabled
-                      />
-
-                      {/* Total Harga Keseluruhan UMUM (readonly) */}
+                      {/* Total Harga Keseluruhan PEMANDU (readonly) */}
                       <SimpleField
                         control={form.control}
                         name="publicTotalAmount"
-                        label="Total Harga Tiket Umum"
+                        label="Total Harga Tiket Pemandu"
                         placeholder="0"
-                        tooltip="Total harga tiket kategori umum."
+                        tooltip="Total harga tiket kategori pemandu."
                         valueFormatter={(val) => formatRupiah(val || 0)}
                         disabled
                       />
 
-                      {/* Total Harga Keseluruhan ASING (readonly) */}
+                      {/* Total Harga Keseluruhan KHUSUS (readonly) */}
                       <SimpleField
                         control={form.control}
                         name="customTotalAmount"
-                        label="Total Harga Tiket Asing"
+                        label="Total Harga Tiket Khusus"
                         placeholder="0"
-                        tooltip="Total harga tiket kategori asing."
+                        tooltip="Total harga tiket kategori khusus."
                         valueFormatter={(val) => formatRupiah(val || 0)}
                         disabled
                       />
@@ -420,37 +399,26 @@ export default function CreateCustomReservation() {
 
               {isDesktop && (
                 <>
-                  {/* ROW 3 (desktop only) */}
-                  <div className="grid grid-cols-4 gap-4">
-                    {/* Jumlah Seluruh PELAJAR */}
-                    <NumberFieldInput
-                      control={form.control}
-                      name="studentMemberTotal"
-                      label="Jumlah Pelajar"
-                      placeholder="0"
-                      tooltip="Jumlah anggota pelajar."
-                      minValue={0}
-                      defaultValue={0}
-                    />
-
-                    {/* Jumlah Anggota UMUM */}
+                  {/* ROW 2 (desktop only) */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Jumlah Anggota PEMANDU */}
                     <NumberFieldInput
                       control={form.control}
                       name="publicMemberTotal"
-                      label="Jumlah Umum"
+                      label="Jumlah Pemandu"
                       placeholder="0"
-                      tooltip="Jumlah anggota umum."
+                      tooltip="Jumlah anggota pemandu."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Jumlah Anggota ASING */}
+                    {/* Jumlah Anggota KHUSUS */}
                     <NumberFieldInput
                       control={form.control}
                       name="customMemberTotal"
-                      label="Jumlah Asing"
+                      label="Jumlah Khusus"
                       placeholder="0"
-                      tooltip="Jumlah anggota asing."
+                      tooltip="Jumlah anggota khusus."
                       minValue={0}
                       defaultValue={0}
                     />
@@ -466,35 +434,24 @@ export default function CreateCustomReservation() {
                       defaultValue={0}
                     />
 
-                    {/* Total Harga Keseluruhan PELAJAR (readonly) */}
-                    <SimpleField
-                      control={form.control}
-                      name="studentTotalAmount"
-                      label="Total Harga Tiket Pelajar"
-                      placeholder="0"
-                      tooltip="Total harga tiket kategori pelajar."
-                      valueFormatter={(val) => formatRupiah(val || 0)}
-                      disabled
-                    />
-
-                    {/* Total Harga Keseluruhan UMUM (readonly) */}
+                    {/* Total Harga Keseluruhan PEMANDU (readonly) */}
                     <SimpleField
                       control={form.control}
                       name="publicTotalAmount"
-                      label="Total Harga Tiket Umum"
+                      label="Total Harga Tiket Pemandu"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori umum."
+                      tooltip="Total harga tiket kategori pemandu."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
 
-                    {/* Total Harga Keseluruhan ASING (readonly) */}
+                    {/* Total Harga Keseluruhan KHUSUS (readonly) */}
                     <SimpleField
                       control={form.control}
                       name="customTotalAmount"
-                      label="Total Harga Tiket Asing"
+                      label="Total Harga Tiket Khusus"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori asing."
+                      tooltip="Total harga tiket kategori khusus."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -513,7 +470,7 @@ export default function CreateCustomReservation() {
                 </>
               )}
 
-              {/* ROW 4 */}
+              {/* ROW 3 */}
               <div className="grid gap-3">
                 <SimpleField
                   control={form.control}
@@ -525,7 +482,7 @@ export default function CreateCustomReservation() {
                 />
               </div>
 
-              {/* ROW 5 */}
+              {/* ROW 4 */}
               <div className="grid gap-3">
                 {/* Alamat */}
                 <SimpleField
@@ -534,11 +491,11 @@ export default function CreateCustomReservation() {
                   label="Alamat"
                   placeholder="Masukan alamat"
                   component={<Textarea className="rounded-xs" />}
-                  tooltip="Masukkan alamat lengkap pemesan atau instansi asal rombongan."
+                  tooltip="Masukkan alamat lengkap pemesan."
                 />
               </div>
 
-              {/* ROW 6 */}
+              {/* ROW 5 */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Provinsi */}
                 <ComboboxField
@@ -553,7 +510,7 @@ export default function CreateCustomReservation() {
                       label: prov.name,
                     })
                   )}
-                  disabled={!provinces.length || customTotal > 0}
+                  disabled={!provinces.length}
                   tooltip="Pilih provinsi asal pemesan."
                 />
 
@@ -570,7 +527,7 @@ export default function CreateCustomReservation() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!regencies.length || customTotal > 0}
+                  disabled={!regencies.length}
                   tooltip="Pilih kabupaten/kota asal pemesan."
                 />
 
@@ -587,7 +544,7 @@ export default function CreateCustomReservation() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!districts.length || customTotal > 0}
+                  disabled={!districts.length}
                   tooltip="Pilih kecamatan asal pemesan."
                 />
 
@@ -604,7 +561,7 @@ export default function CreateCustomReservation() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!villages.length || customTotal > 0}
+                  disabled={!villages.length}
                   tooltip="Pilih kelurahan/desa asal pemesan."
                 />
 
@@ -622,12 +579,11 @@ export default function CreateCustomReservation() {
                     })
                   )}
                   tooltip="Pilih negara asal pemesan."
-                  disabled={customTotal === 0}
                   countrySelect
                 />
               </div>
 
-              {/* ROW 7 */}
+              {/* ROW 6 */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 {/* Metode Pembayaran */}
                 <SelectField
@@ -680,6 +636,16 @@ export default function CreateCustomReservation() {
                 />
               </div>
 
+              {/* ROW 7 */}
+              <div className="grid gap-3">
+                {/* File Upload */}
+                <FileUploadField
+                  control={form.control}
+                  name="attachments"
+                  label="Lampiran File"
+                />
+              </div>
+
               {/* Submit Button */}
               {isWithinOperationalHours() && (
                 <Button
@@ -687,8 +653,10 @@ export default function CreateCustomReservation() {
                   className="rounded-xs"
                   disabled={
                     form.formState.isSubmitting ||
+                    guideTotal === 0 ||
+                    customTotal === 0 ||
                     visitorTotal === 0 ||
-                    visitorTotal < 19 ||
+                    attachments.length === 0 ||
                     !phoneNumber ||
                     paymentMethod === "Lainnya" ||
                     downPayment < totalPaymentAmount

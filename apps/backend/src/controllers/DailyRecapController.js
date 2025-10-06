@@ -58,7 +58,6 @@ export const getLastRecap = async (_, res) => {
   }
 };
 
-
 /**
  * * @desc Mendapatkan satu data rekapitulasi berdasarkan Kode Unik
  * @route GET /api/daily-recap/:uniqueCode
@@ -68,12 +67,10 @@ export const getRecapByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    // Cari satu data dengan RecapNumber
-    const recap = await DailyRecap.find({
+    const recap = await DailyRecap.findOne({
       recapNumber: uniqueCode,
     }).populate("agent", "fullName username");
 
-    // Karena response API `data` adalah array, pastikan ada data dan ambil objek pertama
     if (!recap || recap.length === 0) {
       return sendResponse(
         res,
@@ -88,7 +85,7 @@ export const getRecapByCode = async (req, res) => {
       200,
       true,
       `Berhasil mendapatkan data rekapitulasi dengan kode ${uniqueCode}`,
-      recap[0]
+      recap
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

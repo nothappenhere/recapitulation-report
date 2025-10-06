@@ -5,13 +5,6 @@ export const CustomReservationSchema = z.object({
     message: "Tanggal kunjungan tidak boleh kosong!",
   }),
   visitingHour: z.string().nonempty("Waktu Kunjungan tidak boleh kosong!"),
-  reservationMechanism: z
-    .enum(
-      ["Whatsapp", "Google Form", "Datang Langsung", "Lainnya"],
-      "Mekanisme reservasi tidak boleh kosong!"
-    )
-    .optional()
-    .default("Lainnya"),
   description: z.string().optional().default("-"),
 
   ordererName: z.string().nonempty("Nama pemesan tidak boleh kosong!"),
@@ -44,6 +37,15 @@ export const CustomReservationSchema = z.object({
   village: z.string().optional().default("-"),
   country: z.string().optional().default("Indonesia"),
 
+  attachments: z
+    .array(
+      z.custom<File>((val) => val instanceof File, {
+        message: "Tipe file tidak valid!",
+      })
+    )
+    .max(5, "Maksimal 5 file!")
+    .default([]),
+
   publicTotalAmount: z.coerce
     .number()
     .nonnegative("Jumlah total pembayaran pemandu tidak boleh negative!"),
@@ -71,7 +73,6 @@ export type TCustomReservation = z.infer<typeof CustomReservationSchema>;
 export const defaultCustomReservationFormValues: TCustomReservation = {
   visitingDate: new Date(),
   visitingHour: "",
-  reservationMechanism: "Lainnya",
   description: "",
 
   ordererName: "",
@@ -91,6 +92,8 @@ export const defaultCustomReservationFormValues: TCustomReservation = {
   district: "",
   village: "",
   country: "Indonesia",
+
+  attachments: [],
 
   publicTotalAmount: 0,
   customTotalAmount: 0,

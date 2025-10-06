@@ -35,7 +35,7 @@ export function ColumnsActions<T>({
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="size-8 p-0 hover:bg-neutral-200 hover:border hover:border-black"
+          className="size-8 p-0 hover:bg-neutral-200 hover:border hover:border-black transition-all duration-300 ease-in-out"
         >
           <span className="sr-only">Open menu</span>
           <Ellipsis className="size-4" />

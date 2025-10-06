@@ -24,8 +24,9 @@ import {
   mapRegionNames,
   useAutoPayment,
   useRegionSelector,
+  useVisitingHourSelect,
 } from "@rzkyakbr/libs";
-import { Flag, Loader2, MapPinned } from "lucide-react";
+import { ClockIcon, Flag, Loader2, MapPinned } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { useMediaQuery } from "react-responsive";
@@ -35,6 +36,8 @@ import { DateField } from "@/components/form/DateField";
 import { ComboboxField } from "@/components/form/ComboboxField";
 import { PhoneField } from "@/components/form/PhoneField";
 import { NumberFieldInput } from "@/components/form/NumberField";
+import { FileUploadField } from "@/components/form/FileUploadField";
+import { SelectField } from "@/components/form/SelectField";
 
 export default function CreateCustomVisit() {
   const navigate = useNavigate();
@@ -47,6 +50,16 @@ export default function CreateCustomVisit() {
     defaultValues: defaultCustomReservationFormValues,
   });
 
+  //* for submit button validation purposes
+  const phoneNumber = form.watch("phoneNumber");
+  const attachments = form.watch("attachments");
+  const guideTotal = form.watch("publicMemberTotal");
+  const customTotal = form.watch("customMemberTotal");
+  const visitorTotal = form.watch("visitorMemberTotal");
+
+  // * Hook untuk mengambil seluruh data waktu kunjungan museum
+  const { visitHours } = useVisitingHourSelect(form);
+
   // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
   const { countries, provinces, regencies, districts, villages } =
     useRegionSelector(form);
@@ -54,11 +67,7 @@ export default function CreateCustomVisit() {
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
-  const phoneNumber = form.watch("phoneNumber");
-  const customTotal = form.watch("customMemberTotal");
-  const visitorTotal = form.watch("visitorMemberTotal");
-
-  //* Submit handler create
+  //* Submit handler: create
   const onSubmit = async (values: TCustomReservation): Promise<void> => {
     try {
       const {
@@ -75,23 +84,51 @@ export default function CreateCustomVisit() {
         countries,
       });
 
-      const payload = {
-        ...values,
-        province: customTotal > 0 ? "-" : provinceName,
-        regencyOrCity: customTotal > 0 ? "-" : regencyName,
-        district: customTotal > 0 ? "-" : districtName,
-        village: customTotal > 0 ? "-" : villageName,
-        country: !customTotal ? "Indonesia" : countryName,
-      };
+      const formData = new FormData();
 
-      const res = await api.post("/walk-in", payload);
-      const { walkinNumber } = res.data.data;
+      // Append semua data biasa
+      formData.append("visitingDate", values.visitingDate.toString());
+      formData.append("visitingHour", values.visitingHour);
+      formData.append("description", values.description || "-");
 
-      form.reset();
-      navigate(`/visit/${walkinNumber}`, {
-        replace: true,
+      formData.append("ordererName", values.ordererName);
+      formData.append("phoneNumber", values.phoneNumber);
+      formData.append("groupName", values.groupName);
+
+      formData.append("publicMemberTotal", String(values.publicMemberTotal));
+      formData.append("customMemberTotal", String(values.customMemberTotal));
+      formData.append("visitorMemberTotal", String(values.visitorMemberTotal));
+
+      formData.append("reservationStatus", values.reservationStatus);
+
+      formData.append("address", values.address);
+      formData.append("province", customTotal > 0 ? provinceName : "-");
+      formData.append("regencyOrCity", customTotal > 0 ? regencyName : "-");
+      formData.append("district", customTotal > 0 ? districtName : "-");
+      formData.append("village", customTotal > 0 ? villageName : "-");
+      formData.append("country", !customTotal ? "Indonesia" : countryName);
+
+      formData.append("publicTotalAmount", String(values.publicTotalAmount));
+      formData.append("customTotalAmount", String(values.customTotalAmount));
+      formData.append("totalPaymentAmount", String(values.totalPaymentAmount));
+
+      if (values.attachments && values.attachments.length > 0) {
+        values.attachments.forEach((file: File) => {
+          formData.append("attachments", file);
+        });
+      }
+
+      const res = await api.post("/custom-reservation", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+
+      const { customReservationNumber } = res.data.data;
+      form.reset();
+      navigate(`${customReservationNumber}`, { replace: true });
     } catch (err) {
+      console.log(err);
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
         ? `${error.response.data.message}!`
@@ -103,34 +140,56 @@ export default function CreateCustomVisit() {
   return (
     <Card className="m-5 shadow-lg rounded-md">
       <CardHeader className="text-center">
-        <CardTitle>Pendataan Kunjungan Khusus</CardTitle>
+        <CardTitle>Pendataan Reservasi Khusus</CardTitle>
         <CardDescription>
-          Isi formulir di bawah untuk mencatat kunjungan khusus.
+          Isi formulir di bawah untuk mencatat reservasi khusus.
         </CardDescription>
       </CardHeader>
       <Separator />
       <CardContent>
         <Form {...form}>
+          {/* <pre>{JSON.stringify(form.formState.errors, null, 2)}</pre> */}
+
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               {/* ROW 1 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Tanggal Kunjungan */}
                 <DateField
                   control={form.control}
                   name="visitingDate"
                   label="Tanggal Kunjungan"
                   placeholder="Pilih tanggal kunjungan"
-                  tooltip="Tanggal kunjungan."
+                  tooltip="Tanggal kunjungan (tidak bisa memilih sebelum hari ini)."
                 />
 
+                {/* Waktu Kunjungan */}
+                <SelectField
+                  control={form.control}
+                  name="visitingHour"
+                  label="Waktu Kunjungan"
+                  placeholder="Pilih waktu kunjungan"
+                  icon={ClockIcon}
+                  options={visitHours.map(
+                    (vh: { _id: string; timeRange: string }) => ({
+                      value: vh._id,
+                      label: vh.timeRange,
+                      disabled: vh.timeRange.includes("Istirahat"),
+                    })
+                  )}
+                  tooltip="Tentukan jam kunjungan sesuai jadwal museum."
+                />
+              </div>
+
+              {/* ROW 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Nama Pemesan */}
                 <SimpleField
                   control={form.control}
                   name="ordererName"
                   label="Nama Pemesan"
                   placeholder="Masukan nama pemesan"
-                  tooltip="Nama pemesan yang berkunjungan."
+                  tooltip="Isi dengan nama pemesan yang mengatur kunjungan."
                 />
 
                 {/* Nomor Telepon */}
@@ -140,6 +199,15 @@ export default function CreateCustomVisit() {
                   label="Nomor Telepon"
                   placeholder="Masukan nomor telepon"
                   tooltip="Nomor telepon aktif yang dapat dihubungi."
+                />
+
+                {/* Nama Rombongan */}
+                <SimpleField
+                  control={form.control}
+                  name="groupName"
+                  label="Nama Rombongan"
+                  placeholder="Masukan nama rombongan"
+                  tooltip="Isi dengan nama rombongan atau identitas kelompok pengunjung."
                 />
               </div>
 
@@ -369,6 +437,18 @@ export default function CreateCustomVisit() {
 
               {/* ROW 3 */}
               <div className="grid gap-3">
+                <SimpleField
+                  control={form.control}
+                  name="description"
+                  label="Deskripsi"
+                  placeholder="Tambahkan keterangan (opsional)"
+                  component={<Textarea className="rounded-xs" />}
+                  tooltip="Tambahkan catatan tambahan terkait kunjungan."
+                />
+              </div>
+
+              {/* ROW 4 */}
+              <div className="grid gap-3">
                 {/* Alamat */}
                 <SimpleField
                   control={form.control}
@@ -380,7 +460,7 @@ export default function CreateCustomVisit() {
                 />
               </div>
 
-              {/* ROW 4 */}
+              {/* ROW 5 */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Provinsi */}
                 <ComboboxField
@@ -468,6 +548,17 @@ export default function CreateCustomVisit() {
                 />
               </div>
 
+              {/* ROW 6 */}
+              <div className="grid gap-3">
+                {/* File Upload */}
+                <FileUploadField
+                  control={form.control}
+                  name="attachments"
+                  label="Lampiran File Nota Dinas Permohonan Pengajuan Tarif Khusus"
+                  accept="image/*,application/pdf"
+                />
+              </div>
+
               {/* Submit Button */}
               {isWithinOperationalHours() && (
                 <Button
@@ -475,7 +566,10 @@ export default function CreateCustomVisit() {
                   className="rounded-xs"
                   disabled={
                     form.formState.isSubmitting ||
+                    guideTotal === 0 ||
+                    customTotal === 0 ||
                     visitorTotal === 0 ||
+                    attachments.length === 0 ||
                     !phoneNumber
                   }
                 >

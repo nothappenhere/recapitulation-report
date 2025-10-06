@@ -49,14 +49,12 @@ export const getCustomReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    // Cari satu data dengan CustomReservationNumber
-    const reservation = await CustomReservation.find({
-      groupCustomReservationNumber: uniqueCode,
+    const reservation = await CustomReservation.findOne({
+      customReservationNumber: uniqueCode,
     })
       .populate("agent", "fullName username")
       .populate("visitingHour", "timeRange");
 
-    // Karena response API `data` adalah array, pastikan ada data dan ambil objek pertama
     if (!reservation || reservation.length === 0) {
       return sendResponse(
         res,
@@ -71,7 +69,7 @@ export const getCustomReservationByCode = async (req, res) => {
       200,
       true,
       `Berhasil mendapatkan data reservasi khusus dengan kode ${uniqueCode}`,
-      reservation[0]
+      reservation
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
@@ -88,20 +86,21 @@ export const createCustomReservation = async (req, res) => {
   const { agent } = req.body;
 
   try {
-    const file = req.file;
+    const files = req.files;
 
     const newCustomReservation = new CustomReservation({
       ...req.validatedData,
       agent,
-      attachment: file
-        ? {
+      attachments: files
+        ? files.map((file) => ({
             originalName: file.originalname,
-            fileName: file.filename,
+            encoding: file.encoding,
             mimeType: file.mimetype,
+            fileName: file.filename,
             size: file.size,
             path: file.path,
-          }
-        : null,
+          }))
+        : [],
     });
     await newCustomReservation.save();
 
@@ -113,8 +112,10 @@ export const createCustomReservation = async (req, res) => {
       newCustomReservation
     );
   } catch (err) {
-    return sendResponse(res, 500, false, "Internal server error", null, {
-      detail: err.message,
+    console.log(err);
+    const statusCode = err.statusCode || 500;
+    return sendResponse(res, statusCode, false, "Internal server error", null, {
+      detail: err.detail,
     });
   }
 };
@@ -131,7 +132,7 @@ export const updateCustomReservationByCode = async (req, res) => {
   try {
     // Pakai findOneAndUpdate agar update satu dokumen dan return data terbaru
     const updated = await CustomReservation.findOneAndUpdate(
-      { groupCustomReservationNumber: uniqueCode },
+      { customReservationNumber: uniqueCode },
       { ...req.validatedData, agent },
       {
         new: true,
@@ -173,7 +174,7 @@ export const deleteCustomReservationByCode = async (req, res) => {
   try {
     // Pakai findOneAndDelete untuk hapus satu dokumen
     const deleted = await CustomReservation.findOneAndDelete({
-      groupCustomReservationNumber: uniqueCode,
+      customReservationNumber: uniqueCode,
     });
 
     if (!deleted || deleted.length === 0) {

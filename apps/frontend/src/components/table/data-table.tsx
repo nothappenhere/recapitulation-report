@@ -229,7 +229,10 @@ export function DataTable<TData, TValue>({
 
                 if (location.pathname.includes("walk-in")) {
                   rowClass = statusPaymentClass;
-                } else if (location.pathname.includes("group-reservation")) {
+                } else if (
+                  location.pathname.includes("group-reservation") ||
+                  location.pathname.includes("custom-reservation")
+                ) {
                   rowClass = statusReservationClass;
                 }
 
@@ -244,6 +247,7 @@ export function DataTable<TData, TValue>({
                           `edit/${
                             row.original.walkinNumber ||
                             row.original.groupReservationNumber ||
+                            row.original.customReservationNumber ||
                             row.original.recapNumber
                           }`
                         );

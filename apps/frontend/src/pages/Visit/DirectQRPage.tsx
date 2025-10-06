@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function QRPage() {
+export default function DirectQRPage() {
   const { uniqueCode } = useParams();
   const [walkInData, setWalkInData] = useState<WalkInFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,6 +26,7 @@ export default function QRPage() {
 
     const fetchData = async () => {
       setLoading(true);
+
       try {
         const res = await api.get(`/walk-in/${uniqueCode}`);
         setWalkInData(res.data.data);
@@ -37,7 +38,7 @@ export default function QRPage() {
         toast.error(message);
 
         // window.location.href = "https://museum.geologi.esdm.go.id/";
-        navigate("/visit", { replace: true });
+        navigate("/visit/direct", { replace: true });
       } finally {
         setLoading(false);
       }
@@ -59,7 +60,7 @@ export default function QRPage() {
       <Card className="max-w-xl mx-auto shadow-lg rounded-md">
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-lg sm:text-xl font-semibold">
-            Pengisian data kunjungan Anda sudah kami terima.
+            Pengisian data kunjungan Anda telah kami terima.
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
             Simpan kode QR ini (<span className="italic">screenshot</span> jika

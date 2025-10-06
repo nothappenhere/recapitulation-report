@@ -1,28 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
-import { type CustomReservationFullTypes } from "@rzkyakbr/types";
+import { type GroupReservationFullTypes } from "@rzkyakbr/types";
 import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
-import { useCustomReservationColumns } from "./columns";
+import { useGroupReservationColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
 
-export default function CustomReservationTable() {
-  const [data, setData] = useState<CustomReservationFullTypes[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // * Untuk AlertDelete
-  const [isDeleteOpen, setDeleteOpen] = useState(false);
+export default function GroupReservationPage() {
+  const [data, setData] = useState<GroupReservationFullTypes[]>([]);
   const [selectedItem, setSelectedItem] =
-    useState<CustomReservationFullTypes | null>(null);
+    useState<GroupReservationFullTypes | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isDeleteOpen, setDeleteOpen] = useState(false);
 
-  // TODO: Ambil data dari API
+  //* Fetch data for displaying table
   const fetchReservations = useCallback(async () => {
     setLoading(true);
 
     try {
-      const res = await api.get("/custom-reservation");
+      const res = await api.get("/group-reservation");
       setData(res.data.data);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
@@ -39,7 +37,7 @@ export default function CustomReservationTable() {
     fetchReservations();
   }, [fetchReservations]);
 
-  // jalankan polling
+  //* Conduct a poll
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -74,14 +72,14 @@ export default function CustomReservationTable() {
     };
   }, [fetchReservations]);
 
-  // TODO: Handler delete setelah dikonfirmasi
+  //* Delete handler: delete data after confirmation
   const confirmDelete = useCallback(async () => {
     if (!selectedItem) return;
     setLoading(true);
 
     try {
       const res = await api.delete(
-        `/custom-reservation/${selectedItem.customReservationNumber}`
+        `/group-reservation/${selectedItem.groupReservationNumber}`
       );
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
@@ -98,14 +96,14 @@ export default function CustomReservationTable() {
     }
   }, [selectedItem]);
 
-  // TODO: Handler ketika klik tombol Delete (tampilkan alert)
-  const handleDeleteClick = useCallback((item: CustomReservationFullTypes) => {
+  //* Handler when the Delete button is clicked (display alert)
+  const handleDeleteClick = useCallback((item: GroupReservationFullTypes) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);
 
-  // TODO: Oper ke kolom
-  const columns = useCustomReservationColumns(handleDeleteClick);
+  //* Operate to the column
+  const columns = useGroupReservationColumns(handleDeleteClick);
 
   return (
     <div className="container mx-auto">

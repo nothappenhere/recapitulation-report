@@ -34,8 +34,7 @@ export const getWalkInByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    // Cari satu data dengan walkinNumber
-    const walkIn = await Walkin.find({ walkinNumber: uniqueCode }).populate(
+    const walkIn = await Walkin.findOne({ walkinNumber: uniqueCode }).populate(
       "agent",
       "fullName username"
     );
@@ -55,7 +54,7 @@ export const getWalkInByCode = async (req, res) => {
       200,
       true,
       `Berhasil mendapatkan data kunjungan dengan kode ${uniqueCode}`,
-      walkIn[0]
+      walkIn
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {

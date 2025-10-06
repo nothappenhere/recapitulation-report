@@ -62,7 +62,7 @@ export default function CreateTicketPrice() {
         setExistingCategories(categories);
 
         if (existing.length >= 4) {
-          toast.error("Tidak bisa menambahkan lebih dari 4 kategori.");
+          toast.error("Jumlah maksimum 4 kategori telah terisi.");
           navigate("/dashboard/ticket-price", { replace: true });
         }
       } catch (err) {

@@ -11,19 +11,18 @@ import CardSkeleton from "@/components/skeleton/CardSkeleton";
 import { RefreshCw, TicketIcon } from "lucide-react";
 import type { TicketPriceFullTypes } from "@rzkyakbr/types";
 
-function TicketPricePage() {
+export default function TicketPricePage() {
   const [data, setData] = useState<TicketPriceFullTypes[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // * Untuk AlertDelete
-  const [isDeleteOpen, setDeleteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<TicketPriceFullTypes | null>(
     null
   );
+  const [loading, setLoading] = useState(false);
+  const [isDeleteOpen, setDeleteOpen] = useState(false);
 
   const { user } = useUser();
   const role = user?.role || null;
 
+  //* Fetch data for displaying card
   const fetchTicketPrices = useCallback(async () => {
     setLoading(true);
 
@@ -45,7 +44,8 @@ function TicketPricePage() {
     fetchTicketPrices();
   }, [fetchTicketPrices]);
 
-  async function confirmDelete() {
+  //* Delete handler: delete data after confirmation
+  const confirmDelete = async () => {
     if (!selectedItem) return;
     setLoading(true);
 
@@ -64,7 +64,7 @@ function TicketPricePage() {
       setDeleteOpen(false);
       setLoading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -91,40 +91,44 @@ function TicketPricePage() {
 
               {data.length === 0 ? (
                 role === "Administrator" ? (
-                  <div className="flex flex-col items-center justify-center py-16 space-y-2.5 max-w-md mx-auto text-center">
-                    <div className="bg-primary/10 rounded-full p-7">
-                      <TicketIcon className="size-10" />
-                    </div>
+                  <>
                     {/* Teks dan tombol untuk admin */}
-                    <h3 className="text-xl font-bold">
-                      Tidak ada daftar harga tiket.
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Siap untuk mengatur harga tiket Museum Geologi? Buat data
-                      pertama untuk memulai.
-                    </p>
-                    <Button asChild>
-                      <Link to="add">Tambah Harga Tiket</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-16 space-y-2.5 max-w-md mx-auto text-center">
-                    <div className="bg-primary/10 rounded-full p-7">
-                      <TicketIcon className="size-10" />
+                    <div className="flex flex-col items-center justify-center py-16 space-y-2.5 max-w-md mx-auto text-center">
+                      <div className="bg-primary/10 rounded-full p-7">
+                        <TicketIcon className="size-10" />
+                      </div>
+                      <h3 className="text-xl font-bold">
+                        Tidak ada daftar harga tiket.
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Siap untuk mengatur harga tiket Museum Geologi? Buat
+                        data pertama untuk memulai.
+                      </p>
+                      <Button asChild>
+                        <Link to="add">Tambah Harga Tiket</Link>
+                      </Button>
                     </div>
-                    {/* Teks untuk user biasa */}
-                    <h3 className="text-xl font-bold">
-                      Tidak ada daftar harga tiket.
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Anda tidak memiliki akses untuk menambahkan harga tiket.
-                      Silakan hubungi Administrator jika diperlukan.
-                    </p>
-                    <Button onClick={fetchTicketPrices}>
-                      <RefreshCw className="mt-0.5" />
-                      Refresh
-                    </Button>
-                  </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Teks dan tombol untuk user biasa */}
+                    <div className="flex flex-col items-center justify-center py-16 space-y-2.5 max-w-md mx-auto text-center">
+                      <div className="bg-primary/10 rounded-full p-7">
+                        <TicketIcon className="size-10" />
+                      </div>
+                      <h3 className="text-xl font-bold">
+                        Tidak ada daftar harga tiket.
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Anda tidak memiliki akses untuk menambahkan harga tiket.
+                        Silakan hubungi Administrator jika diperlukan.
+                      </p>
+                      <Button onClick={fetchTicketPrices}>
+                        <RefreshCw className="mt-0.5" />
+                        Refresh
+                      </Button>
+                    </div>
+                  </>
                 )
               ) : data.length > 0 && data.length < 4 ? (
                 role === "Administrator" && (
@@ -159,5 +163,3 @@ function TicketPricePage() {
     </>
   );
 }
-
-export default TicketPricePage;
