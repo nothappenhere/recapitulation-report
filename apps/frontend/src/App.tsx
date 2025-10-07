@@ -15,7 +15,7 @@ import DashboardPage from "./pages/Dashboard/DashboardPage";
 // Kalender
 import CalendarEventPage from "./pages/Dashboard/CalendarEventPage";
 // Pengelolaan Pengguna
-import UserTable from "./pages/Dashboard/UserManagement/UserTable";
+import ManageUserPage from "./pages/Dashboard/UserManagement/ManageUserPage";
 // import DetailUser from "./pages/Dashboard/UserManagement/DetailUser";
 // Harga Tiket
 import TicketPricePage from "./pages/Dashboard/TicketPrice/TicketPricePage";
@@ -35,6 +35,7 @@ import CustomReservationPrintPage from "./pages/Dashboard/CustomReservation/Cust
 // Rekapitulasi Harian
 import DailyRecapPage from "./pages/Dashboard/DailyRecap/DailyRecapPage";
 import DailyRecapForm from "./pages/Dashboard/DailyRecap/DailyRecapForm";
+import UserProfilePage from "./pages/Dashboard/UserManagement/UserProfilePage";
 
 function App() {
   return (
@@ -64,9 +65,15 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />}>
           <Route index element={<Navigate to="calendar" replace />} />
           <Route path="calendar" element={<CalendarEventPage />} />
+
+          <Route path="profile">
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path=":username" element={<UserProfilePage />} />
+          </Route>
+
           {/* Pengelolaan Pengguna */}
           <Route path="user-management">
-            <Route index element={<UserTable />} />
+            <Route index element={<ManageUserPage />} />
           </Route>
 
           {/* Harga Tiket */}

@@ -8,6 +8,12 @@ import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
 
+type ExportColumn<T> = {
+  key: keyof T;
+  header: string;
+  type?: "dateOnly" | "dateWithTime" | "currency" | "timeRange" | "fullName";
+};
+
 export default function DailyRecapPage() {
   const [data, setData] = useState<DailyRecapFullTypes[]>([]);
   const [selectedItem, setSelectedItem] = useState<DailyRecapFullTypes | null>(
@@ -104,6 +110,42 @@ export default function DailyRecapPage() {
   //* Operate to the column
   const columns = useDailyRecapColumns(handleDeleteClick);
 
+  const exportColumns: ExportColumn<DailyRecapFullTypes>[] = [
+    { key: "recapNumber", header: "Kode Rekapitulasi" },
+    { key: "agent", header: "Petugas Rekapitulasi", type: "fullName" },
+
+    { key: "recapDate", header: "Tanggal Rekapitulasi", type: "dateWithTime" },
+    { key: "description", header: "Keterangan" },
+
+    { key: "initialStudentSerialNumber", header: "No. Seri Awal Pelajar" },
+    { key: "finalStudentSerialNumber", header: "No. Seri Akhir Pelajar" },
+    { key: "initialPublicSerialNumber", header: "No. Seri Awal Umum" },
+    { key: "finalPublicSerialNumber", header: "No. Seri Akhir Umum" },
+    { key: "initialForeignSerialNumber", header: "No. Seri Awal Asing" },
+    { key: "finalForeignSerialNumber", header: "No. Seri Akhir Asing" },
+
+    { key: "studentMemberTotal", header: "Total Pelajar" },
+    {
+      key: "studentTotalAmount",
+      header: "Harga Tiket Pelajar",
+      type: "currency",
+    },
+    { key: "publicMemberTotal", header: "Total Umum" },
+    { key: "publicTotalAmount", header: "Harga Tiket Umum", type: "currency" },
+    { key: "foreignMemberTotal", header: "Total Asing" },
+    {
+      key: "foreignTotalAmount",
+      header: "Harga Tiket Asing",
+      type: "currency",
+    },
+    { key: "visitorMemberTotal", header: "Total Pengunjung" },
+    {
+      key: "totalPaymentAmount",
+      header: "Total Harga Tiket",
+      type: "currency",
+    },
+  ];
+
   return (
     <div className="container mx-auto">
       {loading ? (
@@ -116,6 +158,8 @@ export default function DailyRecapPage() {
             addTitle="Tambah Rekap"
             colSpan={5}
             onRefresh={fetchDailyRecaps}
+            worksheetName="Rekap Harian"
+            exportColumns={exportColumns}
           />
 
           <AlertDelete

@@ -10,14 +10,20 @@ import TableSkeleton from "@/components/skeleton/TableSkeleton";
 import DetailUser from "./DetailUser";
 import type { TUserUpdate } from "@rzkyakbr/schemas";
 
-export default function UserTable() {
+type ExportColumn<T> = {
+  key: keyof T;
+  header: string;
+  type?: "dateOnly" | "dateWithTime" | "currency" | "timeRange" | "fullName";
+};
+
+export default function ManageUserPage() {
   const [data, setData] = useState<UserFullTypes[]>([]);
+  const [selectedItem, setSelectedItem] = useState<UserFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditOpen, setEditOpen] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<UserFullTypes | null>(null);
 
-  // TODO: Ambil data dari API
+  //* Fetch data for displaying table
   const fetchUsers = useCallback(async () => {
     setLoading(true);
 
@@ -39,7 +45,7 @@ export default function UserTable() {
     fetchUsers();
   }, [fetchUsers]);
 
-  // jalankan polling
+  //* Conduct a poll
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -74,7 +80,7 @@ export default function UserTable() {
     };
   }, [fetchUsers]);
 
-  // TODO: Handler update setelah dikonfirmasi
+  //* Update handler: update data after confirmation
   const handleSaveEdit = useCallback(
     async (formData: TUserUpdate) => {
       if (!selectedItem) return;
@@ -86,7 +92,7 @@ export default function UserTable() {
           formData
         );
         toast.success(`${res.data.message}.`);
-        fetchUsers(); // refresh data
+        fetchUsers();
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
         const message = error.response?.data?.message
@@ -102,7 +108,13 @@ export default function UserTable() {
     [selectedItem, fetchUsers]
   );
 
-  // TODO: Handler delete setelah dikonfirmasi
+  //* Handler when the Edit button is clicked (display dialog)
+  const handleEditClick = useCallback((item: UserFullTypes) => {
+    setSelectedItem(item);
+    setEditOpen(true);
+  }, []);
+
+  //* Delete handler: delete data after confirmation
   const confirmDelete = useCallback(async () => {
     if (!selectedItem) return;
     setLoading(true);
@@ -124,20 +136,27 @@ export default function UserTable() {
     }
   }, [selectedItem]);
 
-  // TODO: Handler ketika klik tombol Edit (tampilkan dialog)
-  const handleEditClick = useCallback((item: UserFullTypes) => {
-    setSelectedItem(item);
-    setEditOpen(true);
-  }, []);
-
-  // TODO: Handler ketika klik tombol Delete (tampilkan alert)
+  //* Handler when the Delete button is clicked (display alert)
   const handleDeleteClick = useCallback((item: UserFullTypes) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);
 
-  // TODO: Oper ke kolom
+  //* Operate to the column
   const columns = useUserColumns(handleDeleteClick, handleEditClick);
+
+  const exportColumns: ExportColumn<UserFullTypes>[] = [
+    { key: "NIP", header: "Nomor Induk Pegawai" },
+    { key: "position", header: "Jabatan" },
+
+    { key: "fullName", header: "Nama Lengkap" },
+    { key: "username", header: "Username" },
+    { key: "role", header: "Role" },
+    { key: "lastLogin", header: "Terakhir Login", type: "dateWithTime" },
+
+    { key: "createdAt", header: "Tanggal Bergabung", type: "dateWithTime" },
+    { key: "updatedAt", header: "Tanggal Diperbarui", type: "dateWithTime" },
+  ];
 
   return (
     <div className="container mx-auto">
@@ -151,6 +170,8 @@ export default function UserTable() {
             colSpan={8}
             onRefresh={fetchUsers}
             setOpen={setEditOpen}
+            worksheetName="Pengeolaan Pengguna"
+            exportColumns={exportColumns}
           />
 
           <DetailUser

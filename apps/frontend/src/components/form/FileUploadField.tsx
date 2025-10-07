@@ -247,6 +247,7 @@ export function FileUploadField<T extends FieldValues>({
                               }
                             >
                               <DownloadIcon className="size-4" />
+                              {file.preview}
                             </Button>
                             <Button
                               type="button"
@@ -266,17 +267,6 @@ export function FileUploadField<T extends FieldValues>({
                 </div>
               </>
             )}
-
-            {/* Errors */}
-            {/* {errors.length > 0 && (
-              <div
-                className="text-destructive flex items-center gap-1 text-xs"
-                role="alert"
-              >
-                <AlertCircleIcon className="size-3" />
-                <span>{errors[0]}</span>
-              </div>
-            )} */}
 
             {errors.length > 0 && (
               <ul className="text-destructive text-xs space-y-1">

@@ -8,6 +8,12 @@ import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
 
+type ExportColumn<T> = {
+  key: keyof T;
+  header: string;
+  type?: "dateOnly" | "dateWithTime" | "currency" | "timeRange" | "fullName";
+};
+
 export default function CustomReservationPage() {
   const [data, setData] = useState<CustomReservationFullTypes[]>([]);
   const [selectedItem, setSelectedItem] =
@@ -105,6 +111,52 @@ export default function CustomReservationPage() {
   //* Operate to the column
   const columns = useCustomReservationColumns(handleDeleteClick);
 
+  const exportColumns: ExportColumn<CustomReservationFullTypes>[] = [
+    { key: "customReservationNumber", header: "Kode Reservasi" },
+    { key: "agent", header: "Petugas Reservasi", type: "fullName" },
+
+    { key: "ordererName", header: "Nama Pemesan" },
+    { key: "phoneNumber", header: "No. Telepon" },
+    { key: "visitingDate", header: "Tanggal Kunjungan", type: "dateOnly" },
+    { key: "visitingHour", header: "Jam Kunjungan", type: "timeRange" },
+    { key: "groupName", header: "Nama Rombongan" },
+    { key: "description", header: "Keterangan" },
+
+    { key: "address", header: "Alamat" },
+    { key: "province", header: "Provinsi" },
+    { key: "regencyOrCity", header: "Kabupaten/Kota" },
+    { key: "district", header: "Kecamatan" },
+    { key: "village", header: "Kelurahan/Desa" },
+    { key: "country", header: "Negara Asal" },
+
+    { key: "publicMemberTotal", header: "Total Pemandu" },
+    {
+      key: "publicTotalAmount",
+      header: "Harga Tiket Pemandu",
+      type: "currency",
+    },
+    { key: "customMemberTotal", header: "Total Khusus" },
+    {
+      key: "customTotalAmount",
+      header: "Harga Tiket Khusus",
+      type: "currency",
+    },
+    { key: "visitorMemberTotal", header: "Total Pengunjung" },
+    {
+      key: "totalPaymentAmount",
+      header: "Total Harga Tiket",
+      type: "currency",
+    },
+
+    { key: "actualMemberTotal", header: "Total Kehadiran" },
+    { key: "reservationStatus", header: "Status Reservasi" },
+
+    { key: "paymentMethod", header: "Metode Pembayaran" },
+    { key: "downPayment", header: "Uang Pembayaran", type: "currency" },
+    { key: "changeAmount", header: "Uang Kembalian", type: "currency" },
+    { key: "statusPayment", header: "Status Pembayaran" },
+  ];
+
   return (
     <div className="container mx-auto">
       {loading ? (
@@ -115,8 +167,10 @@ export default function CustomReservationPage() {
             columns={columns}
             data={loading ? [] : data}
             addTitle="Tambah Reservasi"
-            colSpan={13}
+            colSpan={12}
             onRefresh={fetchReservations}
+            worksheetName="Reservasi Khusus"
+            exportColumns={exportColumns}
           />
 
           <AlertDelete

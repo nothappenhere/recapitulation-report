@@ -29,13 +29,15 @@ export function useCustomReservationColumns(
       },
     }),
 
+    createColumn("ordererName", "Nama Pemesan"),
+    createColumn("phoneNumber", "No. Telepon"),
     createColumn("visitingDate", "Tgl. Kunjungan", {
       cell: ({ row }) =>
         format(new Date(row.original.visitingDate), "dd MMMM yyyy", {
           locale: id,
         }),
     }),
-    createColumn("visitingHour", "Wkt. Kunjungan", {
+    createColumn("visitingHour", "Jam Kunjungan", {
       cell: ({ row }) => {
         const visitingHour = row.original.visitingHour as unknown as {
           timeRange: string;
@@ -43,25 +45,22 @@ export function useCustomReservationColumns(
         return <span>{visitingHour?.timeRange ?? "-"} WIB</span>;
       },
     }),
-    createColumn("ordererName", "Nama Pemesan"),
-    createColumn("phoneNumber", "No. Telepon"),
     createColumn("groupName", "Nama Rombongan"),
+    createColumn("description", "Keterangan"),
 
     createColumn("address", "Alamat"),
     createColumn("country", "Negara Asal"),
-
     createColumn("reservationStatus", "Status Reservasi"),
-    createColumn("description", "Deskripsi"),
 
-    createColumn("publicMemberTotal", "Jumlah Umum", {
-      meta: { sum: true, label: "Jumlah Umum" },
+    createColumn("publicMemberTotal", "Total Pemandu", {
+      meta: { sum: true, label: "Total Pemandu" },
     }),
-    createColumn("publicTotalAmount", "Harga Tiket Umum", {
-      meta: { sum: true, isCurrency: true, label: "Harga Tiket Umum" },
+    createColumn("publicTotalAmount", "Harga Tiket Pemandu", {
+      meta: { sum: true, isCurrency: true, label: "Harga Tiket Pemandu" },
       cell: ({ row }) => formatRupiah(row.getValue("publicTotalAmount")),
     }),
-    createColumn("customMemberTotal", "Jumlah Khusus", {
-      meta: { sum: true, label: "Jumlah Khusus" },
+    createColumn("customMemberTotal", "Total Khusus", {
+      meta: { sum: true, label: "Total Khusus" },
     }),
     createColumn("customTotalAmount", "Harga Tiket Khusus", {
       meta: { sum: true, isCurrency: true, label: "Harga Tiket Khusus" },
@@ -75,12 +74,12 @@ export function useCustomReservationColumns(
       cell: ({ row }) => formatRupiah(row.getValue("totalPaymentAmount")),
     }),
 
-    createColumn("actualMemberTotal", "Jumlah Kedatangan", {
-      meta: { sum: true, label: "Jumlah Kedatangan" },
+    createColumn("actualMemberTotal", "Total Kehadiran", {
+      meta: { sum: true, label: "Total Kehadiran" },
     }),
 
-    createColumn("paymentMethod", "Metode Pemb."),
-    createColumn("downPayment", "Uang Pemb.", {
+    createColumn("paymentMethod", "Metode Pembayaran"),
+    createColumn("downPayment", "Uang Pembayaran", {
       meta: { sum: true, isCurrency: true, label: "Uang Bayar" },
       cell: ({ row }) => formatRupiah(row.getValue("downPayment")),
     }),
@@ -88,7 +87,7 @@ export function useCustomReservationColumns(
       meta: { sum: true, isCurrency: true, label: "Uang Kembalian" },
       cell: ({ row }) => formatRupiah(row.getValue("changeAmount")),
     }),
-    createColumn("statusPayment", "Status Pemb.", {
+    createColumn("statusPayment", "Status Pembayaran", {
       cell: ({ row }) => {
         const status = row.getValue("statusPayment");
         return (

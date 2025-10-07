@@ -12,7 +12,7 @@ export type CustomReservationFullTypes = {
 
   visitingDate: string;
   visitingHour: VisitingHour;
-  reservationMechanism: string;
+  reservationMechanism: string; // note: hapus
   description: string;
 
   ordererName: string;

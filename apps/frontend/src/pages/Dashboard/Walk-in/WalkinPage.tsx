@@ -8,6 +8,12 @@ import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
 
+type ExportColumn<T> = {
+  key: keyof T;
+  header: string;
+  type?: "dateOnly" | "dateWithTime" | "currency" | "timeRange" | "fullName";
+};
+
 export default function WalkinPage() {
   const [data, setData] = useState<WalkInFullTypes[]>([]);
   const [selectedItem, setSelectedItem] = useState<WalkInFullTypes | null>(
@@ -104,6 +110,48 @@ export default function WalkinPage() {
   //* Operate to the column
   const columns = useWalkInColumns(handleDeleteClick);
 
+  const exportColumns: ExportColumn<WalkInFullTypes>[] = [
+    { key: "walkinNumber", header: "Kode Reservasi" },
+    { key: "agent", header: "Petugas Reservasi", type: "fullName" },
+
+    { key: "ordererName", header: "Nama Pemesan" },
+    { key: "phoneNumber", header: "No. Telepon" },
+    { key: "visitingDate", header: "Tanggal Kunjungan", type: "dateWithTime" },
+
+    { key: "address", header: "Alamat" },
+    { key: "province", header: "Provinsi" },
+    { key: "regencyOrCity", header: "Kabupaten/Kota" },
+    { key: "district", header: "Kecamatan" },
+    { key: "village", header: "Kelurahan/Desa" },
+    { key: "country", header: "Negara Asal" },
+
+    { key: "studentMemberTotal", header: "Total Pelajar" },
+    {
+      key: "studentTotalAmount",
+      header: "Harga Tiket Pelajar",
+      type: "currency",
+    },
+    { key: "publicMemberTotal", header: "Total Umum" },
+    { key: "publicTotalAmount", header: "Harga Tiket Umum", type: "currency" },
+    { key: "foreignMemberTotal", header: "Total Asing" },
+    {
+      key: "foreignTotalAmount",
+      header: "Harga Tiket Asing",
+      type: "currency",
+    },
+    { key: "visitorMemberTotal", header: "Total Pengunjung" },
+    {
+      key: "totalPaymentAmount",
+      header: "Total Harga Tiket",
+      type: "currency",
+    },
+
+    { key: "paymentMethod", header: "Metode Pembayaran" },
+    { key: "downPayment", header: "Uang Pembayaran", type: "currency" },
+    { key: "changeAmount", header: "Uang Kembalian", type: "currency" },
+    { key: "statusPayment", header: "Status Pembayaran" },
+  ];
+
   return (
     <div className="container mx-auto">
       {loading ? (
@@ -116,6 +164,8 @@ export default function WalkinPage() {
             addTitle="Tambah Kunjungan"
             colSpan={8}
             onRefresh={fetchWalkIns}
+            worksheetName="Reservasi Langsung"
+            exportColumns={exportColumns}
           />
 
           <AlertDelete

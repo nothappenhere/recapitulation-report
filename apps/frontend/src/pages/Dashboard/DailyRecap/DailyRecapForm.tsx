@@ -87,7 +87,6 @@ export default function DailyRecapForm() {
       try {
         const res = await api.get(`/daily-recap/${uniqueCode}`);
         const recapData = res.data.data;
-
         form.reset(recapData);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;

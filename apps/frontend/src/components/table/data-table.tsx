@@ -27,6 +27,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  FileDown,
   Plus,
   RefreshCw,
 } from "lucide-react";
@@ -37,7 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useLocation, useNavigate } from "react-router";
-import { formatRupiah } from "@rzkyakbr/libs";
+import { formatRupiah, slugToTitle } from "@rzkyakbr/libs";
 import { Label } from "../ui/label";
 import {
   SelectItem,
@@ -46,13 +47,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+
+interface ExportColumnsProps {
+  key: string;
+  header: string;
+  type: string;
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   addTitle?: string;
-  colSpan: number;
+  colSpan?: number;
   onRefresh?: () => void;
+  worksheetName?: string;
+  exportColumns?: ExportColumnsProps[];
 }
 
 export function DataTable<TData, TValue>({
@@ -61,6 +74,8 @@ export function DataTable<TData, TValue>({
   addTitle,
   colSpan,
   onRefresh,
+  worksheetName,
+  exportColumns,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -91,26 +106,121 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const handleExportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(worksheetName || "Worksheet");
+
+    if (!exportColumns || exportColumns.length === 0) return;
+
+    // 1. Buat header
+    worksheet.columns = exportColumns.map((col) => ({
+      header: col.header,
+      key: col.key,
+      width: 20,
+      style: {
+        alignment: {
+          vertical: "middle",
+          horizontal: "center",
+          wrapText: true,
+        },
+      },
+    }));
+
+    // 2. Ambil data yang tampil
+    const rows = table.getRowModel().rows.map((row) => row.original);
+
+    // 3. Tambahkan data dengan format
+    rows.forEach((item) => {
+      const rowData: Record<string, unknown> = {};
+
+      exportColumns.forEach((col) => {
+        let value = item[col.key];
+
+        // Format khusus
+        switch (col.type) {
+          case "dateOnly":
+            value = value
+              ? format(new Date(value), "dd MMMM yyyy", {
+                  locale: id,
+                })
+              : "-";
+            break;
+          case "dateWithTime":
+            value = value
+              ? format(new Date(value), "dd MMMM yyyy, HH:mm:ss", {
+                  locale: id,
+                })
+              : "-";
+            break;
+          case "currency":
+            value = typeof value === "number" ? formatRupiah(value) : value;
+            break;
+          case "timeRange":
+            value =
+              typeof value === "object" && value !== null
+                ? `${value?.timeRange} WIB`
+                : "-";
+            break;
+          case "fullName":
+            value =
+              typeof value === "object" && value !== null
+                ? value.fullName ?? "-"
+                : "-";
+            break;
+        }
+
+        rowData[col.key] = value;
+      });
+
+      worksheet.addRow(rowData);
+    });
+
+    // 4. Bold header
+    worksheet.getRow(1).font = { bold: true };
+
+    // 5. Resize kolom otomatis berdasarkan isi
+    worksheet.columns.forEach((column) => {
+      let maxLength = 10;
+      column.eachCell?.({ includeEmpty: true }, (cell) => {
+        const cellLength = `${cell.value ?? ""}`.length;
+        if (cellLength > maxLength) {
+          maxLength = cellLength;
+        }
+      });
+      column.width = maxLength + 2;
+    });
+
+    // 6. Export
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(blob, `${worksheetName?.toLowerCase().replace(/\s+/g, "-")}.xlsx`);
+
+    // 7. Kembalikan 10 data per halaman
+    table.setPageSize(10);
+  };
+
   return (
     <div>
       {/* Header Control */}
       <div className="flex items-center justify-between py-4">
-        {/* Search Filters */}
-        <Input
-          placeholder={
-            location.pathname.includes("user-management")
-              ? "Cari berdasarkan NIP, Jabatan, Nama lengkap, Username, dll..."
-              : location.pathname.includes("daily-recap")
-              ? "Cari berdasarkan Kode, Nama Petugas, Tgl/Wkt Rekap, dll..."
-              : "Cari berdasarkan Kode, Nama Petugas/Pemesan, Tgl/Wkt Kunjungan, dll..."
-          }
-          value={globalFilter}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          className="max-w-lg"
-          autoFocus
-        />
+        <div className="flex justify-start items-center gap-3 w-full">
+          {/* Search Filters */}
+          <Input
+            placeholder={
+              location.pathname.includes("user-management")
+                ? "Cari berdasarkan NIP, Jabatan, Nama lengkap, Username, Role, dll..."
+                : location.pathname.includes("daily-recap")
+                ? "Cari berdasarkan Kode, Nama Petugas, Tgl/Wkt Rekapitulasi, dll..."
+                : "Cari berdasarkan Kode, Nama Pemesan, No. Telepon, Tgl/Wkt Kunjungan, dll..."
+            }
+            value={globalFilter}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="w-full max-w-lg"
+            autoFocus
+          />
 
-        <div className="flex justify-evenly items-center gap-3">
           {/* Refresh Button */}
           {onRefresh && (
             <Button onClick={onRefresh}>
@@ -118,7 +228,9 @@ export function DataTable<TData, TValue>({
               Refresh
             </Button>
           )}
+        </div>
 
+        <div className="flex justify-evenly items-center gap-3">
           {/* Add Button */}
           {addTitle && (
             <Button variant="outline" asChild>
@@ -128,6 +240,15 @@ export function DataTable<TData, TValue>({
               </Link>
             </Button>
           )}
+
+          {/* Export Button */}
+          <Button
+            onClick={handleExportToExcel}
+            disabled={table.getRowModel().rows.length === 0}
+          >
+            <FileDown />
+            Export
+          </Button>
 
           {/* Dropdown column visibility */}
           <DropdownMenu>
@@ -234,6 +355,9 @@ export function DataTable<TData, TValue>({
                   location.pathname.includes("custom-reservation")
                 ) {
                   rowClass = statusReservationClass;
+                } else {
+                  rowClass =
+                    "hover:bg-gray-100 data-[state=selected]:bg-gray-200";
                 }
 
                 return (
@@ -349,11 +473,29 @@ export function DataTable<TData, TValue>({
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value));
+              const newSize = Number(value);
+              if (newSize === -1) {
+                // Tampilkan semua baris
+                table.setPageSize(data.length);
+              } else {
+                table.setPageSize(newSize);
+              }
             }}
           >
-            <SelectTrigger size="sm" className="w-16" id="rows-per-page">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+            <SelectTrigger
+              size="sm"
+              id="rows-per-page"
+              className={
+                table.getState().pagination.pageSize === data.length
+                  ? "w-24"
+                  : "w-16"
+              }
+            >
+              <SelectValue placeholder={table.getState().pagination.pageSize}>
+                {table.getState().pagination.pageSize === data.length
+                  ? "Semua"
+                  : table.getState().pagination.pageSize}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent side="top">
               {[10, 20, 30, 40, 50].map((pageSize) => (
@@ -361,6 +503,9 @@ export function DataTable<TData, TValue>({
                   {pageSize}
                 </SelectItem>
               ))}
+
+              {/* Opsi tampilkan semua */}
+              <SelectItem value="-1">Semua</SelectItem>
             </SelectContent>
           </Select>
         </div>

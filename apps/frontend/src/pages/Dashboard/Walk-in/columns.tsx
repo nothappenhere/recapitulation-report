@@ -19,7 +19,7 @@ export function useWalkInColumns(
   return [
     createSelectColumn<WalkInFullTypes>(),
 
-    createColumn("walkinNumber", "Kode Kunjungan"),
+    createColumn("walkinNumber", "Kode Reservasi"),
     createColumn("agent", "Petugas Reservasi", {
       cell: ({ row }) => {
         const agent = row.original.agent as unknown as {
@@ -29,34 +29,34 @@ export function useWalkInColumns(
       },
     }),
 
+    createColumn("ordererName", "Nama Pemesan"),
+    createColumn("phoneNumber", "No. Telepon"),
     createColumn("visitingDate", "Tgl. Kunjungan", {
       cell: ({ row }) =>
         format(new Date(row.original.visitingDate), "dd MMM yyyy, HH:mm:ss", {
           locale: id,
         }),
     }),
-    createColumn("ordererName", "Nama Pemesan"),
-    createColumn("phoneNumber", "No. Telepon"),
 
     createColumn("address", "Alamat"),
     createColumn("country", "Negara Asal"),
 
-    createColumn("studentMemberTotal", "Jumlah Pelajar", {
-      meta: { sum: true, label: "Jumlah Pelajar" },
+    createColumn("studentMemberTotal", "Total Pelajar", {
+      meta: { sum: true, label: "Total Pelajar" },
     }),
     createColumn("studentTotalAmount", "Harga Tiket Pelajar", {
       meta: { sum: true, isCurrency: true, label: "Harga Tiket Pelajar" },
       cell: ({ row }) => formatRupiah(row.getValue("studentTotalAmount")),
     }),
-    createColumn("publicMemberTotal", "Jumlah Umum", {
-      meta: { sum: true, label: "Jumlah Umum" },
+    createColumn("publicMemberTotal", "Total Umum", {
+      meta: { sum: true, label: "Total Umum" },
     }),
     createColumn("publicTotalAmount", "Harga Tiket Umum", {
       meta: { sum: true, isCurrency: true, label: "Harga Tiket Umum" },
       cell: ({ row }) => formatRupiah(row.getValue("publicTotalAmount")),
     }),
-    createColumn("foreignMemberTotal", "Jumlah Asing", {
-      meta: { sum: true, label: "Jumlah Asing" },
+    createColumn("foreignMemberTotal", "Total Asing", {
+      meta: { sum: true, label: "Total Asing" },
     }),
     createColumn("foreignTotalAmount", "Harga Tiket Asing", {
       meta: { sum: true, isCurrency: true, label: "Harga Tiket Asing" },
@@ -70,8 +70,8 @@ export function useWalkInColumns(
       cell: ({ row }) => formatRupiah(row.getValue("totalPaymentAmount")),
     }),
 
-    createColumn("paymentMethod", "Metode Pemb."),
-    createColumn("downPayment", "Uang Pemb.", {
+    createColumn("paymentMethod", "Metode Pembayaran"),
+    createColumn("downPayment", "Uang Pembayaran", {
       meta: { sum: true, isCurrency: true, label: "Uang Bayar" },
       cell: ({ row }) => formatRupiah(row.getValue("downPayment")),
     }),
@@ -79,7 +79,7 @@ export function useWalkInColumns(
       meta: { sum: true, isCurrency: true, label: "Uang Kembalian" },
       cell: ({ row }) => formatRupiah(row.getValue("changeAmount")),
     }),
-    createColumn("statusPayment", "Status Pemb.", {
+    createColumn("statusPayment", "Status Pembayaran", {
       cell: ({ row }) => {
         const status = row.getValue("statusPayment");
         return (

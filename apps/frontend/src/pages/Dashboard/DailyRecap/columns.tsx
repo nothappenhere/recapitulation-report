@@ -34,7 +34,7 @@ export function useDailyRecapColumns(
           locale: id,
         }),
     }),
-    createColumn("description", "Deskripsi"),
+    createColumn("description", "Keterangan"),
 
     createColumn("initialStudentSerialNumber", "No. Seri Awal Pelajar", {
       meta: { sum: true, label: "No. Seri Awal Pelajar" },
@@ -55,22 +55,22 @@ export function useDailyRecapColumns(
       meta: { sum: true, label: "No. Seri Akhir Asing" },
     }),
 
-    createColumn("studentMemberTotal", "Jumlah Pelajar", {
-      meta: { sum: true, label: "Jumlah Pelajar" },
+    createColumn("studentMemberTotal", "Total Pelajar", {
+      meta: { sum: true, label: "Total Pelajar" },
     }),
     createColumn("studentTotalAmount", "Harga Tiket Pelajar", {
       meta: { sum: true, isCurrency: true, label: "Harga Tiket Pelajar" },
       cell: ({ row }) => formatRupiah(row.getValue("studentTotalAmount")),
     }),
-    createColumn("publicMemberTotal", "Jumlah Umum", {
-      meta: { sum: true, label: "Jumlah Umum" },
+    createColumn("publicMemberTotal", "Total Umum", {
+      meta: { sum: true, label: "Total Umum" },
     }),
     createColumn("publicTotalAmount", "Harga Tiket Umum", {
       meta: { sum: true, isCurrency: true, label: "Harga Tiket Umum" },
       cell: ({ row }) => formatRupiah(row.getValue("publicTotalAmount")),
     }),
-    createColumn("foreignMemberTotal", "Jumlah Asing", {
-      meta: { sum: true, label: "Jumlah Asing" },
+    createColumn("foreignMemberTotal", "Total Asing", {
+      meta: { sum: true, label: "Total Asing" },
     }),
     createColumn("foreignTotalAmount", "Harga Tiket Asing", {
       meta: { sum: true, isCurrency: true, label: "Harga Tiket Asing" },

@@ -32,6 +32,18 @@ export function useUserColumns(
         });
       },
     }),
+    createColumn("createdAt", "Tgl. Bergabung", {
+      cell: ({ row }) =>
+        format(new Date(row.original.createdAt), "dd MMM yyyy, HH:mm:ss", {
+          locale: id,
+        }),
+    }),
+    createColumn("updatedAt", "Tgl. Diperbarui", {
+      cell: ({ row }) =>
+        format(new Date(row.original.updatedAt), "dd MMM yyyy, HH:mm:ss", {
+          locale: id,
+        }),
+    }),
 
     createActionsColumn<UserFullTypes>(onEdit, onDelete),
   ];

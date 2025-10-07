@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -143,7 +142,6 @@ export default function DetailUser({
                     onChange={(e) => setNip(e.target.value)}
                     type="number"
                     required
-                    disabled
                   />
                 </div>
 
@@ -190,7 +188,6 @@ export default function DetailUser({
                     onChange={(e) => setUsername(e.target.value)}
                     type="text"
                     required
-                    disabled
                   />
                 </div>
 
@@ -320,7 +317,7 @@ function Avatar() {
   const currentImage = files[0]?.preview || null;
 
   return (
-    <div className="-mt-10 px-6">
+    <div className="-mt-12 px-6">
       <div className="border-black/10 bg-muted relative flex size-24 items-center justify-center overflow-hidden rounded-full border-3 shadow-xs shadow-black/10">
         {currentImage && (
           <img

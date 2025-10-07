@@ -128,7 +128,6 @@ export default function CreateCustomVisit() {
       form.reset();
       navigate(`${customReservationNumber}`, { replace: true });
     } catch (err) {
-      console.log(err);
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
         ? `${error.response.data.message}!`

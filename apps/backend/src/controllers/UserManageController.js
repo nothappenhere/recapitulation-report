@@ -1,3 +1,5 @@
+import bcrypt from "bcrypt";
+
 import { User } from "../models/User.js";
 import { sendResponse } from "../utils/sendResponse.js";
 
@@ -66,17 +68,9 @@ export const updateUserByUsername = async (req, res) => {
   const { username } = req.params;
 
   try {
-    // Pakai findOneAndUpdate agar update satu dokumen dan return data terbaru
-    const updated = await User.findOneAndUpdate(
-      { username: username },
-      { ...req.validatedData },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const user = await User.findOne({ username });
 
-    if (!updated || updated.length === 0) {
+    if (!user) {
       return sendResponse(
         res,
         404,
@@ -85,12 +79,37 @@ export const updateUserByUsername = async (req, res) => {
       );
     }
 
+    // Update field-field lain (selain password)
+    const updateFields = { ...req.validatedData };
+
+    // Jika kolom password baru diisi (tidak kosong), hash dan update
+    if (
+      req.validatedData.newPassword &&
+      req.validatedData.newPassword.trim() !== ""
+    ) {
+      const hashedPassword = await bcrypt.hash(
+        req.validatedData.newPassword,
+        10
+      );
+      updateFields.password = hashedPassword;
+    } else {
+      // Jika tidak diisi, hapus password dari update
+      delete updateFields.password;
+    }
+
+    // Lakukan update
+    Object.assign(user, updateFields);
+    await user.save();
+
+    // Hapus password dari respons
+    const updatedUser = { ...user._doc, password: undefined };
+
     sendResponse(
       res,
       200,
       true,
       `Berhasil memperbarui data pengguna dengan username ${username}`,
-      updated
+      updatedUser
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
