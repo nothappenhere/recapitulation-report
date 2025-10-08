@@ -13,9 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  WalkInSchema,
-  defaultWalkInFormValues,
-  type TWalkIn,
+  CustomReservationSchema,
+  defaultCustomReservationFormValues,
+  type TCustomReservation,
 } from "@rzkyakbr/schemas";
 import {
   api,
@@ -24,8 +24,15 @@ import {
   mapRegionNames,
   useAutoPayment,
   useRegionSelector,
+  useVisitingHourSelect,
 } from "@rzkyakbr/libs";
-import { Flag, Loader2, MapPinned } from "lucide-react";
+import {
+  ClockIcon,
+  Flag,
+  Loader2,
+  MapPinned,
+  SquareLibrary,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { useMediaQuery } from "react-responsive";
@@ -35,22 +42,29 @@ import { DateField } from "@/components/form/DateField";
 import { ComboboxField } from "@/components/form/ComboboxField";
 import { PhoneField } from "@/components/form/PhoneField";
 import { NumberFieldInput } from "@/components/form/NumberField";
+import { FileUploadField } from "@/components/form/FileUploadField";
+import { SelectField } from "@/components/form/SelectField";
 
-export default function CreateDirectVisit() {
+export default function CustomVisitForm() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 639 });
   const isTablet = useMediaQuery({ minWidth: 640, maxWidth: 1023 });
   const isDesktop = useMediaQuery({ minWidth: 1024 });
 
-  const form = useForm<TWalkIn>({
-    resolver: zodResolver(WalkInSchema),
-    defaultValues: defaultWalkInFormValues,
+  const form = useForm<TCustomReservation>({
+    resolver: zodResolver(CustomReservationSchema),
+    defaultValues: defaultCustomReservationFormValues,
   });
 
   //* for submit button validation purposes
-  const foreignTotal = form.watch("foreignMemberTotal");
+  const attachments = form.watch("attachments");
+  const guideTotal = form.watch("publicMemberTotal");
+  const customTotal = form.watch("customMemberTotal");
   const visitorTotal = form.watch("visitorMemberTotal");
   const phoneNumber = form.watch("phoneNumber");
+
+  // * Hook untuk mengambil seluruh data waktu kunjungan museum
+  const { visitHours } = useVisitingHourSelect(form);
 
   // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
   const { countries, provinces, regencies, districts, villages } =
@@ -60,7 +74,7 @@ export default function CreateDirectVisit() {
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
   //* Submit handler: create
-  const onSubmit = async (values: TWalkIn): Promise<void> => {
+  const onSubmit = async (values: TCustomReservation): Promise<void> => {
     try {
       const {
         provinceName,
@@ -76,22 +90,49 @@ export default function CreateDirectVisit() {
         countries,
       });
 
-      const payload = {
-        ...values,
-        province: foreignTotal > 0 ? "-" : provinceName,
-        regencyOrCity: foreignTotal > 0 ? "-" : regencyName,
-        district: foreignTotal > 0 ? "-" : districtName,
-        village: foreignTotal > 0 ? "-" : villageName,
-        country: !foreignTotal ? "Indonesia" : countryName,
-      };
+      const formData = new FormData();
 
-      const res = await api.post("/walk-in", payload);
-      const { walkinNumber } = res.data.data;
+      // Append semua data biasa
+      formData.append("visitingDate", values.visitingDate.toString());
+      formData.append("visitingHour", values.visitingHour);
+      formData.append("description", values.description || "-");
 
-      form.reset();
-      navigate(`${walkinNumber}`, {
-        replace: true,
+      formData.append("ordererName", values.ordererName);
+      formData.append("phoneNumber", values.phoneNumber);
+      formData.append("groupName", values.groupName);
+
+      formData.append("publicMemberTotal", String(values.publicMemberTotal));
+      formData.append("customMemberTotal", String(values.customMemberTotal));
+      formData.append("visitorMemberTotal", String(values.visitorMemberTotal));
+
+      formData.append("reservationStatus", values.reservationStatus);
+
+      formData.append("address", values.address);
+      formData.append("province", customTotal > 0 ? provinceName : "-");
+      formData.append("regencyOrCity", customTotal > 0 ? regencyName : "-");
+      formData.append("district", customTotal > 0 ? districtName : "-");
+      formData.append("village", customTotal > 0 ? villageName : "-");
+      formData.append("country", !customTotal ? "Indonesia" : countryName);
+
+      formData.append("publicTotalAmount", String(values.publicTotalAmount));
+      formData.append("customTotalAmount", String(values.customTotalAmount));
+      formData.append("totalPaymentAmount", String(values.totalPaymentAmount));
+
+      if (values.attachments && values.attachments.length > 0) {
+        values.attachments.forEach((file: File) => {
+          formData.append("attachments", file);
+        });
+      }
+
+      const res = await api.post("/custom-reservation", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+
+      const { reservationNumber } = res.data.data;
+      form.reset();
+      navigate(`${reservationNumber}`, { replace: true });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -104,9 +145,9 @@ export default function CreateDirectVisit() {
   return (
     <Card className="m-5 shadow-lg rounded-md">
       <CardHeader className="text-center">
-        <CardTitle>Pendataan Kunjungan Langsung</CardTitle>
+        <CardTitle>Pendataan Reservasi Khusus</CardTitle>
         <CardDescription>
-          Isi formulir di bawah untuk mencatat kunjungan langsung.
+          Isi formulir di bawah untuk mencatat reservasi khusus.
         </CardDescription>
       </CardHeader>
       <Separator />
@@ -122,17 +163,55 @@ export default function CreateDirectVisit() {
                   name="visitingDate"
                   label="Tanggal Kunjungan"
                   placeholder="Pilih tanggal kunjungan"
-                  tooltip="Tanggal kunjungan (hanya bisa memilih hari ini)."
-                  disabledForward
+                  tooltip="Tanggal kunjungan (tidak bisa memilih sebelum hari ini)."
                 />
 
+                {/* Waktu Kunjungan */}
+                <SelectField
+                  control={form.control}
+                  name="visitingHour"
+                  label="Waktu Kunjungan"
+                  placeholder="Pilih waktu kunjungan"
+                  icon={ClockIcon}
+                  options={visitHours.map(
+                    (vh: { _id: string; timeRange: string }) => ({
+                      value: vh._id,
+                      label: vh.timeRange,
+                      disabled: vh.timeRange.includes("Istirahat"),
+                    })
+                  )}
+                  tooltip="Tentukan jam kunjungan sesuai jadwal museum."
+                />
+
+                {/* Mekanisme Reservasi */}
+                <SelectField
+                  control={form.control}
+                  name="reservationMechanism"
+                  label="Mekanisme Reservasi"
+                  placeholder="Pilih mekanisme reservasi"
+                  icon={SquareLibrary}
+                  options={[
+                    { value: "Whatsapp", label: "Whatsapp" },
+                    { value: "Google Form", label: "Google Form" },
+                    {
+                      value: "Datang Langsung",
+                      label: "Datang Langsung",
+                    },
+                    { value: "Lainnya", label: "Lainnya" },
+                  ]}
+                  tooltip="Pilih metode reservasi yang digunakan."
+                />
+              </div>
+
+              {/* ROW 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Nama Pemesan */}
                 <SimpleField
                   control={form.control}
                   name="ordererName"
                   label="Nama Pemesan"
                   placeholder="Masukan nama pemesan"
-                  tooltip="Nama pemesan yang berkunjungan."
+                  tooltip="Isi dengan nama pemesan yang mengatur kunjungan."
                 />
 
                 {/* Nomor Telepon */}
@@ -143,75 +222,62 @@ export default function CreateDirectVisit() {
                   placeholder="Masukan nomor telepon"
                   tooltip="Nomor telepon aktif yang dapat dihubungi."
                 />
+
+                {/* Nama Rombongan */}
+                <SimpleField
+                  control={form.control}
+                  name="groupName"
+                  label="Nama Rombongan"
+                  placeholder="Masukan nama rombongan"
+                  tooltip="Isi dengan nama rombongan atau identitas kelompok pengunjung."
+                />
               </div>
 
               {/* Kondisional berdasarkan ukuran layar */}
               {isMobile && (
                 <>
-                  {/* ROW 2 (mobile-only) */}
+                  {/* ROW 3 (mobile-only) */}
                   <div className="grid grid-cols-1 gap-4">
-                    {/* Jumlah Seluruh PELAJAR */}
-                    <NumberFieldInput
-                      control={form.control}
-                      name="studentMemberTotal"
-                      label="Jumlah Pelajar"
-                      placeholder="0"
-                      tooltip="Jumlah anggota pelajar."
-                      minValue={0}
-                      defaultValue={0}
-                    />
-
-                    {/* Total Harga Keseluruhan PELAJAR (readonly) */}
-                    <SimpleField
-                      control={form.control}
-                      name="studentTotalAmount"
-                      label="Total Harga Tiket Pelajar"
-                      placeholder="0"
-                      tooltip="Total harga tiket kategori pelajar."
-                      valueFormatter={(val) => formatRupiah(val || 0)}
-                      disabled
-                    />
-
-                    {/* Jumlah Anggota UMUM */}
+                    {/* Jumlah Anggota PEMANDU */}
                     <NumberFieldInput
                       control={form.control}
                       name="publicMemberTotal"
-                      label="Jumlah Umum"
+                      label="Jumlah Pemandu"
                       placeholder="0"
-                      tooltip="Jumlah anggota umum."
+                      tooltip="Jumlah anggota pemandu."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Total Harga Keseluruhan UMUM (readonly) */}
+                    {/* Total Harga Keseluruhan PEMANDU (readonly) */}
                     <SimpleField
                       control={form.control}
                       name="publicTotalAmount"
-                      label="Total Harga Tiket Umum"
+                      label="Total Harga Tiket Pemandu"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori umum."
+                      tooltip="Total harga tiket kategori pemandu."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
 
-                    {/* Jumlah Anggota ASING */}
+                    {/* Jumlah Anggota KHUSUS */}
                     <NumberFieldInput
                       control={form.control}
-                      name="foreignMemberTotal"
-                      label="Jumlah Asing"
+                      name="customMemberTotal"
+                      label="Jumlah Khusus"
                       placeholder="0"
-                      tooltip="Jumlah anggota asing."
+                      tooltip="Jumlah anggota khusus."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Total Harga Keseluruhan ASING (readonly) */}
+                    {/* Total Harga Keseluruhan KHUSUS (readonly) */}
                     <SimpleField
                       control={form.control}
-                      name="foreignTotalAmount"
-                      label="Total Harga Tiket Asing"
+                      name="customTotalAmount"
+                      label="Total Harga Tiket Khusus"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori asing."
+                      tooltip="Total harga tiket kategori khusus."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -222,7 +288,7 @@ export default function CreateDirectVisit() {
                       name="visitorMemberTotal"
                       label="Total Seluruh Pengunjung"
                       placeholder="0"
-                      tooltip="Jumlah total pengunjung."
+                      tooltip="Jumlah total seluruh pengunjung."
                       minValue={0}
                       defaultValue={0}
                     />
@@ -233,7 +299,7 @@ export default function CreateDirectVisit() {
                       name="totalPaymentAmount"
                       label="Total Pembayaran Harga Tiket"
                       placeholder="Masukan total pembayaran"
-                      tooltip="Jumlah total pembayaran."
+                      tooltip="Jumlah total pembayaran harga tiket."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -243,38 +309,27 @@ export default function CreateDirectVisit() {
 
               {isTablet && (
                 <>
-                  {/* ROW 2 (tablet-only) */}
+                  {/* ROW 3 (tablet-only) */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      {/* Jumlah Seluruh PELAJAR */}
-                      <NumberFieldInput
-                        control={form.control}
-                        name="studentMemberTotal"
-                        label="Jumlah Pelajar"
-                        placeholder="0"
-                        tooltip="Jumlah anggota pelajar."
-                        minValue={0}
-                        defaultValue={0}
-                      />
-
-                      {/* Jumlah Anggota UMUM */}
+                      {/* Jumlah Anggota PEMANDU */}
                       <NumberFieldInput
                         control={form.control}
                         name="publicMemberTotal"
-                        label="Jumlah Umum"
+                        label="Jumlah Pemandu"
                         placeholder="0"
-                        tooltip="Jumlah anggota umum."
+                        tooltip="Jumlah anggota pemandu."
                         minValue={0}
                         defaultValue={0}
                       />
 
-                      {/* Jumlah Anggota ASING */}
+                      {/* Jumlah Anggota KHUSUS */}
                       <NumberFieldInput
                         control={form.control}
-                        name="foreignMemberTotal"
-                        label="Jumlah Asing"
+                        name="customMemberTotal"
+                        label="Jumlah Khusus"
                         placeholder="0"
-                        tooltip="Jumlah anggota asing."
+                        tooltip="Jumlah anggota khusus."
                         minValue={0}
                         defaultValue={0}
                       />
@@ -285,42 +340,31 @@ export default function CreateDirectVisit() {
                         name="visitorMemberTotal"
                         label="Total Seluruh Pengunjung"
                         placeholder="0"
-                        tooltip="Jumlah total pengunjung."
+                        tooltip="Jumlah total seluruh pengunjung."
                         minValue={0}
                         defaultValue={0}
                       />
                     </div>
 
                     <div className="flex flex-col gap-4">
-                      {/* Total Harga Keseluruhan PELAJAR (readonly) */}
-                      <SimpleField
-                        control={form.control}
-                        name="studentTotalAmount"
-                        label="Total Harga Tiket Pelajar"
-                        placeholder="0"
-                        tooltip="Total harga tiket kategori pelajar."
-                        valueFormatter={(val) => formatRupiah(val || 0)}
-                        disabled
-                      />
-
-                      {/* Total Harga Keseluruhan UMUM (readonly) */}
+                      {/* Total Harga Keseluruhan PEMANDU (readonly) */}
                       <SimpleField
                         control={form.control}
                         name="publicTotalAmount"
-                        label="Total Harga Tiket Umum"
+                        label="Total Harga Tiket Pemandu"
                         placeholder="0"
-                        tooltip="Total harga tiket kategori umum."
+                        tooltip="Total harga tiket kategori pemandu."
                         valueFormatter={(val) => formatRupiah(val || 0)}
                         disabled
                       />
 
-                      {/* Total Harga Keseluruhan ASING (readonly) */}
+                      {/* Total Harga Keseluruhan KHUSUS (readonly) */}
                       <SimpleField
                         control={form.control}
-                        name="foreignTotalAmount"
-                        label="Total Harga Tiket Asing"
+                        name="customTotalAmount"
+                        label="Total Harga Tiket Khusus"
                         placeholder="0"
-                        tooltip="Total harga tiket kategori asing."
+                        tooltip="Total harga tiket kategori khusus."
                         valueFormatter={(val) => formatRupiah(val || 0)}
                         disabled
                       />
@@ -331,7 +375,7 @@ export default function CreateDirectVisit() {
                         name="totalPaymentAmount"
                         label="Total Pembayaran Harga Tiket"
                         placeholder="Masukan total pembayaran"
-                        tooltip="Jumlah total pembayaran."
+                        tooltip="Jumlah total pembayaran harga tiket."
                         valueFormatter={(val) => formatRupiah(val || 0)}
                         disabled
                       />
@@ -342,37 +386,26 @@ export default function CreateDirectVisit() {
 
               {isDesktop && (
                 <>
-                  {/* ROW 2 (desktop only) */}
-                  <div className="grid grid-cols-4 gap-4">
-                    {/* Jumlah Seluruh PELAJAR */}
-                    <NumberFieldInput
-                      control={form.control}
-                      name="studentMemberTotal"
-                      label="Jumlah Pelajar"
-                      placeholder="0"
-                      tooltip="Jumlah anggota pelajar."
-                      minValue={0}
-                      defaultValue={0}
-                    />
-
-                    {/* Jumlah Anggota UMUM */}
+                  {/* ROW 3 (desktop only) */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Jumlah Anggota PEMANDU */}
                     <NumberFieldInput
                       control={form.control}
                       name="publicMemberTotal"
-                      label="Jumlah Umum"
+                      label="Jumlah Pemandu"
                       placeholder="0"
-                      tooltip="Jumlah anggota umum."
+                      tooltip="Jumlah anggota pemandu."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Jumlah Anggota ASING */}
+                    {/* Jumlah Anggota KHUSUS */}
                     <NumberFieldInput
                       control={form.control}
-                      name="foreignMemberTotal"
-                      label="Jumlah Asing"
+                      name="customMemberTotal"
+                      label="Jumlah Khusus"
                       placeholder="0"
-                      tooltip="Jumlah anggota asing."
+                      tooltip="Jumlah anggota khusus."
                       minValue={0}
                       defaultValue={0}
                     />
@@ -383,40 +416,29 @@ export default function CreateDirectVisit() {
                       name="visitorMemberTotal"
                       label="Total Seluruh Pengunjung"
                       placeholder="0"
-                      tooltip="Jumlah total pengunjung."
+                      tooltip="Jumlah total seluruh pengunjung."
                       minValue={0}
                       defaultValue={0}
                     />
 
-                    {/* Total Harga Keseluruhan PELAJAR (readonly) */}
-                    <SimpleField
-                      control={form.control}
-                      name="studentTotalAmount"
-                      label="Total Harga Tiket Pelajar"
-                      placeholder="0"
-                      tooltip="Total harga tiket kategori pelajar."
-                      valueFormatter={(val) => formatRupiah(val || 0)}
-                      disabled
-                    />
-
-                    {/* Total Harga Keseluruhan UMUM (readonly) */}
+                    {/* Total Harga Keseluruhan PEMANDU (readonly) */}
                     <SimpleField
                       control={form.control}
                       name="publicTotalAmount"
-                      label="Total Harga Tiket Umum"
+                      label="Total Harga Tiket Pemandu"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori umum."
+                      tooltip="Total harga tiket kategori pemandu."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
 
-                    {/* Total Harga Keseluruhan ASING (readonly) */}
+                    {/* Total Harga Keseluruhan KHUSUS (readonly) */}
                     <SimpleField
                       control={form.control}
-                      name="foreignTotalAmount"
-                      label="Total Harga Tiket Asing"
+                      name="customTotalAmount"
+                      label="Total Harga Tiket Khusus"
                       placeholder="0"
-                      tooltip="Total harga tiket kategori asing."
+                      tooltip="Total harga tiket kategori khusus."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -427,7 +449,7 @@ export default function CreateDirectVisit() {
                       name="totalPaymentAmount"
                       label="Total Pembayaran Harga Tiket"
                       placeholder="Masukan total pembayaran"
-                      tooltip="Jumlah total pembayaran."
+                      tooltip="Jumlah total pembayaran harga tiket."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -435,26 +457,19 @@ export default function CreateDirectVisit() {
                 </>
               )}
 
-              {visitorTotal > 19 && (
-                <h2 className="text-xl font-bold text-center max-w-10/12 mx-auto">
-                  Ketentuan Kunjungan
-                  <br />
-                  <span className="text-base font-normal">
-                    Jumlah maksimal pembelian tiket langsung adalah 19 orang.
-                    Untuk rombongan lebih dari itu, silakan melakukan reservasi
-                    terlebih dahulu beberapa hari sebelum kedatangan melalui
-                    konter tiket atau menghubungi nomor berikut:
-                  </span>
-                  <br />
-                  <span className="text-base font-normal">
-                    (022)-7213822 atau 0811-1111-9330.
-                  </span>
-                  <br />
-                  <span className="text-base font-medium">Terima Kasih.</span>
-                </h2>
-              )}
+              {/* ROW 4 */}
+              <div className="grid gap-3">
+                <SimpleField
+                  control={form.control}
+                  name="description"
+                  label="Keterangan"
+                  placeholder="Tambahkan keterangan (opsional)"
+                  component={<Textarea className="rounded-xs" />}
+                  tooltip="Tambahkan catatan tambahan terkait kunjungan."
+                />
+              </div>
 
-              {/* ROW 3 */}
+              {/* ROW 5 */}
               <div className="grid gap-3">
                 {/* Alamat */}
                 <SimpleField
@@ -463,11 +478,11 @@ export default function CreateDirectVisit() {
                   label="Alamat"
                   placeholder="Masukan alamat"
                   component={<Textarea className="rounded-xs" />}
-                  tooltip="Masukkan alamat lengkap pemesan."
+                  tooltip="Masukkan alamat lengkap pemesan atau instansi asal rombongan."
                 />
               </div>
 
-              {/* ROW 4 */}
+              {/* ROW 6 */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Provinsi */}
                 <ComboboxField
@@ -482,7 +497,7 @@ export default function CreateDirectVisit() {
                       label: prov.name,
                     })
                   )}
-                  disabled={!provinces.length || foreignTotal > 0}
+                  disabled={!provinces.length}
                   tooltip="Pilih provinsi asal pemesan."
                 />
 
@@ -499,7 +514,7 @@ export default function CreateDirectVisit() {
                       label: reg.name,
                     })
                   )}
-                  disabled={!regencies.length || foreignTotal > 0}
+                  disabled={!regencies.length}
                   tooltip="Pilih kabupaten/kota asal pemesan."
                 />
 
@@ -516,7 +531,7 @@ export default function CreateDirectVisit() {
                       label: dist.name,
                     })
                   )}
-                  disabled={!districts.length || foreignTotal > 0}
+                  disabled={!districts.length}
                   tooltip="Pilih kecamatan asal pemesan."
                 />
 
@@ -533,7 +548,7 @@ export default function CreateDirectVisit() {
                       label: vill.name,
                     })
                   )}
-                  disabled={!villages.length || foreignTotal > 0}
+                  disabled={!villages.length}
                   tooltip="Pilih kelurahan/desa asal pemesan."
                 />
 
@@ -551,8 +566,18 @@ export default function CreateDirectVisit() {
                     })
                   )}
                   tooltip="Pilih negara asal pemesan."
-                  disabled={foreignTotal === 0}
                   countrySelect
+                />
+              </div>
+
+              {/* ROW 7 */}
+              <div className="grid gap-3">
+                {/* File Upload */}
+                <FileUploadField
+                  control={form.control}
+                  name="attachments"
+                  label="Lampiran File Nota Dinas Permohonan Pengajuan Tarif Khusus"
+                  accept="image/*,application/pdf"
                 />
               </div>
 
@@ -563,8 +588,10 @@ export default function CreateDirectVisit() {
                   className="rounded-xs"
                   disabled={
                     form.formState.isSubmitting ||
+                    guideTotal === 0 ||
+                    customTotal === 0 ||
                     visitorTotal === 0 ||
-                    visitorTotal > 19 ||
+                    attachments.length === 0 ||
                     !phoneNumber
                   }
                 >
@@ -584,20 +611,18 @@ export default function CreateDirectVisit() {
       </CardContent>
 
       <CardFooter className="flex justify-center">
-        {!isWithinOperationalHours() && (
-          <h2 className="text-xl font-bold text-center">
-            Ketentuan Kunjungan
-            <br />
-            <span className="text-base font-normal">
-              Pemesanan tiket hanya dapat dilakukan 30 menit sebelum jam
-              operasional Museum Geologi:
-            </span>
-            <br />
-            <span className="text-base font-normal">09:00 – 15:00 WIB</span>
-            <br />
-            <span className="text-base font-medium">Terima Kasih.</span>
-          </h2>
-        )}
+        <h2 className="text-xl font-bold text-center">
+          Ketentuan Pendataan Reservasi Khusus
+          <br />
+          <span className="text-base font-normal">
+            Pendataan reservasi khusus hanya dapat dilakukan 30 menit sebelum
+            jam operasional Museum Geologi:
+          </span>
+          <br />
+          <span className="text-base font-normal">09:00 – 15:00 WIB</span>
+          <br />
+          <span className="text-base font-medium">Terima Kasih.</span>
+        </h2>
       </CardFooter>
     </Card>
   );

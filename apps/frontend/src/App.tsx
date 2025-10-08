@@ -5,10 +5,12 @@ import LoginPage from "./pages/Auth/LoginPage";
 import RegisterPage from "./pages/Auth/RegisterPage";
 import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
 // Visit Page
-import CreateDirectVisit from "./pages/Visit/CreateDirectVisit";
-import DirectQRPage from "./pages/Visit/DirectQRPage";
-import CreateCustomVisit from "./pages/Visit/CreateCustomVisit";
-import CustomQRPage from "./pages/Visit/CustomQRPage";
+import DirectVisitForm from "./pages/Visit/Direct/DirectVisitForm";
+import DirectQRPage from "./pages/Visit/Direct/DirectQRPage";
+import GroupVisitForm from "./pages/Visit/Group/GroupVisitForm";
+import GroupQRPage from "./pages/Visit/Group/GroupQRPage";
+import CustomVisitForm from "./pages/Visit/Custom/CustomVisitForm";
+import CustomQRPage from "./pages/Visit/Custom/CustomQRPage";
 
 // Dashboard
 import DashboardPage from "./pages/Dashboard/DashboardPage";
@@ -16,7 +18,7 @@ import DashboardPage from "./pages/Dashboard/DashboardPage";
 import CalendarEventPage from "./pages/Dashboard/CalendarEventPage";
 // Pengelolaan Pengguna
 import ManageUserPage from "./pages/Dashboard/UserManagement/ManageUserPage";
-// import DetailUser from "./pages/Dashboard/UserManagement/DetailUser";
+import UserProfilePage from "./pages/Dashboard/UserManagement/UserProfilePage";
 // Harga Tiket
 import TicketPricePage from "./pages/Dashboard/TicketPrice/TicketPricePage";
 import TicketPriceForm from "./pages/Dashboard/TicketPrice/TicketPriceForm";
@@ -35,7 +37,6 @@ import CustomReservationPrintPage from "./pages/Dashboard/CustomReservation/Cust
 // Rekapitulasi Harian
 import DailyRecapPage from "./pages/Dashboard/DailyRecap/DailyRecapPage";
 import DailyRecapForm from "./pages/Dashboard/DailyRecap/DailyRecapForm";
-import UserProfilePage from "./pages/Dashboard/UserManagement/UserProfilePage";
 
 function App() {
   return (
@@ -51,13 +52,21 @@ function App() {
         <Route path="/visit">
           <Route index element={<Navigate to="direct" replace />} />
 
+          {/* Reservasi Langsung */}
           <Route path="direct">
-            <Route index element={<CreateDirectVisit />} />
+            <Route index element={<DirectVisitForm />} />
             <Route path=":uniqueCode" element={<DirectQRPage />} />
           </Route>
 
+          {/* Reservasi Rombongan */}
+          <Route path="group">
+            <Route index element={<GroupVisitForm />} />
+            <Route path=":uniqueCode" element={<GroupQRPage />} />
+          </Route>
+
+          {/* Reservasi Khusus */}
           <Route path="custom">
-            <Route index element={<CreateCustomVisit />} />
+            <Route index element={<CustomVisitForm />} />
             <Route path=":uniqueCode" element={<CustomQRPage />} />
           </Route>
         </Route>
@@ -66,14 +75,13 @@ function App() {
           <Route index element={<Navigate to="calendar" replace />} />
           <Route path="calendar" element={<CalendarEventPage />} />
 
-          <Route path="profile">
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path=":username" element={<UserProfilePage />} />
-          </Route>
-
           {/* Pengelolaan Pengguna */}
           <Route path="user-management">
             <Route index element={<ManageUserPage />} />
+          </Route>
+          <Route path="profile">
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path=":username" element={<UserProfilePage />} />
           </Route>
 
           {/* Harga Tiket */}
@@ -89,19 +97,19 @@ function App() {
           </Route>
 
           {/* Reservasi Langsung */}
-          <Route path="walk-in">
+          <Route path="direct-reservation">
             <Route index element={<WalkinPage />} />
             <Route path="add" element={<WalkinForm />} />
 
             <Route
               path="edit"
-              element={<Navigate to="/dashboard/walk-in" replace />}
+              element={<Navigate to="/dashboard/direct-reservation" replace />}
             />
             <Route path="edit/:uniqueCode" element={<WalkinForm />} />
 
             <Route
               path="print"
-              element={<Navigate to="/dashboard/walk-in" replace />}
+              element={<Navigate to="/dashboard/direct-reservation" replace />}
             />
             <Route path="print/:uniqueCode" element={<WalkinPrintPage />} />
           </Route>

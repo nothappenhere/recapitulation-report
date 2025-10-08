@@ -174,11 +174,11 @@ export default function DetailGroupReservation() {
       };
 
       const res = await api.put(`/group-reservation/${uniqueCode}`, payload);
-      const { groupReservationNumber } = res.data.data;
+      const { reservationNumber } = res.data.data;
       toast.success(`${res.data.message}`);
 
       form.reset();
-      navigate(`/dashboard/group-reservation/print/${groupReservationNumber}`, {
+      navigate(`/dashboard/group-reservation/print/${reservationNumber}`, {
         replace: true,
       });
     } catch (err) {

@@ -33,7 +33,7 @@ export const getLastRecap = async (_, res) => {
   try {
     const lastRecap = await DailyRecap.findOne()
       .populate("agent", "fullName username")
-      .sort({ createdAt: -1 }); // ambil 1 data terbaru
+      .sort({ createdAt: -1 });
 
     if (!lastRecap || lastRecap.length === 0) {
       return sendResponse(
@@ -132,7 +132,6 @@ export const updateRecapByCode = async (req, res) => {
   const { agent } = req.body;
 
   try {
-    // Pakai findOneAndUpdate agar update satu dokumen dan return data terbaru
     const updated = await DailyRecap.findOneAndUpdate(
       { recapNumber: uniqueCode },
       { ...req.validatedData, agent },
@@ -174,7 +173,6 @@ export const deleteRecapByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    // Pakai findOneAndDelete untuk hapus satu dokumen
     const deleted = await DailyRecap.findOneAndDelete({
       recapNumber: uniqueCode,
     });

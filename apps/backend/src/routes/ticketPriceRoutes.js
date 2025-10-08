@@ -6,7 +6,7 @@ import {
   updateTicketPriceByCategory,
   deleteTicketPriceByCategory,
 } from "../controllers/TicketPriceController.js";
-import { validateSchema } from "../utils/validateSchema.js";
+import { validateSchema } from "../middlewares/validateSchema.js";
 import { TicketPriceSchema } from "@rzkyakbr/schemas";
 
 const router = express.Router();
@@ -35,7 +35,11 @@ router.post("/", validateSchema(TicketPriceSchema), createTicketPrice);
  * @route PUT /api/ticket-price/:category
  * @param category - Kategori dari harga tiket yang akan diperbarui
  */
-router.put("/:category", validateSchema(TicketPriceSchema), updateTicketPriceByCategory);
+router.put(
+  "/:category",
+  validateSchema(TicketPriceSchema),
+  updateTicketPriceByCategory
+);
 
 /**
  * * @desc Menghapus data harga tiket berdasarkan Kategori

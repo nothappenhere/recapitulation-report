@@ -8,7 +8,6 @@ const countrySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-
 // menambahkan index agar query lebih cepat
 countrySchema.index({ code: 1 });
 

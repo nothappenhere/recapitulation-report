@@ -5,7 +5,7 @@ import { sendResponse } from "../utils/sendResponse.js";
  * * @desc Mendapatkan seluruh data acara
  * @route GET /api/calendar-event
  */
-export const getEvents = async (req, res) => {
+export const getEvents = async (_, res) => {
   try {
     const allEvents = await CalendarEvent.find();
 
@@ -34,7 +34,7 @@ export const getEventById = async (req, res) => {
   try {
     const event = await CalendarEvent.findById(id);
 
-    if (!event) {
+    if (!event || event.length === 0) {
       return sendResponse(
         res,
         404,
@@ -63,7 +63,6 @@ export const getEventById = async (req, res) => {
  */
 export const createEvent = async (req, res) => {
   try {
-    // Buat acara baru
     const newEvent = new CalendarEvent({
       ...req.validatedData,
     });
@@ -95,7 +94,7 @@ export const updateEventById = async (req, res) => {
       }
     );
 
-    if (!updated) {
+    if (!updated || updated.length === 0) {
       return sendResponse(
         res,
         404,
@@ -120,7 +119,7 @@ export const updateEventById = async (req, res) => {
 
 /**
  * * @desc Menghapus data acara berdasarkan ID
- * @route DELETE /api/calendar-event/:
+ * @route DELETE /api/calendar-event/:id
  * @param id - ID dari acara yang akan dihapus
  */
 export const deleteEventById = async (req, res) => {
@@ -129,7 +128,7 @@ export const deleteEventById = async (req, res) => {
   try {
     const deleted = await CalendarEvent.findByIdAndDelete(id);
 
-    if (!deleted) {
+    if (!deleted || deleted.length === 0) {
       return sendResponse(
         res,
         404,

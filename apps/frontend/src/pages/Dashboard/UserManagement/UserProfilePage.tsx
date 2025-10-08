@@ -300,7 +300,7 @@ function ProfileBg() {
   const currentImage = files[0]?.preview || null;
 
   return (
-    <div className="h-42">
+    <div className="h-44">
       <div className="bg-black/10 border-b-2 border-black/10 relative flex size-full items-center justify-center overflow-hidden">
         {currentImage && (
           <img

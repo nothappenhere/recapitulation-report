@@ -76,12 +76,13 @@ export default function GroupReservationPrintPage() {
               <CardTitle>Telp : 022-7213822</CardTitle>
               <CardTitle>Fax : 022-7213822</CardTitle>
               <CardTitle>Email : museum-geologi@esdm.go.id</CardTitle>
+              <CardTitle>Website : museum.geologi.esdm.go.id</CardTitle>
             </CardHeader>
 
             <CardContent className="border-y py-4 grid gap-2">
               <InfoRow
-                label="Kode Kunjungan (Reservation code)"
-                value={reservationData.groupReservationNumber}
+                label="Kode Reservasi (Reservation code)"
+                value={reservationData.reservationNumber}
               />
 
               <InfoRow

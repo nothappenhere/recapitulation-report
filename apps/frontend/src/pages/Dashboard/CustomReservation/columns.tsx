@@ -19,7 +19,7 @@ export function useCustomReservationColumns(
   return [
     createSelectColumn<CustomReservationFullTypes>(),
 
-    createColumn("customReservationNumber", "Kode Reservasi"),
+    createColumn("reservationNumber", "Kode Reservasi"),
     createColumn("agent", "Petugas Reservasi", {
       cell: ({ row }) => {
         const agent = row.original.agent as unknown as {
@@ -99,9 +99,9 @@ export function useCustomReservationColumns(
     }),
 
     createActionsColumn<CustomReservationFullTypes>(
-      (item) => navigate(`edit/${item.customReservationNumber}`),
+      (item) => navigate(`edit/${item.reservationNumber}`),
       onDelete,
-      (item) => navigate(`print/${item.customReservationNumber}`)
+      (item) => navigate(`print/${item.reservationNumber}`)
     ),
   ];
 }

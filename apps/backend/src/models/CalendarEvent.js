@@ -4,14 +4,18 @@ const calendarEventSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, default: "-" },
+
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
+
     startHour: { type: String, default: "-" },
     endHour: { type: String, default: "-" },
+
     allDay: { type: Boolean, default: false },
     color: {
       type: String,
       enum: ["sky", "amber", "violet", "rose", "emerald", "orange"],
+      required: true,
       default: "sky",
     },
     location: { type: String, required: true },

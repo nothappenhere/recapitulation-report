@@ -83,7 +83,7 @@ export default function DetailWalkin() {
       setLoading(true);
 
       try {
-        const res = await api.get(`/walk-in/${uniqueCode}`);
+        const res = await api.get(`/direct-reservation/${uniqueCode}`);
         const WalkinData = res.data.data;
 
         const formData: TWalkIn = {
@@ -111,7 +111,7 @@ export default function DetailWalkin() {
           : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
         toast.error(message);
 
-        navigate("/dashboard/walk-in", { replace: true });
+        navigate("/dashboard/direct-reservation", { replace: true });
       } finally {
         setLoading(false);
       }
@@ -161,12 +161,14 @@ export default function DetailWalkin() {
         agent: Agent,
       };
 
-      const res = await api.put(`/walk-in/${uniqueCode}`, payload);
-      const { walkinNumber } = res.data.data;
+      const res = await api.put(`/direct-reservation/${uniqueCode}`, payload);
+      const { reservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/dashboard/walk-in/print/${walkinNumber}`, { replace: true });
+      navigate(`/dashboard/direct-reservation/print/${reservationNumber}`, {
+        replace: true,
+      });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -181,9 +183,9 @@ export default function DetailWalkin() {
     if (!uniqueCode) return;
 
     try {
-      const res = await api.delete(`/walk-in/${uniqueCode}`);
+      const res = await api.delete(`/direct-reservation/${uniqueCode}`);
       toast.success(`${res.data.message}.`);
-      navigate("/dashboard/walk-in");
+      navigate("/dashboard/direct-reservation");
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -217,7 +219,7 @@ export default function DetailWalkin() {
               <CardAction className="flex gap-2">
                 {/* Back */}
                 <Button asChild>
-                  <Link to="/dashboard/walk-in">
+                  <Link to="/dashboard/direct-reservation">
                     <ArrowLeft />
                     Kembali
                   </Link>
@@ -225,7 +227,9 @@ export default function DetailWalkin() {
 
                 {/* Print */}
                 <Button variant="outline" asChild>
-                  <Link to={`/dashboard/walk-in/print/${uniqueCode}`}>
+                  <Link
+                    to={`/dashboard/direct-reservation/print/${uniqueCode}`}
+                  >
                     <Printer />
                     Print
                   </Link>

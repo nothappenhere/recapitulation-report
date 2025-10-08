@@ -3,7 +3,7 @@ import { sendResponse } from "../utils/sendResponse.js";
 
 /**
  * * @desc Mendapatkan seluruh data kunjungan walk-in
- * @route GET /api/walk-in
+ * @route GET /api/direct-reservation
  */
 export const getWalkIns = async (_, res) => {
   try {
@@ -27,19 +27,17 @@ export const getWalkIns = async (_, res) => {
 
 /**
  * * @desc Mendapatkan satu data kunjungan walk-in berdasarkan Kode Unik
- * @route GET /api/walk-in/:uniqueCode
+ * @route GET /api/direct-reservation/:uniqueCode
  * @param uniqueCode - Kode unik dari kunjungan walk-in yang dicari
  */
 export const getWalkInByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    const walkIn = await Walkin.findOne({ walkinNumber: uniqueCode }).populate(
-      "agent",
-      "fullName username"
-    );
+    const walkIn = await Walkin.findOne({
+      reservationNumber: uniqueCode,
+    }).populate("agent", "fullName username");
 
-    // Karena response API `data` adalah array, pastikan ada data dan ambil objek pertama
     if (!walkIn || walkIn.length === 0) {
       return sendResponse(
         res,
@@ -65,7 +63,7 @@ export const getWalkInByCode = async (req, res) => {
 
 /**
  * * @desc Membuat data kunjungan walk-in baru
- * @route POST /api/walk-in
+ * @route POST /api/direct-reservation
  */
 export const createWalkIn = async (req, res) => {
   const { agent } = req.body;
@@ -90,7 +88,7 @@ export const createWalkIn = async (req, res) => {
 
 /**
  * * @desc Memperbarui data kunjungan walk-in berdasarkan Kode Unik
- * @route PUT /api/walk-in/:uniqueCode
+ * @route PUT /api/direct-reservation/:uniqueCode
  * @param uniqueCode - Kode unik dari kunjungan walk-in yang akan diperbarui
  */
 export const updateWalkInByCode = async (req, res) => {
@@ -98,9 +96,8 @@ export const updateWalkInByCode = async (req, res) => {
   const { agent } = req.body;
 
   try {
-    // Pakai findOneAndUpdate agar update satu dokumen dan return data terbaru
     const updated = await Walkin.findOneAndUpdate(
-      { walkinNumber: uniqueCode },
+      { reservationNumber: uniqueCode },
       { ...req.validatedData, agent },
       {
         new: true,
@@ -133,15 +130,16 @@ export const updateWalkInByCode = async (req, res) => {
 
 /**
  * * @desc Menghapus data kunjungan walk-in berdasarkan Kode Unik
- * @route DELETE /api/walk-in/:uniqueCode
+ * @route DELETE /api/direct-reservation/:uniqueCode
  * @param uniqueCode - Kode unik dari kunjungan walk-in yang akan dihapus
  */
 export const deleteWalkInByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    // Pakai findOneAndDelete untuk hapus satu dokumen
-    const deleted = await Walkin.findOneAndDelete({ walkinNumber: uniqueCode });
+    const deleted = await Walkin.findOneAndDelete({
+      reservationNumber: uniqueCode,
+    });
 
     if (!deleted || deleted.length === 0) {
       return sendResponse(

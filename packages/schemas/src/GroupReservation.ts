@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const GroupReservationSchema = z.object({
   visitingDate: z.coerce.date().refine((val) => !isNaN(val.getTime()), {
-    message: "Tanggal kunjungan tidak boleh kosong!",
+    message: "Tanggal kunjungan tidak boleh kosong/invalid!",
   }),
   visitingHour: z.string().nonempty("Waktu Kunjungan tidak boleh kosong!"),
   reservationMechanism: z
@@ -29,7 +29,23 @@ export const GroupReservationSchema = z.object({
     .nonnegative("Jumlah asing tidak boleh negative!"),
   visitorMemberTotal: z.coerce
     .number()
-    .min(1, "Jumlah total seluruh pengunjung minimal 1 orang!"),
+    .min(1, "Jumlah total seluruh pengunjung minimal 1 orang!")
+    .nonnegative("Jumlah total seluruh pengunjung tidak boleh negative!"),
+
+  studentTotalAmount: z.coerce
+    .number()
+    .nonnegative("Jumlah total pembayaran pelajar tidak boleh negative!"),
+  publicTotalAmount: z.coerce
+    .number()
+    .nonnegative("Jumlah total pembayaran umum tidak boleh negative!"),
+  foreignTotalAmount: z.coerce
+    .number()
+    .nonnegative("Jumlah total pembayaran asing tidak boleh negative!"),
+  totalPaymentAmount: z.coerce
+    .number()
+    .nonnegative(
+      "Jumlah total pembayaran seluruh pengunjung tidak boleh negative!"
+    ),
 
   actualMemberTotal: z.coerce.number().optional().default(0),
   reservationStatus: z
@@ -47,25 +63,20 @@ export const GroupReservationSchema = z.object({
   village: z.string().optional().default("-"),
   country: z.string().optional().default("Indonesia"),
 
-  studentTotalAmount: z.coerce
-    .number()
-    .nonnegative("Jumlah total pembayaran pelajar tidak boleh negative!"),
-  publicTotalAmount: z.coerce
-    .number()
-    .nonnegative("Jumlah total pembayaran umum tidak boleh negative!"),
-  foreignTotalAmount: z.coerce
-    .number()
-    .nonnegative("Jumlah total pembayaran asing tidak boleh negative!"),
-  totalPaymentAmount: z.coerce
-    .number()
-    .nonnegative("Jumlah total pembayaran tidak boleh negative!"),
-
   paymentMethod: z
     .enum(["Tunai", "QRIS", "Lainnya"], "Metode pembayaran tidak boleh kosong!")
     .optional()
     .default("Lainnya"),
-  downPayment: z.coerce.number().optional().default(0),
-  changeAmount: z.coerce.number().optional().default(0),
+  downPayment: z.coerce
+    .number()
+    .nonnegative("Jumlah uang pembayaran tidak boleh negative!")
+    .optional()
+    .default(0),
+  changeAmount: z.coerce
+    .number()
+    .nonnegative("Jumlah uang kembalian tidak boleh negative!")
+    .optional()
+    .default(0),
   statusPayment: z
     .enum(["Lunas", "Belum Bayar"], "Status pembayaran tidak boleh kosong!")
     .optional()
@@ -73,7 +84,6 @@ export const GroupReservationSchema = z.object({
 });
 
 export type TGroupReservation = z.infer<typeof GroupReservationSchema>;
-
 export const defaultGroupReservationFormValues: TGroupReservation = {
   visitingDate: new Date(),
   visitingHour: "",
@@ -89,6 +99,11 @@ export const defaultGroupReservationFormValues: TGroupReservation = {
   foreignMemberTotal: 0,
   visitorMemberTotal: 0,
 
+  studentTotalAmount: 0,
+  publicTotalAmount: 0,
+  foreignTotalAmount: 0,
+  totalPaymentAmount: 0,
+
   actualMemberTotal: 0,
   reservationStatus: "Lainnya",
 
@@ -98,11 +113,6 @@ export const defaultGroupReservationFormValues: TGroupReservation = {
   district: "",
   village: "",
   country: "Indonesia",
-
-  studentTotalAmount: 0,
-  publicTotalAmount: 0,
-  foreignTotalAmount: 0,
-  totalPaymentAmount: 0,
 
   paymentMethod: "Lainnya",
   downPayment: 0,

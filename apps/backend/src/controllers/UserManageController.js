@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-
 import { User } from "../models/User.js";
 import { sendResponse } from "../utils/sendResponse.js";
 
@@ -9,7 +8,9 @@ import { sendResponse } from "../utils/sendResponse.js";
  */
 export const getUsers = async (_, res) => {
   try {
-    const allUsers = await User.find().sort({ createdAt: -1 });
+    const allUsers = await User.find()
+      .sort({ createdAt: -1 })
+      .select("-password");
 
     sendResponse(
       res,
@@ -50,7 +51,7 @@ export const getUserByUsername = async (req, res) => {
       200,
       true,
       `Berhasil mendapatkan data pengguna dengan username ${username}`,
-      oneUser
+      { ...oneUser._doc, password: undefined }
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
@@ -70,7 +71,7 @@ export const updateUserByUsername = async (req, res) => {
   try {
     const user = await User.findOne({ username });
 
-    if (!user) {
+    if (!user || user.length === 0) {
       return sendResponse(
         res,
         404,
@@ -101,15 +102,12 @@ export const updateUserByUsername = async (req, res) => {
     Object.assign(user, updateFields);
     await user.save();
 
-    // Hapus password dari respons
-    const updatedUser = { ...user._doc, password: undefined };
-
     sendResponse(
       res,
       200,
       true,
       `Berhasil memperbarui data pengguna dengan username ${username}`,
-      updatedUser
+      { ...user._doc, password: undefined }
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
@@ -127,7 +125,6 @@ export const deleteUserByUsername = async (req, res) => {
   const { username } = req.params;
 
   try {
-    // Pakai findOneAndDelete untuk hapus satu dokumen
     const deleted = await User.findOneAndDelete({ username: username });
 
     if (!deleted || deleted.length === 0) {

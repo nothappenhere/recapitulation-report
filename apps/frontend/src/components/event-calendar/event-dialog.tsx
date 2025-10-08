@@ -146,6 +146,7 @@ export function EventDialog({
 
   //* Submit handler: create or update
   const onSubmit = async (values: TCalendarEvent): Promise<void> => {
+    console.log(values);
     const start = new Date(values.startDate);
     const end = new Date(values.endDate);
 
@@ -157,6 +158,9 @@ export function EventDialog({
     } else {
       start.setHours(0, 0, 0, 0);
       end.setHours(23, 59, 59, 999);
+
+      values.startHour = "00:00";
+      values.endHour = "23:59";
     }
 
     try {
@@ -233,7 +237,7 @@ export function EventDialog({
                   name="title"
                   label="Judul Acara"
                   placeholder="Masukan judul acara"
-                  tooltip="Masukan nama acara yang singkat dan mudah dikenali."
+                  tooltip="Berikan nama acara yang singkat dan mudah dikenali."
                 />
               </div>
 
@@ -243,9 +247,9 @@ export function EventDialog({
                   control={form.control}
                   name="description"
                   label="Deskripsi"
-                  placeholder="Masukan deskripsi acara"
+                  placeholder="Masukan deskripsi acara (opsional)"
                   component={<Textarea className="rounded-xs" />}
-                  tooltip="Tambahkan detail tambahan tentang acara (opsional)."
+                  tooltip="Tambahkan detail tambahan terkait acara."
                 />
               </div>
 
@@ -257,7 +261,7 @@ export function EventDialog({
                     name="startDate"
                     label="Tanggal Mulai"
                     placeholder="Pilih tanggal mulai acara"
-                    tooltip="Tanggal pertama acara berlangsung."
+                    tooltip="Tanggal dimulainya acara."
                   />
                 </div>
 
@@ -274,7 +278,7 @@ export function EventDialog({
                         value: time.value,
                         label: time.value,
                       }))}
-                      tooltip="Jam dimulainya acara."
+                      tooltip="Waktu dimulainya acara."
                     />
                   </div>
                 )}
@@ -305,7 +309,7 @@ export function EventDialog({
                         value: time.value,
                         label: time.value,
                       }))}
-                      tooltip="Jam berakhirnya acara."
+                      tooltip="Waktu berakhirnya acara."
                     />
                   </div>
                 )}
@@ -317,7 +321,7 @@ export function EventDialog({
                   control={form.control}
                   name="allDay"
                   label="Sepanjang hari"
-                  tooltip="Centang jika acara berlangsung seharian penuh tanpa jam khusus."
+                  tooltip="Centang jika acara berlangsung seharian penuh tanpa waktu khusus."
                 />
               </div>
 

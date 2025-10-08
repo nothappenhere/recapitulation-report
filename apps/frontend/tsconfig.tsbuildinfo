@@ -104,12 +104,12 @@
     "./src/pages/ticketprice/detailticketprice.tsx",
     "./src/pages/ticketprice/ticketpricecard.tsx",
     "./src/pages/ticketprice/ticketpricepage.tsx",
-    "./src/pages/walk-in/createwalkin copy.tsx",
-    "./src/pages/walk-in/createwalkin.tsx",
-    "./src/pages/walk-in/detailwalkin.tsx",
-    "./src/pages/walk-in/qrpage.tsx",
-    "./src/pages/walk-in/walkintable.tsx",
-    "./src/pages/walk-in/columns.tsx"
+    "./src/pages/direct-reservation/createwalkin copy.tsx",
+    "./src/pages/direct-reservation/createwalkin.tsx",
+    "./src/pages/direct-reservation/detailwalkin.tsx",
+    "./src/pages/direct-reservation/qrpage.tsx",
+    "./src/pages/direct-reservation/walkintable.tsx",
+    "./src/pages/direct-reservation/columns.tsx"
   ],
   "errors": true,
   "version": "5.8.3"

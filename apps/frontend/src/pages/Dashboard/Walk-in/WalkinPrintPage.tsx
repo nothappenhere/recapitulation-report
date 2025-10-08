@@ -32,7 +32,7 @@ export default function WalkinPrintPage() {
       setLoading(true);
 
       try {
-        const res = await api.get(`/walk-in/${uniqueCode}`);
+        const res = await api.get(`/direct-reservation/${uniqueCode}`);
         setWalkInData(res.data.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
@@ -41,7 +41,7 @@ export default function WalkinPrintPage() {
           : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
         toast.error(message);
 
-        navigate("/dashboard/walk-in", { replace: true });
+        navigate("/dashboard/direct-reservation", { replace: true });
       } finally {
         setLoading(false);
       }
@@ -80,8 +80,8 @@ export default function WalkinPrintPage() {
 
             <CardContent className="border-y py-4 grid gap-2">
               <InfoRow
-                label="Kode Kunjungan (Reservation code)"
-                value={walkInData.walkinNumber}
+                label="Kode Reservasi (Reservation code)"
+                value={walkInData.reservationNumber}
               />
 
               <InfoRow
@@ -177,7 +177,7 @@ export default function WalkinPrintPage() {
               </Button>
 
               <Button asChild>
-                <Link to="/dashboard/walk-in">
+                <Link to="/dashboard/direct-reservation">
                   <ArrowLeft />
                   Kembali ke Pencarian
                 </Link>

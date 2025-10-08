@@ -6,7 +6,7 @@ import { sendResponse } from "../utils/sendResponse.js";
  * * @desc Mendapatkan seluruh data provinsi yang ada di Indonesia
  * @route GET /api/region/provinces
  */
-export const getProvinces = async (req, res) => {
+export const getProvinces = async (_, res) => {
   try {
     const provinces = await Region.find({ level: "province" }).sort({
       name: 1,

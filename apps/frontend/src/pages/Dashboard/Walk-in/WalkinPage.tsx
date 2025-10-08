@@ -27,7 +27,7 @@ export default function WalkinPage() {
     setLoading(true);
 
     try {
-      const res = await api.get("/walk-in");
+      const res = await api.get("/direct-reservation");
       setData(res.data.data);
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
@@ -85,7 +85,9 @@ export default function WalkinPage() {
     setLoading(true);
 
     try {
-      const res = await api.delete(`/walk-in/${selectedItem.walkinNumber}`);
+      const res = await api.delete(
+        `/direct-reservation/${selectedItem.reservationNumber}`
+      );
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
     } catch (err) {
@@ -111,7 +113,7 @@ export default function WalkinPage() {
   const columns = useWalkInColumns(handleDeleteClick);
 
   const exportColumns: ExportColumn<WalkInFullTypes>[] = [
-    { key: "walkinNumber", header: "Kode Reservasi" },
+    { key: "reservationNumber", header: "Kode Reservasi" },
     { key: "agent", header: "Petugas Reservasi", type: "fullName" },
 
     { key: "ordererName", header: "Nama Pemesan" },
@@ -161,7 +163,7 @@ export default function WalkinPage() {
           <DataTable
             columns={columns}
             data={loading ? [] : data}
-            addTitle="Tambah Kunjungan"
+            addTitle="Tambah Reservasi"
             colSpan={8}
             onRefresh={fetchWalkIns}
             worksheetName="Reservasi Langsung"

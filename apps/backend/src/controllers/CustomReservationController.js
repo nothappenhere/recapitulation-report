@@ -1,3 +1,5 @@
+import path from "path";
+import fs from "fs-extra";
 import { CustomReservation } from "../models/CustomReservation.js";
 import { sendResponse } from "../utils/sendResponse.js";
 
@@ -32,11 +34,28 @@ export const getCustomReservations = async (_, res) => {
  * @param fileName - Nama file hasil upload yang dicari
  */
 export const getFileUpload = async (req, res) => {
-  const filePath = path.join(process.cwd(), "uploads", req.params.fileName);
-  if (await fs.pathExists(filePath)) {
-    return res.download(filePath);
-  } else {
-    return res.status(404).send("File tidak ditemukan");
+  try {
+    const fileName = req.params.fileName;
+    const imageDir = path.join(process.cwd(), "uploads", "images", fileName);
+    const docsDir = path.join(process.cwd(), "uploads", "docs", fileName);
+
+    // cek di folder images dulu, lalu docs
+    const filePath = (await fs.pathExists(imageDir)) ? imageDir : docsDir;
+
+    if (await fs.pathExists(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      return sendResponse(
+        res,
+        404,
+        false,
+        `File dengan nama ${fileName} tidak ditemukan`
+      );
+    }
+  } catch (err) {
+    return sendResponse(res, 500, false, "Internal server error", null, {
+      detail: err.message,
+    });
   }
 };
 
@@ -50,7 +69,7 @@ export const getCustomReservationByCode = async (req, res) => {
 
   try {
     const reservation = await CustomReservation.findOne({
-      customReservationNumber: uniqueCode,
+      reservationNumber: uniqueCode,
     })
       .populate("agent", "fullName username")
       .populate("visitingHour", "timeRange");
@@ -112,7 +131,6 @@ export const createCustomReservation = async (req, res) => {
       newCustomReservation
     );
   } catch (err) {
-    console.log(err);
     const statusCode = err.statusCode || 500;
     return sendResponse(res, statusCode, false, "Internal server error", null, {
       detail: err.detail,
@@ -130,9 +148,8 @@ export const updateCustomReservationByCode = async (req, res) => {
   const { agent } = req.body;
 
   try {
-    // Pakai findOneAndUpdate agar update satu dokumen dan return data terbaru
     const updated = await CustomReservation.findOneAndUpdate(
-      { customReservationNumber: uniqueCode },
+      { reservationNumber: uniqueCode },
       { ...req.validatedData, agent },
       {
         new: true,
@@ -172,9 +189,8 @@ export const deleteCustomReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    // Pakai findOneAndDelete untuk hapus satu dokumen
     const deleted = await CustomReservation.findOneAndDelete({
-      customReservationNumber: uniqueCode,
+      reservationNumber: uniqueCode,
     });
 
     if (!deleted || deleted.length === 0) {

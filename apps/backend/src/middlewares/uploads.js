@@ -3,9 +3,8 @@ import path from "path";
 import fs from "fs-extra";
 import { v4 as uuidv4 } from "uuid";
 
-const BASE_UPLOAD_DIR = path.join(process.cwd(), "uploads");
-
 // Buat direktori utama dan subfolder
+const BASE_UPLOAD_DIR = path.join(process.cwd(), "uploads");
 const IMAGE_DIR = path.join(BASE_UPLOAD_DIR, "images");
 const DOCS_DIR = path.join(BASE_UPLOAD_DIR, "docs");
 
@@ -36,13 +35,13 @@ const storage = multer.diskStorage({
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // max 10MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // max 5MB
   fileFilter: (_, file, cb) => {
     const allowed = ["image/jpeg", "image/png", "application/pdf"];
     if (!allowed.includes(file.mimetype)) {
       const error = new Error("Tipe file tidak diizinkan");
       error.statusCode = 400;
-      return cb(error, false); // to trigger catch in controller
+      return cb(error, false);
     }
     cb(null, true);
   },

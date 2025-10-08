@@ -146,16 +146,13 @@ export default function CreateCustomReservation() {
           "Content-Type": "multipart/form-data",
         },
       });
-      const { customReservationNumber } = res.data.data;
+      const { reservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(
-        `/dashboard/custom-reservation/print/${customReservationNumber}`,
-        {
-          replace: true,
-        }
-      );
+      navigate(`/dashboard/custom-reservation/print/${reservationNumber}`, {
+        replace: true,
+      });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message

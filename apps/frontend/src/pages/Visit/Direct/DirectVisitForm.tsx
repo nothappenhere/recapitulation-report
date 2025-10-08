@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -26,9 +25,9 @@ import {
   useAutoPayment,
   useRegionSelector,
 } from "@rzkyakbr/libs";
-import { ArrowLeft, Banknote, Flag, Loader2, MapPinned } from "lucide-react";
+import { Flag, Loader2, MapPinned } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useMediaQuery } from "react-responsive";
 import type { AxiosError } from "axios";
 import { SimpleField } from "@/components/form/SimpleField";
@@ -36,22 +35,22 @@ import { DateField } from "@/components/form/DateField";
 import { ComboboxField } from "@/components/form/ComboboxField";
 import { PhoneField } from "@/components/form/PhoneField";
 import { NumberFieldInput } from "@/components/form/NumberField";
-import { SelectField } from "@/components/form/SelectField";
-import { useUser } from "@/hooks/use-user-context";
 
-export default function CreateWalkin() {
+export default function DirectVisitForm() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 639 });
   const isTablet = useMediaQuery({ minWidth: 640, maxWidth: 1023 });
   const isDesktop = useMediaQuery({ minWidth: 1024 });
 
-  const { user } = useUser();
-  const Agent = user?._id || null;
-
   const form = useForm<TWalkIn>({
     resolver: zodResolver(WalkInSchema),
     defaultValues: defaultWalkInFormValues,
   });
+
+  //* for submit button validation purposes
+  const foreignTotal = form.watch("foreignMemberTotal");
+  const visitorTotal = form.watch("visitorMemberTotal");
+  const phoneNumber = form.watch("phoneNumber");
 
   // * Hook untuk mengambil dan mengatur data wilayah (negara, provinsi, kabupaten/kota, kecamatan, desa)
   const { countries, provinces, regencies, districts, villages } =
@@ -60,14 +59,7 @@ export default function CreateWalkin() {
   //* Hook untuk menghitung otomatis total pembayaran, uang kembalian, dan status pembayaran
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
-  const foreignTotal = form.watch("foreignMemberTotal");
-  const visitorTotal = form.watch("visitorMemberTotal");
-  const phoneNumber = form.watch("phoneNumber");
-  const totalPaymentAmount = form.watch("totalPaymentAmount");
-  const paymentMethod = form.watch("paymentMethod");
-  const downPayment = form.watch("downPayment");
-
-  //* Submit handler create
+  //* Submit handler: create
   const onSubmit = async (values: TWalkIn): Promise<void> => {
     try {
       const {
@@ -91,15 +83,13 @@ export default function CreateWalkin() {
         district: foreignTotal > 0 ? "-" : districtName,
         village: foreignTotal > 0 ? "-" : villageName,
         country: !foreignTotal ? "Indonesia" : countryName,
-        agent: Agent,
       };
 
       const res = await api.post("/direct-reservation", payload);
       const { reservationNumber } = res.data.data;
-      toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/dashboard/direct-reservation/print/${reservationNumber}`, {
+      navigate(`${reservationNumber}`, {
         replace: true,
       });
     } catch (err) {
@@ -112,21 +102,12 @@ export default function CreateWalkin() {
   };
 
   return (
-    <Card className="shadow-lg rounded-md">
+    <Card className="m-5 shadow-lg rounded-md">
       <CardHeader className="text-center">
-        <CardTitle>Pendataan Kunjungan</CardTitle>
+        <CardTitle>Pendataan Reservasi Langsung</CardTitle>
         <CardDescription>
-          Isi formulir di bawah untuk mencatat kunjungan.
+          Isi formulir di bawah untuk mencatat reservasi langsung.
         </CardDescription>
-
-        <CardAction>
-          <Button asChild>
-            <Link to="/dashboard/direct-reservation">
-              <ArrowLeft />
-              Kembali
-            </Link>
-          </Button>
-        </CardAction>
       </CardHeader>
       <Separator />
       <CardContent>
@@ -151,7 +132,7 @@ export default function CreateWalkin() {
                   name="ordererName"
                   label="Nama Pemesan"
                   placeholder="Masukan nama pemesan"
-                  tooltip="Nama pemesan yang berkunjungan."
+                  tooltip="Isi dengan nama pemesan yang berkunjung."
                 />
 
                 {/* Nomor Telepon */}
@@ -241,7 +222,7 @@ export default function CreateWalkin() {
                       name="visitorMemberTotal"
                       label="Total Seluruh Pengunjung"
                       placeholder="0"
-                      tooltip="Jumlah total pengunjung."
+                      tooltip="Jumlah total seluruh pengunjung."
                       minValue={0}
                       defaultValue={0}
                     />
@@ -252,7 +233,7 @@ export default function CreateWalkin() {
                       name="totalPaymentAmount"
                       label="Total Pembayaran Harga Tiket"
                       placeholder="Masukan total pembayaran"
-                      tooltip="Jumlah total pembayaran."
+                      tooltip="Jumlah total pembayaran harga tiket."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -304,7 +285,7 @@ export default function CreateWalkin() {
                         name="visitorMemberTotal"
                         label="Total Seluruh Pengunjung"
                         placeholder="0"
-                        tooltip="Jumlah total pengunjung."
+                        tooltip="Jumlah total seluruh pengunjung."
                         minValue={0}
                         defaultValue={0}
                       />
@@ -350,7 +331,7 @@ export default function CreateWalkin() {
                         name="totalPaymentAmount"
                         label="Total Pembayaran Harga Tiket"
                         placeholder="Masukan total pembayaran"
-                        tooltip="Jumlah total pembayaran."
+                        tooltip="Jumlah total pembayaran harga tiket."
                         valueFormatter={(val) => formatRupiah(val || 0)}
                         disabled
                       />
@@ -402,7 +383,7 @@ export default function CreateWalkin() {
                       name="visitorMemberTotal"
                       label="Total Seluruh Pengunjung"
                       placeholder="0"
-                      tooltip="Jumlah total pengunjung."
+                      tooltip="Jumlah total seluruh pengunjung."
                       minValue={0}
                       defaultValue={0}
                     />
@@ -446,7 +427,7 @@ export default function CreateWalkin() {
                       name="totalPaymentAmount"
                       label="Total Pembayaran Harga Tiket"
                       placeholder="Masukan total pembayaran"
-                      tooltip="Jumlah total pembayaran."
+                      tooltip="Jumlah total pembayaran harga tiket."
                       valueFormatter={(val) => formatRupiah(val || 0)}
                       disabled
                     />
@@ -456,13 +437,13 @@ export default function CreateWalkin() {
 
               {visitorTotal > 19 && (
                 <h2 className="text-xl font-bold text-center max-w-10/12 mx-auto">
-                  Ketentuan Pembuatan Data Kunjungan
+                  Ketentuan Pendataan Reservasi Langsung
                   <br />
                   <span className="text-base font-normal">
                     Jumlah maksimal pembelian tiket langsung adalah 19 orang.
-                    Untuk rombongan lebih dari itu, silakan melakukan reservasi
-                    terlebih dahulu beberapa hari sebelum kedatangan melalui
-                    konter tiket atau menghubungi nomor berikut:
+                    Untuk rombongan yang lebih dari itu, silakan melakukan
+                    reservasi terlebih dahulu beberapa hari sebelum kedatangan
+                    melalui konter tiket atau menghubungi nomor berikut:
                   </span>
                   <br />
                   <span className="text-base font-normal">
@@ -575,59 +556,6 @@ export default function CreateWalkin() {
                 />
               </div>
 
-              {/* ROW 5 */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                {/* Metode Pembayaran */}
-                <SelectField
-                  control={form.control}
-                  name="paymentMethod"
-                  label="Metode Pembayaran"
-                  placeholder="Pilih metode pembayaran"
-                  icon={Banknote}
-                  options={[
-                    { label: "Tunai", value: "Tunai" },
-                    { label: "QRIS", value: "QRIS" },
-                    { label: "Lainnya", value: "Lainnya" },
-                  ]}
-                  tooltip="Metode pembayaran tiket."
-                />
-
-                {/* Uang Pembayaran */}
-                <SimpleField
-                  control={form.control}
-                  name="downPayment"
-                  label="Uang Pembayaran"
-                  placeholder="Masukan uang pembayaran"
-                  onChangeOverride={(e, field) => {
-                    const rawValue = e.target.value.replace(/[^\d]/g, "");
-                    field.onChange(Number(rawValue));
-                  }}
-                  valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah uang yang dibayarkan."
-                />
-
-                {/* Uang Kembalian (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  name="changeAmount"
-                  label="Uang Kembalian"
-                  placeholder="Masukan uang kembalian"
-                  disabled
-                  valueFormatter={(val) => formatRupiah(val || 0)}
-                  tooltip="Jumlah uang kembalian jika pembayaran melebihi total yang ditentukan."
-                />
-
-                {/* Status Pembayaran (readonly) */}
-                <SimpleField
-                  control={form.control}
-                  name="statusPayment"
-                  label="Status Pembayaran"
-                  placeholder="Masukan status pembayaran"
-                  disabled
-                  tooltip="Status pembayaran terisi otomatis (Lunas atau Belum Bayar)."
-                />
-              </div>
-
               {/* Submit Button */}
               {isWithinOperationalHours() && (
                 <Button
@@ -637,9 +565,7 @@ export default function CreateWalkin() {
                     form.formState.isSubmitting ||
                     visitorTotal === 0 ||
                     visitorTotal > 19 ||
-                    !phoneNumber ||
-                    paymentMethod === "Lainnya" ||
-                    downPayment < totalPaymentAmount
+                    !phoneNumber
                   }
                 >
                   {form.formState.isSubmitting ? (
@@ -657,25 +583,19 @@ export default function CreateWalkin() {
         </Form>
       </CardContent>
 
-      <CardFooter className="flex flex-col justify-center items-center gap-2">
+      <CardFooter className="flex justify-center">
         <h2 className="text-xl font-bold text-center">
-          Ketentuan Pembuatan Data Kunjungan
+          Ketentuan Pendataan Reservasi Langsung
+          <br />
+          <span className="text-base font-normal">
+            Pendataan reservasi langsung hanya dapat dilakukan 30 menit sebelum
+            jam operasional Museum Geologi:
+          </span>
+          <br />
+          <span className="text-base font-normal">09:00 – 15:00 WIB</span>
+          <br />
+          <span className="text-base font-medium">Terima Kasih.</span>
         </h2>
-
-        <div className="flex justify-center items-center">
-          <span className="text-base font-normal text-center max-w-1/2 border p-4">
-            Pemesanan tiket hanya dapat dilakukan 30 menit sebelum jam
-            operasional Museum Geologi: 09:00 – 15:00 WIB.
-          </span>
-
-          <span className="text-base font-normal text-center max-w-1/2 border p-4">
-            Silakan pilih Metode Pembayaran, serta Uang Pembayaran{" "}
-            <span className="underline">tidak boleh kurang dari</span> Total
-            Pembayaran Harga Tiket.
-          </span>
-        </div>
-
-        <span className="text-base font-medium">Terima Kasih.</span>
       </CardFooter>
     </Card>
   );

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { generateRandomCode } from "../utils/generateRandomCode.js";
 
 const dailyRecapSchema = new mongoose.Schema(
   {
@@ -12,22 +13,22 @@ const dailyRecapSchema = new mongoose.Schema(
     recapDate: { type: Date, required: true },
     description: { type: String, default: "-" },
 
-    studentMemberTotal: { type: Number, required: true, default: 0 },
-    publicMemberTotal: { type: Number, required: true, default: 0 },
-    foreignMemberTotal: { type: Number, required: true, default: 0 },
-    visitorMemberTotal: { type: Number, required: true, default: 0 },
+    studentMemberTotal: { type: Number, required: true },
+    publicMemberTotal: { type: Number, required: true },
+    foreignMemberTotal: { type: Number, required: true },
+    visitorMemberTotal: { type: Number, required: true },
 
-    studentTotalAmount: { type: Number, default: 0 },
-    publicTotalAmount: { type: Number, default: 0 },
-    foreignTotalAmount: { type: Number, default: 0 },
-    totalPaymentAmount: { type: Number, default: 0 },
+    studentTotalAmount: { type: Number, required: true },
+    publicTotalAmount: { type: Number, required: true },
+    foreignTotalAmount: { type: Number, required: true },
+    totalPaymentAmount: { type: Number, required: true },
 
-    initialStudentSerialNumber: { type: Number, required: true, default: 0 },
-    finalStudentSerialNumber: { type: Number, required: true, default: 0 },
-    initialPublicSerialNumber: { type: Number, required: true, default: 0 },
-    finalPublicSerialNumber: { type: Number, required: true, default: 0 },
-    initialForeignSerialNumber: { type: Number, required: true, default: 0 },
-    finalForeignSerialNumber: { type: Number, required: true, default: 0 },
+    initialStudentSerialNumber: { type: Number, required: true },
+    finalStudentSerialNumber: { type: Number, required: true },
+    initialPublicSerialNumber: { type: Number, required: true },
+    finalPublicSerialNumber: { type: Number, required: true },
+    initialForeignSerialNumber: { type: Number, required: true },
+    finalForeignSerialNumber: { type: Number, required: true },
   },
   { timestamps: true }
 );
@@ -59,24 +60,13 @@ dailyRecapSchema.pre("save", function (next) {
 dailyRecapSchema.pre("save", async function (next) {
   if (!this.recapNumber) {
     try {
-      const generateRandomCode = () => {
-        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        let result = "";
-        for (let i = 0; i < 6; i++) {
-          result += characters.charAt(
-            Math.floor(Math.random() * characters.length)
-          );
-        }
-        return result;
-      };
-
       let unique = false;
       let attempt = 0;
       const maxAttempts = 10;
 
       while (!unique && attempt < maxAttempts) {
         const randomCode = generateRandomCode();
-        const candidate = `MGDR-${randomCode}`;
+        const candidate = `MGRH-${randomCode}`;
 
         const existing = await mongoose.models.GroupReservation.findOne({
           recapNumber: candidate,

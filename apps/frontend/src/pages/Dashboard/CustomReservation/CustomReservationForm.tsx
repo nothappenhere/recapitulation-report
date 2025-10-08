@@ -136,19 +136,20 @@ export default function CustomReservationForm() {
 
         // Map data from API response to expected format for FileUploadField
         const mappedFiles = reservationData.attachments.map((file: any) => ({
-          name: file.originalName,
+          name: file.fileName,
           size: file.size,
           type: file.mimeType,
-          url: `${import.meta.env.VITE_BASE_URL}/uploads/images/${
-            file.fileName
-          }`, // sesuaikan path jika perlu
+          path: file.path, // sesuaikan path jika perlu
+          // url: `${import.meta.env.VITE_BASE_URL}/uploads/images/${
+          //   file.fileName
+          // }`, // sesuaikan path jika perlu
           id: file._id,
         }));
         setInitialFiles(mappedFiles);
 
         form.reset({
           ...formData,
-          attachments: [mappedFiles],
+          attachments: mappedFiles,
         });
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
@@ -178,6 +179,7 @@ export default function CustomReservationForm() {
 
   //* Submit handler: create or update data
   const onSubmit = async (values: TCustomReservation): Promise<void> => {
+    console.log(values);
     try {
       const {
         provinceName,
@@ -229,10 +231,13 @@ export default function CustomReservationForm() {
       formData.append("paymentMethod", values.paymentMethod);
       formData.append("statusPayment", values.statusPayment);
 
-      if (values.attachments && values.attachments.length > 0) {
+      if (!isEditMode && values.attachments && values.attachments.length > 0) {
         values.attachments.forEach((file: File) => {
           formData.append("attachments", file);
         });
+      } else {
+        const newFiles = values.attachments.filter((f) => f instanceof File);
+        newFiles.forEach((file) => formData.append("attachments", file));
       }
 
       let res = null;
@@ -252,15 +257,12 @@ export default function CustomReservationForm() {
         });
       }
 
-      const { customReservationNumber } = res.data.data;
+      const { reservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
       form.reset();
-      navigate(
-        `/dashboard/custom-reservation/print/${customReservationNumber}`,
-        {
-          replace: true,
-        }
-      );
+      navigate(`/dashboard/custom-reservation/print/${reservationNumber}`, {
+        replace: true,
+      });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -310,8 +312,8 @@ export default function CustomReservationForm() {
               </CardTitle>
               <CardDescription>
                 {isEditMode
-                  ? ` Ubah detail reservasi khusus dengan kode: ${uniqueCode}`
-                  : " Isi formulir di bawah untuk mencatat reservasi khusus."}
+                  ? `Ubah detail reservasi khusus dengan kode: ${uniqueCode}`
+                  : "Isi formulir di bawah untuk mencatat reservasi khusus."}
               </CardDescription>
 
               <CardAction className="flex gap-2">
@@ -355,7 +357,7 @@ export default function CustomReservationForm() {
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                   <div className="flex flex-col gap-6">
                     {/* ROW 1 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Tanggal Kunjungan */}
                       <DateField
                         control={form.control}
@@ -380,6 +382,25 @@ export default function CustomReservationForm() {
                           })
                         )}
                         tooltip="Tentukan jam kunjungan sesuai jadwal museum."
+                      />
+
+                      {/* Mekanisme Reservasi */}
+                      <SelectField
+                        control={form.control}
+                        name="reservationMechanism"
+                        label="Mekanisme Reservasi"
+                        placeholder="Pilih mekanisme reservasi"
+                        icon={SquareLibrary}
+                        options={[
+                          { value: "Whatsapp", label: "Whatsapp" },
+                          { value: "Google Form", label: "Google Form" },
+                          {
+                            value: "Datang Langsung",
+                            label: "Datang Langsung",
+                          },
+                          { value: "Lainnya", label: "Lainnya" },
+                        ]}
+                        tooltip="Pilih metode reservasi yang digunakan."
                       />
                     </div>
 
@@ -468,7 +489,7 @@ export default function CustomReservationForm() {
                             name="visitorMemberTotal"
                             label="Total Seluruh Pengunjung"
                             placeholder="0"
-                            tooltip="Jumlah total pengunjung."
+                            tooltip="Jumlah total seluruh pengunjung."
                             minValue={0}
                             defaultValue={0}
                           />
@@ -479,7 +500,7 @@ export default function CustomReservationForm() {
                             name="totalPaymentAmount"
                             label="Total Pembayaran Harga Tiket"
                             placeholder="Masukan total pembayaran"
-                            tooltip="Jumlah total pembayaran."
+                            tooltip="Jumlah total pembayaran harga tiket."
                             valueFormatter={(val) => formatRupiah(val || 0)}
                             disabled
                           />
@@ -520,7 +541,7 @@ export default function CustomReservationForm() {
                               name="visitorMemberTotal"
                               label="Total Seluruh Pengunjung"
                               placeholder="0"
-                              tooltip="Jumlah total pengunjung."
+                              tooltip="Jumlah total seluruh pengunjung."
                               minValue={0}
                               defaultValue={0}
                             />
@@ -555,7 +576,7 @@ export default function CustomReservationForm() {
                               name="totalPaymentAmount"
                               label="Total Pembayaran Harga Tiket"
                               placeholder="Masukan total pembayaran"
-                              tooltip="Jumlah total pembayaran."
+                              tooltip="Jumlah total pembayaran harga tiket."
                               valueFormatter={(val) => formatRupiah(val || 0)}
                               disabled
                             />
@@ -596,7 +617,7 @@ export default function CustomReservationForm() {
                             name="visitorMemberTotal"
                             label="Total Seluruh Pengunjung"
                             placeholder="0"
-                            tooltip="Jumlah total pengunjung."
+                            tooltip="Jumlah total seluruh pengunjung."
                             minValue={0}
                             defaultValue={0}
                           />
@@ -629,7 +650,7 @@ export default function CustomReservationForm() {
                             name="totalPaymentAmount"
                             label="Total Pembayaran Harga Tiket"
                             placeholder="Masukan total pembayaran"
-                            tooltip="Jumlah total pembayaran."
+                            tooltip="Jumlah total pembayaran harga tiket."
                             valueFormatter={(val) => formatRupiah(val || 0)}
                             disabled
                           />
@@ -642,7 +663,7 @@ export default function CustomReservationForm() {
                       <SimpleField
                         control={form.control}
                         name="description"
-                        label="Deskripsi"
+                        label="Keterangan"
                         placeholder="Tambahkan keterangan (opsional)"
                         component={<Textarea className="rounded-xs" />}
                         tooltip="Tambahkan catatan tambahan terkait kunjungan."
@@ -695,7 +716,7 @@ export default function CustomReservationForm() {
                         label="Alamat"
                         placeholder="Masukan alamat"
                         component={<Textarea className="rounded-xs" />}
-                        tooltip="Masukkan alamat lengkap pemesan."
+                        tooltip="Masukkan alamat lengkap pemesan atau instansi asal rombongan."
                       />
                     </div>
 
@@ -849,6 +870,7 @@ export default function CustomReservationForm() {
                         label="Lampiran File Nota Dinas Permohonan Pengajuan Tarif Khusus"
                         accept="image/*,application/pdf"
                         initialFiles={isEditMode ? initialFiles : []}
+                        isEditMode={isEditMode}
                       />
                     </div>
 

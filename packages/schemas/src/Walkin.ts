@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const WalkInSchema = z.object({
   visitingDate: z.coerce.date().refine((val) => !isNaN(val.getTime()), {
-    message: "Tanggal kunjungan tidak boleh kosong!",
+    message: "Tanggal kunjungan tidak boleh kosong/invalid!",
   }),
   ordererName: z.string().nonempty("Nama pemesan tidak boleh kosong!"),
   phoneNumber: z.string().nonempty("Nomor telepon tidak boleh kosong!"),
@@ -18,14 +18,8 @@ export const WalkInSchema = z.object({
     .nonnegative("Jumlah asing tidak boleh negative!"),
   visitorMemberTotal: z.coerce
     .number()
-    .min(1, "Jumlah total seluruh pengunjung minimal 1 orang!"),
-
-  address: z.string().nonempty("Alamat tidak boleh kosong!").default("-"),
-  province: z.string().optional().default("-"),
-  regencyOrCity: z.string().optional().default("-"),
-  district: z.string().optional().default("-"),
-  village: z.string().optional().default("-"),
-  country: z.string().optional().default("Indonesia"),
+    .min(1, "Jumlah total seluruh pengunjung minimal 1 orang!")
+    .nonnegative("Jumlah total seluruh pengunjung tidak boleh negative!"),
 
   studentTotalAmount: z.coerce
     .number()
@@ -38,14 +32,31 @@ export const WalkInSchema = z.object({
     .nonnegative("Jumlah total pembayaran asing tidak boleh negative!"),
   totalPaymentAmount: z.coerce
     .number()
-    .nonnegative("Jumlah total pembayaran tidak boleh negative!"),
+    .nonnegative(
+      "Jumlah total pembayaran seluruh pengunjung tidak boleh negative!"
+    ),
+
+  address: z.string().nonempty("Alamat tidak boleh kosong!").default("-"),
+  province: z.string().optional().default("-"),
+  regencyOrCity: z.string().optional().default("-"),
+  district: z.string().optional().default("-"),
+  village: z.string().optional().default("-"),
+  country: z.string().optional().default("Indonesia"),
 
   paymentMethod: z
     .enum(["Tunai", "QRIS", "Lainnya"], "Metode pembayaran tidak boleh kosong!")
     .optional()
     .default("Lainnya"),
-  downPayment: z.coerce.number().optional().default(0),
-  changeAmount: z.coerce.number().optional().default(0),
+  downPayment: z.coerce
+    .number()
+    .nonnegative("Jumlah uang pembayaran tidak boleh negative!")
+    .optional()
+    .default(0),
+  changeAmount: z.coerce
+    .number()
+    .nonnegative("Jumlah uang kembalian tidak boleh negative!")
+    .optional()
+    .default(0),
   statusPayment: z
     .enum(["Lunas", "Belum Bayar"], "Status pembayaran tidak boleh kosong!")
     .optional()
@@ -53,7 +64,6 @@ export const WalkInSchema = z.object({
 });
 
 export type TWalkIn = z.infer<typeof WalkInSchema>;
-
 export const defaultWalkInFormValues: TWalkIn = {
   visitingDate: new Date(),
   ordererName: "",
@@ -64,17 +74,17 @@ export const defaultWalkInFormValues: TWalkIn = {
   foreignMemberTotal: 0,
   visitorMemberTotal: 0,
 
+  studentTotalAmount: 0,
+  publicTotalAmount: 0,
+  foreignTotalAmount: 0,
+  totalPaymentAmount: 0,
+
   address: "",
   province: "",
   regencyOrCity: "",
   district: "",
   village: "",
   country: "Indonesia",
-
-  studentTotalAmount: 0,
-  publicTotalAmount: 0,
-  foreignTotalAmount: 0,
-  totalPaymentAmount: 0,
 
   paymentMethod: "Lainnya",
   downPayment: 0,

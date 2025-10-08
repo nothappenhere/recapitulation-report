@@ -35,7 +35,7 @@ app.use("/api/auth", AuthRoutes);
 app.use("/api/calendar-event", CalendarEventRoutes);
 app.use("/api/user-manage", UserManageRoutes);
 app.use("/api/ticket-price", TicketPriceRoutes);
-app.use("/api/walk-in", WalkinRoutes);
+app.use("/api/direct-reservation", WalkinRoutes);
 app.use("/api/group-reservation", GroupReservationRoutes);
 app.use("/api/custom-reservation", CustomReservationRoutes);
 app.use("/api/daily-recap", DailyRecapRoutes);

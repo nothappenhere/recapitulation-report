@@ -1,4 +1,4 @@
-import { sendResponse } from "./sendResponse.js";
+import { sendResponse } from "../utils/sendResponse.js";
 
 export const validateSchema = (schema) => (req, res, next) => {
   const result = schema.safeParse(req.body);

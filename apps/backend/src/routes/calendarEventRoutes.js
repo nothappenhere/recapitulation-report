@@ -6,7 +6,7 @@ import {
   updateEventById,
   deleteEventById,
 } from "../controllers/CalendarEventController.js";
-import { validateSchema } from "../utils/validateSchema.js";
+import { validateSchema } from "../middlewares/validateSchema.js";
 import { CalendarEventSchema } from "@rzkyakbr/schemas";
 
 const router = express.Router();
@@ -39,7 +39,7 @@ router.put("/:id", validateSchema(CalendarEventSchema), updateEventById);
 
 /**
  * * @desc Menghapus data acara berdasarkan ID
- * @route DELETE /api/calendar-event/:
+ * @route DELETE /api/calendar-event/:id
  * @param id - ID dari acara yang akan dihapus
  */
 router.delete("/:id", deleteEventById);

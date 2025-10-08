@@ -1,14 +1,10 @@
 import type { Agent } from "./Agent.js";
-
-type VisitingHour = {
-  _id: string;
-  timeRange: string;
-};
+import type { VisitingHour } from "./VisitingHour.js";
 
 export type GroupReservationFullTypes = {
   _id: string;
   agent: Agent;
-  groupReservationNumber: string;
+  reservationNumber: string;
 
   visitingDate: string;
   visitingHour: VisitingHour;
@@ -24,6 +20,11 @@ export type GroupReservationFullTypes = {
   foreignMemberTotal: number;
   visitorMemberTotal: number;
 
+  studentTotalAmount: number;
+  publicTotalAmount: number;
+  foreignTotalAmount: number;
+  totalPaymentAmount: number;
+
   actualMemberTotal: number;
   reservationStatus: string;
 
@@ -33,11 +34,6 @@ export type GroupReservationFullTypes = {
   district: string;
   village: string;
   country: string;
-
-  studentTotalAmount: number;
-  publicTotalAmount: number;
-  foreignTotalAmount: number;
-  totalPaymentAmount: number;
 
   paymentMethod: string;
   downPayment: number;

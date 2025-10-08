@@ -5,17 +5,16 @@ export const UserSchema = z.object({
   position: z.string().nonempty("Jabatan tidak boleh kosong!"),
   fullName: z
     .string()
-    .nonempty("Nama lengkap tidak boleh kosong!")
-    .min(3, "Nama lengkap harus minimal 3 karakter!"),
+    .min(3, "Nama lengkap harus minimal 3 karakter!")
+    .nonempty("Nama lengkap tidak boleh kosong!"),
 
   username: z
     .string()
-    .nonempty("Username tidak boleh kosong!")
     .min(3, "Username harus minimal 3 karakter!")
-    .transform((val) => val.toLowerCase()),
+    .nonempty("Username tidak boleh kosong!")
+    .transform((val) => val.toLowerCase().trim()),
   password: z
     .string()
-    .nonempty("Password tidak boleh kosong!")
     .min(8, "Password harus minimal 8 karakter!")
     .regex(/[0-9]/, "Passwords harus memiliki minimal 1 angka!")
     .regex(/[a-z]/, "Passwords harus memiliki minimal 1 huruf kecil!")
@@ -23,7 +22,8 @@ export const UserSchema = z.object({
     .regex(
       /[^A-Za-z0-9]/,
       "Passwords harus memiliki minimal 1 karakter spesial!"
-    ),
+    )
+    .nonempty("Password tidak boleh kosong!"),
 
   biography: z.string().optional().default("-"),
   role: z
@@ -77,5 +77,5 @@ export const defaultUserUpdateFormValues: TUserUpdate = {
   password: "",
   newPassword: "",
   role: "User",
-  biography: "-",
+  biography: "",
 };

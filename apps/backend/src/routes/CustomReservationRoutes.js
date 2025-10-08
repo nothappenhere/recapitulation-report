@@ -7,7 +7,7 @@ import {
   updateCustomReservationByCode,
   deleteCustomReservationByCode,
 } from "../controllers/CustomReservationController.js";
-import { validateSchema } from "../utils/validateSchema.js";
+import { validateSchema } from "../middlewares/validateSchema.js";
 import { upload } from "../middlewares/uploads.js";
 import { CustomReservationSchema } from "@rzkyakbr/schemas";
 

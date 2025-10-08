@@ -31,7 +31,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     async function fetchUser() {
       try {
         const res = await api.get("/auth/check-auth");
-        setUser(res.data?.data?.user);
+        setUser(res.data?.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
         const message = error.response?.data?.message

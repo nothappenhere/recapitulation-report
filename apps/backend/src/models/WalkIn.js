@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
+import { generateRandomCode } from "../utils/generateRandomCode.js";
 
 const walkinSchema = new mongoose.Schema(
   {
-    walkinNumber: { type: String, unique: true },
+    reservationNumber: { type: String, unique: true },
     agent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -13,10 +14,15 @@ const walkinSchema = new mongoose.Schema(
     ordererName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
 
-    studentMemberTotal: { type: Number, required: true, default: 0 },
-    publicMemberTotal: { type: Number, required: true, default: 0 },
-    foreignMemberTotal: { type: Number, required: true, default: 0 },
-    visitorMemberTotal: { type: Number, required: true, default: 0 },
+    studentMemberTotal: { type: Number, required: true },
+    publicMemberTotal: { type: Number, required: true },
+    foreignMemberTotal: { type: Number, required: true },
+    visitorMemberTotal: { type: Number, required: true },
+
+    studentTotalAmount: { type: Number, required: true },
+    publicTotalAmount: { type: Number, required: true },
+    foreignTotalAmount: { type: Number, required: true },
+    totalPaymentAmount: { type: Number, required: true },
 
     address: { type: String, required: true },
     province: { type: String, default: "-" },
@@ -25,18 +31,13 @@ const walkinSchema = new mongoose.Schema(
     village: { type: String, default: "-" },
     country: { type: String, default: "Indonesia" },
 
-    studentTotalAmount: { type: Number, default: 0 },
-    publicTotalAmount: { type: Number, default: 0 },
-    foreignTotalAmount: { type: Number, default: 0 },
-    totalPaymentAmount: { type: Number, default: 0 },
-
     paymentMethod: {
       type: String,
       enum: ["Tunai", "QRIS", "Lainnya"],
       default: "Lainnya",
     },
-    downPayment: { type: Number, default: 0 },
-    changeAmount: { type: Number, default: 0 },
+    downPayment: { type: Number },
+    changeAmount: { type: Number },
     statusPayment: {
       type: String,
       enum: ["Lunas", "Belum Bayar"],
@@ -86,21 +87,10 @@ walkinSchema.pre("save", function (next) {
   next();
 });
 
-// Middleware untuk generate walkinNumber acak 6 karakter (unik)
+// Middleware untuk generate reservationNumber acak 6 karakter (unik)
 walkinSchema.pre("save", async function (next) {
-  if (!this.walkinNumber) {
+  if (!this.reservationNumber) {
     try {
-      const generateRandomCode = () => {
-        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        let result = "";
-        for (let i = 0; i < 6; i++) {
-          result += characters.charAt(
-            Math.floor(Math.random() * characters.length)
-          );
-        }
-        return result;
-      };
-
       let unique = false;
       let attempt = 0;
       const maxAttempts = 10;
@@ -110,11 +100,11 @@ walkinSchema.pre("save", async function (next) {
         const candidate = `MG-${randomCode}`;
 
         const existing = await mongoose.models.Walkin.findOne({
-          walkinNumber: candidate,
+          reservationNumber: candidate,
         });
 
         if (!existing) {
-          this.walkinNumber = candidate;
+          this.reservationNumber = candidate;
           unique = true;
         }
 
@@ -123,7 +113,7 @@ walkinSchema.pre("save", async function (next) {
 
       if (!unique) {
         throw new Error(
-          "Failed to generate unique walkinNumber after multiple attempts."
+          "Failed to generate unique reservationNumber after multiple attempts."
         );
       }
 

@@ -1,18 +1,14 @@
 import type { Agent } from "./Agent.js";
-
-type VisitingHour = {
-  _id: string;
-  timeRange: string;
-};
+import type { VisitingHour } from "./VisitingHour.js";
 
 export type CustomReservationFullTypes = {
   _id: string;
   agent: Agent;
-  customReservationNumber: string;
+  reservationNumber: string;
 
   visitingDate: string;
   visitingHour: VisitingHour;
-  reservationMechanism: string; // note: hapus
+  reservationMechanism: string;
   description: string;
 
   ordererName: string;
@@ -23,6 +19,10 @@ export type CustomReservationFullTypes = {
   customMemberTotal: number;
   visitorMemberTotal: number;
 
+  publicTotalAmount: number;
+  customTotalAmount: number;
+  totalPaymentAmount: number;
+
   actualMemberTotal: number;
   reservationStatus: string;
 
@@ -32,10 +32,6 @@ export type CustomReservationFullTypes = {
   district: string;
   village: string;
   country: string;
-
-  publicTotalAmount: number;
-  customTotalAmount: number;
-  totalPaymentAmount: number;
 
   paymentMethod: string;
   downPayment: number;

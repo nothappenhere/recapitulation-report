@@ -185,10 +185,10 @@ export default function GroupReservationForm() {
         res = await api.put(`/group-reservation/${uniqueCode}`, payload);
       }
 
-      const { groupReservationNumber } = res.data.data;
+      const { reservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
       form.reset();
-      navigate(`/dashboard/group-reservation/print/${groupReservationNumber}`, {
+      navigate(`/dashboard/group-reservation/print/${reservationNumber}`, {
         replace: true,
       });
     } catch (err) {
@@ -240,8 +240,8 @@ export default function GroupReservationForm() {
               </CardTitle>
               <CardDescription>
                 {isEditMode
-                  ? ` Ubah detail reservasi rombongan dengan kode: ${uniqueCode}`
-                  : " Isi formulir di bawah untuk mencatat reservasi rombongan."}
+                  ? `Ubah detail reservasi rombongan dengan kode: ${uniqueCode}`
+                  : "Isi formulir di bawah untuk mencatat reservasi rombongan."}
               </CardDescription>
 
               <CardAction className="flex gap-2">
@@ -324,7 +324,7 @@ export default function GroupReservationForm() {
                             value: "Datang Langsung",
                             label: "Datang Langsung",
                           },
-                          { value: "Lainnya", label: "Lainnya..." },
+                          { value: "Lainnya", label: "Lainnya" },
                         ]}
                         tooltip="Pilih metode reservasi yang digunakan."
                       />
@@ -437,7 +437,7 @@ export default function GroupReservationForm() {
                             name="visitorMemberTotal"
                             label="Total Seluruh Pengunjung"
                             placeholder="0"
-                            tooltip="Jumlah total pengunjung."
+                            tooltip="Jumlah total seluruh pengunjung."
                             minValue={0}
                             defaultValue={0}
                           />
@@ -448,7 +448,7 @@ export default function GroupReservationForm() {
                             name="totalPaymentAmount"
                             label="Total Pembayaran Harga Tiket"
                             placeholder="Masukan total pembayaran"
-                            tooltip="Jumlah total pembayaran."
+                            tooltip="Jumlah total pembayaran harga tiket."
                             valueFormatter={(val) => formatRupiah(val || 0)}
                             disabled
                           />
@@ -500,7 +500,7 @@ export default function GroupReservationForm() {
                               name="visitorMemberTotal"
                               label="Total Seluruh Pengunjung"
                               placeholder="0"
-                              tooltip="Jumlah total pengunjung."
+                              tooltip="Jumlah total seluruh pengunjung."
                               minValue={0}
                               defaultValue={0}
                             />
@@ -546,7 +546,7 @@ export default function GroupReservationForm() {
                               name="totalPaymentAmount"
                               label="Total Pembayaran Harga Tiket"
                               placeholder="Masukan total pembayaran"
-                              tooltip="Jumlah total pembayaran."
+                              tooltip="Jumlah total pembayaran harga tiket."
                               valueFormatter={(val) => formatRupiah(val || 0)}
                               disabled
                             />
@@ -598,7 +598,7 @@ export default function GroupReservationForm() {
                             name="visitorMemberTotal"
                             label="Total Seluruh Pengunjung"
                             placeholder="0"
-                            tooltip="Jumlah total pengunjung."
+                            tooltip="Jumlah total seluruh pengunjung."
                             minValue={0}
                             defaultValue={0}
                           />
@@ -642,7 +642,7 @@ export default function GroupReservationForm() {
                             name="totalPaymentAmount"
                             label="Total Pembayaran Harga Tiket"
                             placeholder="Masukan total pembayaran"
-                            tooltip="Jumlah total pembayaran."
+                            tooltip="Jumlah total pembayaran harga tiket."
                             valueFormatter={(val) => formatRupiah(val || 0)}
                             disabled
                           />
@@ -655,7 +655,7 @@ export default function GroupReservationForm() {
                       <SimpleField
                         control={form.control}
                         name="description"
-                        label="Deskripsi"
+                        label="Keterangan"
                         placeholder="Tambahkan keterangan (opsional)"
                         component={<Textarea className="rounded-xs" />}
                         tooltip="Tambahkan catatan tambahan terkait kunjungan."
@@ -668,9 +668,9 @@ export default function GroupReservationForm() {
                         <br />
                         <span className="text-base font-normal">
                           Jumlah minimal reservasi rombongan adalah 19 orang.
-                          Untuk rombongan kurang dari itu, silakan melakukan
-                          reservasi secara langsung melalui konter tiket yang
-                          tersedia.{" "}
+                          Untuk rombongan yang kurang dari itu, silakan
+                          melakukan reservasi secara langsung melalui konter
+                          tiket yang tersedia.{" "}
                         </span>
                         <br />
                         <span className="text-base font-medium">

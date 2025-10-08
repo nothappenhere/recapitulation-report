@@ -85,7 +85,7 @@ export default function CustomReservationPage() {
 
     try {
       const res = await api.delete(
-        `/custom-reservation/${selectedItem.customReservationNumber}`
+        `/custom-reservation/${selectedItem.reservationNumber}`
       );
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
@@ -112,7 +112,7 @@ export default function CustomReservationPage() {
   const columns = useCustomReservationColumns(handleDeleteClick);
 
   const exportColumns: ExportColumn<CustomReservationFullTypes>[] = [
-    { key: "customReservationNumber", header: "Kode Reservasi" },
+    { key: "reservationNumber", header: "Kode Reservasi" },
     { key: "agent", header: "Petugas Reservasi", type: "fullName" },
 
     { key: "ordererName", header: "Nama Pemesan" },
@@ -121,6 +121,9 @@ export default function CustomReservationPage() {
     { key: "visitingHour", header: "Jam Kunjungan", type: "timeRange" },
     { key: "groupName", header: "Nama Rombongan" },
     { key: "description", header: "Keterangan" },
+
+    { key: "reservationMechanism", header: "Mekanisme Reservasi" },
+    { key: "reservationStatus", header: "Status Reservasi" },
 
     { key: "address", header: "Alamat" },
     { key: "province", header: "Provinsi" },
@@ -149,7 +152,6 @@ export default function CustomReservationPage() {
     },
 
     { key: "actualMemberTotal", header: "Total Kehadiran" },
-    { key: "reservationStatus", header: "Status Reservasi" },
 
     { key: "paymentMethod", header: "Metode Pembayaran" },
     { key: "downPayment", header: "Uang Pembayaran", type: "currency" },

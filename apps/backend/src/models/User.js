@@ -2,38 +2,21 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    NIP: {
-      type: Number,
-      required: true,
-      unique: true,
-    },
-    position: {
-      type: String,
-      required: true,
-    },
-    fullName: {
-      type: String,
-      required: true,
-    },
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    biography: {
-      type: String,
-      default: "-",
-    },
+    NIP: { type: Number, required: true, unique: true },
+    position: { type: String, required: true },
+    fullName: { type: String, required: true },
+
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+
+    biography: { type: String, default: "-" },
     role: {
       type: String,
       enum: ["Administrator", "User"],
       default: "User",
       required: true,
     },
+
     lastLogin: {
       type: Date,
     },

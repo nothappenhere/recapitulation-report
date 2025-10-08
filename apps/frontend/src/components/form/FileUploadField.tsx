@@ -30,6 +30,9 @@ import {
   FileArchiveIcon,
   HeadphonesIcon,
 } from "lucide-react";
+import { api } from "@rzkyakbr/libs";
+import type { AxiosError } from "axios";
+import toast from "react-hot-toast";
 
 type FileUploadFieldProps<T extends FieldValues> = {
   control: Control<T>;
@@ -45,6 +48,7 @@ type FileUploadFieldProps<T extends FieldValues> = {
     url: string;
     id: string;
   }[];
+  isEditMode?: boolean;
 };
 
 const getFileIcon = (file: { file: File | { type: string; name: string } }) => {
@@ -80,6 +84,13 @@ const getFileIcon = (file: { file: File | { type: string; name: string } }) => {
   return <FileIcon className="size-4 opacity-60" />;
 };
 
+type TFile = {
+  file: {
+    name: string;
+    type: string;
+  };
+};
+
 export function FileUploadField<T extends FieldValues>({
   control,
   name,
@@ -88,6 +99,7 @@ export function FileUploadField<T extends FieldValues>({
   maxSize = 5 * 1024 * 1024,
   maxFiles = 5,
   initialFiles = [],
+  isEditMode,
 }: FileUploadFieldProps<T>) {
   const { setValue } = useFormContext();
 
@@ -119,6 +131,50 @@ export function FileUploadField<T extends FieldValues>({
             setValue(name, actualFiles, { shouldValidate: true });
           },
         });
+
+        // Fungsi download otomatis
+        const handleDownload = async (file: TFile["file"]) => {
+          try {
+            const response = await api.get(
+              `/custom-reservation/file/${file.name}`,
+              { responseType: "blob" }
+            );
+
+            // ambil MIME type dari server
+            const contentType = response.headers["content-type"] || file.type;
+
+            // buat blob URL
+            const blob = new Blob([response.data], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+
+            if (
+              contentType.startsWith("image/") ||
+              contentType === "application/pdf"
+            ) {
+              // preview di tab baru
+              window.open(url, "_blank");
+            } else {
+              // download otomatis
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = file.name;
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+            }
+
+            // revoke URL setelah beberapa detik (biar sempat dimuat dulu)
+            setTimeout(() => {
+              window.URL.revokeObjectURL(url);
+            }, 5000);
+          } catch (err) {
+            const error = err as AxiosError<{ message?: string }>;
+            const message =
+              error.response?.data?.message ||
+              "Terjadi kesalahan saat memuat file, silakan coba lagi.";
+            toast.error(message);
+          }
+        };
 
         return (
           <div className="flex flex-col gap-2">
@@ -243,12 +299,14 @@ export function FileUploadField<T extends FieldValues>({
                               className="text-muted-foreground hover:text-foreground size-8 hover:bg-transparent"
                               aria-label={`Download ${file.file.name}`}
                               onClick={() =>
-                                window.open(file.preview, "_blank")
+                                isEditMode
+                                  ? handleDownload(file.file) // <- panggil fungsinya + kirim data file
+                                  : window.open(file.preview, "_blank")
                               }
                             >
                               <DownloadIcon className="size-4" />
-                              {file.preview}
                             </Button>
+
                             <Button
                               type="button"
                               size="icon"

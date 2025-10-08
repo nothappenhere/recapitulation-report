@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { api, formatRupiah } from "@rzkyakbr/libs";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
-import { type CustomReservationFullTypes } from "@rzkyakbr/types";
+import { type WalkInFullTypes } from "@rzkyakbr/types";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Card,
@@ -15,10 +15,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function CustomQRPage() {
+export default function GroupQRPage() {
   const { uniqueCode } = useParams();
-  const [walkInData, setWalkInData] =
-    useState<CustomReservationFullTypes | null>(null);
+  const [data, setData] = useState<WalkInFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -29,8 +28,8 @@ export default function CustomQRPage() {
       setLoading(true);
 
       try {
-        const res = await api.get(`/custom-reservation/${uniqueCode}`);
-        setWalkInData(res.data.data);
+        const res = await api.get(`/group-reservation/${uniqueCode}`);
+        setData(res.data.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
         const message = error.response?.data?.message
@@ -39,7 +38,7 @@ export default function CustomQRPage() {
         toast.error(message);
 
         // window.location.href = "https://museum.geologi.esdm.go.id/";
-        navigate("/visit/custom", { replace: true });
+        navigate("/visit/group", { replace: true });
       } finally {
         setLoading(false);
       }
@@ -48,7 +47,7 @@ export default function CustomQRPage() {
     fetchData();
   }, [navigate, uniqueCode]);
 
-  if (loading || !walkInData) {
+  if (loading || !data) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <p className="text-muted-foreground">Memuat data...</p>
@@ -65,7 +64,8 @@ export default function CustomQRPage() {
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
             Simpan kode QR ini (<span className="italic">screenshot</span> jika
-            perlu) dan tunjukkan di loket Penjualan Tiket.
+            perlu) dan tunjukkan di loket Penjualan Tiket pada hari
+            kedatangan/kunjungan.
           </CardDescription>
         </CardHeader>
 
@@ -73,7 +73,7 @@ export default function CustomQRPage() {
           <div className="flex flex-col items-center gap-6">
             {/* QR Code */}
             <QRCodeSVG
-              value={walkInData.customReservationNumber}
+              value={data.reservationNumber}
               size={220}
               bgColor="#F8B500"
               fgColor="#000000"
@@ -88,9 +88,9 @@ export default function CustomQRPage() {
 
             {/* Walk-in number */}
             <div className="text-center space-y-1">
-              <p className="text-sm text-muted-foreground">Kode Kunjungan</p>
+              <p className="text-sm text-muted-foreground">Kode Reservasi</p>
               <p className="text-lg font-bold tracking-wide">
-                {walkInData.customReservationNumber}
+                {data.reservationNumber}
               </p>
             </div>
 
@@ -98,19 +98,24 @@ export default function CustomQRPage() {
             <div className="w-full space-y-3">
               {[
                 {
-                  label: "Pemandu (Guide)",
-                  count: walkInData.publicMemberTotal,
-                  price: walkInData.publicTotalAmount,
+                  label: "Pelajar (Student)",
+                  count: data.studentMemberTotal,
+                  price: data.studentTotalAmount,
                 },
                 {
-                  label: "Khusus (Custom)",
-                  count: walkInData.customMemberTotal,
-                  price: walkInData.customTotalAmount,
+                  label: "Umum (Public)",
+                  count: data.publicMemberTotal,
+                  price: data.publicTotalAmount,
+                },
+                {
+                  label: "Asing (Foreigner)",
+                  count: data.foreignMemberTotal,
+                  price: data.foreignTotalAmount,
                 },
                 {
                   label: "Total Pengunjung (Visitors)",
-                  count: walkInData.visitorMemberTotal,
-                  price: walkInData.totalPaymentAmount,
+                  count: data.visitorMemberTotal,
+                  price: data.totalPaymentAmount,
                 },
               ].map((item, idx) => (
                 <div

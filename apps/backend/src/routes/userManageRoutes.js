@@ -5,7 +5,7 @@ import {
   updateUserByUsername,
   deleteUserByUsername,
 } from "../controllers/UserManageController.js";
-import { validateSchema } from "../utils/validateSchema.js";
+import { validateSchema } from "../middlewares/validateSchema.js";
 import { UserUpdateSchema } from "@rzkyakbr/schemas";
 
 const router = express.Router();

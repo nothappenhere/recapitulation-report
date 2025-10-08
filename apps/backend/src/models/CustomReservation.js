@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
+import { generateRandomCode } from "../utils/generateRandomCode.js";
 
 const customReservationSchema = new mongoose.Schema(
   {
-    customReservationNumber: { type: String, unique: true },
+    reservationNumber: { type: String, unique: true },
     agent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -15,26 +16,24 @@ const customReservationSchema = new mongoose.Schema(
       ref: "VisitingHour",
       required: true,
     },
+    reservationMechanism: {
+      type: String,
+      enum: ["Whatsapp", "Google Form", "Datang Langsung", "Lainnya"],
+      default: "Lainnya",
+    },
     description: { type: String, default: "-" },
-
-    attachments: [
-      {
-        originalName: String,
-        encoding: String,
-        mimeType: String,
-        fileName: String,
-        size: Number,
-        path: String,
-      },
-    ],
 
     ordererName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
     groupName: { type: String, required: true },
 
-    publicMemberTotal: { type: Number, required: true, default: 0 },
-    customMemberTotal: { type: Number, required: true, default: 0 },
-    visitorMemberTotal: { type: Number, required: true, default: 0 },
+    publicMemberTotal: { type: Number, required: true },
+    customMemberTotal: { type: Number, required: true },
+    visitorMemberTotal: { type: Number, required: true },
+
+    publicTotalAmount: { type: Number, required: true },
+    customTotalAmount: { type: Number, required: true },
+    totalPaymentAmount: { type: Number, required: true },
 
     actualMemberTotal: { type: Number, default: 0 },
     reservationStatus: {
@@ -50,22 +49,29 @@ const customReservationSchema = new mongoose.Schema(
     village: { type: String, default: "-" },
     country: { type: String, default: "Indonesia" },
 
-    publicTotalAmount: { type: Number, default: 0 },
-    customTotalAmount: { type: Number, default: 0 },
-    totalPaymentAmount: { type: Number, default: 0 },
-
     paymentMethod: {
       type: String,
       enum: ["Tunai", "QRIS", "Lainnya"],
       default: "Lainnya",
     },
-    downPayment: { type: Number, default: 0 },
-    changeAmount: { type: Number, default: 0 },
+    downPayment: { type: Number },
+    changeAmount: { type: Number },
     statusPayment: {
       type: String,
       enum: ["Lunas", "Belum Bayar"],
       default: "Belum Bayar",
     },
+
+    attachments: [
+      {
+        originalName: String,
+        encoding: String,
+        mimeType: String,
+        fileName: String,
+        size: Number,
+        path: String,
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -110,35 +116,24 @@ customReservationSchema.pre("save", function (next) {
   next();
 });
 
-// Middleware untuk generate customReservationNumber acak 6 karakter (unik)
+// Middleware untuk generate reservationNumber acak 6 karakter (unik)
 customReservationSchema.pre("save", async function (next) {
-  if (!this.customReservationNumber) {
+  if (!this.reservationNumber) {
     try {
-      const generateRandomCode = () => {
-        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        let result = "";
-        for (let i = 0; i < 6; i++) {
-          result += characters.charAt(
-            Math.floor(Math.random() * characters.length)
-          );
-        }
-        return result;
-      };
-
       let unique = false;
       let attempt = 0;
       const maxAttempts = 10;
 
       while (!unique && attempt < maxAttempts) {
         const randomCode = generateRandomCode();
-        const candidate = `MGR-${randomCode}`;
+        const candidate = `MG-${randomCode}`;
 
         const existing = await mongoose.models.CustomReservation.findOne({
-          customReservationNumber: candidate,
+          reservationNumber: candidate,
         });
 
         if (!existing) {
-          this.customReservationNumber = candidate;
+          this.reservationNumber = candidate;
           unique = true;
         }
 
@@ -147,7 +142,7 @@ customReservationSchema.pre("save", async function (next) {
 
       if (!unique) {
         throw new Error(
-          "Failed to generate unique customReservationNumber after multiple attempts."
+          "Failed to generate unique reservationNumber after multiple attempts."
         );
       }
 

@@ -85,7 +85,7 @@ export default function GroupReservationPage() {
 
     try {
       const res = await api.delete(
-        `/group-reservation/${selectedItem.groupReservationNumber}`
+        `/group-reservation/${selectedItem.reservationNumber}`
       );
       toast.success(`${res.data.message}.`);
       setData((prev) => prev.filter((r) => r._id !== selectedItem._id));
@@ -112,7 +112,7 @@ export default function GroupReservationPage() {
   const columns = useGroupReservationColumns(handleDeleteClick);
 
   const exportColumns: ExportColumn<GroupReservationFullTypes>[] = [
-    { key: "groupReservationNumber", header: "Kode Reservasi" },
+    { key: "reservationNumber", header: "Kode Reservasi" },
     { key: "agent", header: "Petugas Reservasi", type: "fullName" },
 
     { key: "ordererName", header: "Nama Pemesan" },

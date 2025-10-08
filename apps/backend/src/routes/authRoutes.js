@@ -7,8 +7,8 @@ import {
   checkAuth,
   logout,
 } from "../controllers/AuthController.js";
-import { validateSchema } from "../utils/validateSchema.js";
-import { validateToken } from "../utils/validateToken.js";
+import { validateSchema } from "../middlewares/validateSchema.js";
+import { validateToken } from "../middlewares/validateToken.js";
 import {
   LoginSchema,
   RegisterSchema,

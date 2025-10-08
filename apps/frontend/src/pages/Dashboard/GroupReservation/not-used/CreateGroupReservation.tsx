@@ -107,11 +107,11 @@ export default function CreateGroupReservation() {
       };
 
       const res = await api.post("/group-reservation", payload);
-      const { groupReservationNumber } = res.data.data;
+      const { reservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
 
       form.reset();
-      navigate(`/dashboard/group-reservation/print/${groupReservationNumber}`, {
+      navigate(`/dashboard/group-reservation/print/${reservationNumber}`, {
         replace: true,
       });
     } catch (err) {

@@ -5,7 +5,7 @@ import { sendResponse } from "../utils/sendResponse.js";
  * * @desc Mendapatkan seluruh data reservasi rombongan
  * @route GET /api/group-reservation
  */
-export const getReservations = async (_, res) => {
+export const getGroupReservations = async (_, res) => {
   try {
     const allReservations = await GroupReservation.find()
       .populate("agent", "fullName username")
@@ -31,12 +31,12 @@ export const getReservations = async (_, res) => {
  * @route GET /api/group-reservation/:uniqueCode
  * @param uniqueCode - Kode Unik dari reservasi rombongan yang dicari
  */
-export const getReservationByCode = async (req, res) => {
+export const getGroupReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
     const reservation = await GroupReservation.findOne({
-      groupReservationNumber: uniqueCode,
+      reservationNumber: uniqueCode,
     })
       .populate("agent", "fullName username")
       .populate("visitingHour", "timeRange");
@@ -68,27 +68,10 @@ export const getReservationByCode = async (req, res) => {
  * * @desc Membuat data reservasi rombongan baru
  * @route POST /api/group-reservation
  */
-export const createReservation = async (req, res) => {
+export const createGroupReservation = async (req, res) => {
   const { agent } = req.body;
 
   try {
-    // const { visitingDate, visitingHour } = req.validatedData;
-
-    // Cek apakah slot waktu sudah dipakai di tanggal itu
-    // const slotTaken = await GroupReservation.findOne({
-    //   visitingDate,
-    //   visitingHour,
-    // });
-
-    // if (slotTaken) {
-    //   return sendResponse(
-    //     res,
-    //     400,
-    //     false,
-    //     `Slot waktu kunjungan saat ini sudah dipesan di tanggal tersebut`
-    //   );
-    // }
-
     const newReservation = new GroupReservation({
       ...req.validatedData,
       agent,
@@ -114,14 +97,13 @@ export const createReservation = async (req, res) => {
  * @route PUT /api/group-reservation/:uniqueCode
  * @param uniqueCode - Kode Unik dari reservasi rombongan yang akan diperbarui
  */
-export const updateReservationByCode = async (req, res) => {
+export const updateGroupReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
   const { agent } = req.body;
 
   try {
-    // Pakai findOneAndUpdate agar update satu dokumen dan return data terbaru
     const updated = await GroupReservation.findOneAndUpdate(
-      { groupReservationNumber: uniqueCode },
+      { reservationNumber: uniqueCode },
       { ...req.validatedData, agent },
       {
         new: true,
@@ -157,13 +139,12 @@ export const updateReservationByCode = async (req, res) => {
  * @route DELETE /api/group-reservation/:uniqueCode
  * @param uniqueCode - Kode Unik dari reservasi rombongan yang akan dihapus
  */
-export const deleteReservationByCode = async (req, res) => {
+export const deleteGroupReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    // Pakai findOneAndDelete untuk hapus satu dokumen
     const deleted = await GroupReservation.findOneAndDelete({
-      groupReservationNumber: uniqueCode,
+      reservationNumber: uniqueCode,
     });
 
     if (!deleted || deleted.length === 0) {

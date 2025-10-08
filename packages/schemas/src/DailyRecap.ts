@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const DailyRecapSchema = z.object({
   recapDate: z.coerce.date().refine((val) => !isNaN(val.getTime()), {
-    message: "Tanggal rekap tidak boleh kosong!",
+    message: "Tanggal rekap tidak boleh kosong/invalid!",
   }),
   description: z.string().optional().default("-"),
 
@@ -17,7 +17,8 @@ export const DailyRecapSchema = z.object({
     .nonnegative("Jumlah asing tidak boleh negative!"),
   visitorMemberTotal: z.coerce
     .number()
-    .min(1, "Jumlah total seluruh pengunjung minimal 1 orang!"),
+    .min(1, "Jumlah total seluruh pengunjung minimal 1 orang!")
+    .nonnegative("Jumlah total seluruh pengunjung tidak boleh negative!"),
 
   studentTotalAmount: z.coerce
     .number()
@@ -30,31 +31,33 @@ export const DailyRecapSchema = z.object({
     .nonnegative("Jumlah total pembayaran asing tidak boleh negative!"),
   totalPaymentAmount: z.coerce
     .number()
-    .nonnegative("Jumlah total pembayaran tidak boleh negative!"),
+    .nonnegative(
+      "Jumlah total pembayaran seluruh pengunjung tidak boleh negative!"
+    ),
 
   initialStudentSerialNumber: z.coerce
     .number()
-    .nonnegative("Nomor awal pelajar tidak boleh negative!")
+    .nonnegative("Nomor seri awal pelajar tidak boleh negative!")
     .default(0),
   finalStudentSerialNumber: z.coerce
     .number()
-    .nonnegative("Nomor akhir pelajar tidak boleh negative!")
+    .nonnegative("Nomor seri akhir pelajar tidak boleh negative!")
     .default(0),
   initialPublicSerialNumber: z.coerce
     .number()
-    .nonnegative("Nomor awal umum tidak boleh negative!")
+    .nonnegative("Nomor seri awal umum tidak boleh negative!")
     .default(0),
   finalPublicSerialNumber: z.coerce
     .number()
-    .nonnegative("Nomor akhir umum tidak boleh negative!")
+    .nonnegative("Nomor seri akhir umum tidak boleh negative!")
     .default(0),
   initialForeignSerialNumber: z.coerce
     .number()
-    .nonnegative("Nomor awal asing tidak boleh negative!")
+    .nonnegative("Nomor seri awal asing tidak boleh negative!")
     .default(0),
   finalForeignSerialNumber: z.coerce
     .number()
-    .nonnegative("Nomor akhir asing tidak boleh negative!")
+    .nonnegative("Nomor seri akhir asing tidak boleh negative!")
     .default(0),
 });
 

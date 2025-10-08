@@ -31,6 +31,7 @@ export function CheckboxField<T extends FieldValues>({
             id={name}
             checked={field.value}
             onCheckedChange={(checked) => field.onChange(!!checked)}
+            className="border border-black"
           />
           <Label htmlFor={name}>{label}</Label>
           {tooltip && (

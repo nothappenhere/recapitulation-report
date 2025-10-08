@@ -7,7 +7,7 @@ import {
   updateRecapByCode,
   deleteRecapByCode,
 } from "../controllers/DailyRecapController.js";
-import { validateSchema } from "../utils/validateSchema.js";
+import { validateSchema } from "../middlewares/validateSchema.js";
 import { DailyRecapSchema } from "@rzkyakbr/schemas";
 
 const router = express.Router();

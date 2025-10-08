@@ -5,7 +5,7 @@ import { sendResponse } from "../utils/sendResponse.js";
  * * @desc Mendapatkan seluruh data waktu kunjungan museum
  * @route GET /api/visit-hour
  */
-export const getVisitHours = async (req, res) => {
+export const getVisitHours = async (_, res) => {
   try {
     const visitHour = await VisitingHour.find().sort({
       timeRange: 1,

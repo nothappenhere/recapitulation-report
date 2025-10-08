@@ -149,9 +149,13 @@ export const checkAuth = async (req, res) => {
       return sendResponse(res, 404, false, "Pengguna tidak ditemukan");
     }
 
-    sendResponse(res, 200, true, "Berhasil melakukan verifikasi otentikasi", {
-      user: userExist,
-    });
+    sendResponse(
+      res,
+      200,
+      true,
+      "Berhasil melakukan verifikasi otentikasi",
+      userExist
+    );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
       detail: err.message,
@@ -163,7 +167,7 @@ export const checkAuth = async (req, res) => {
  * * @desc Logout user
  * @route POST /api/auth/logout
  */
-export const logout = async (req, res) => {
+export const logout = async (_, res) => {
   try {
     res.clearCookie("token");
     sendResponse(res, 200, true, "Logged out berhasil");

@@ -87,7 +87,6 @@ export const createTicketPrice = async (req, res) => {
  */
 export const updateTicketPriceByCategory = async (req, res) => {
   const { category } = req.params;
-  // const { category, unitPrice } = req.validatedData;
 
   try {
     const updated = await TicketPrice.findOneAndUpdate(
@@ -106,10 +105,6 @@ export const updateTicketPriceByCategory = async (req, res) => {
         false,
         `Data harga tiket dengan kategori ${category} tiket tidak ditemukan`
       );
-
-    // if (category !== undefined) updated.category = category;
-    // if (unitPrice !== undefined) updated.unitPrice = unitPrice;
-    // await updated.save();
 
     sendResponse(
       res,

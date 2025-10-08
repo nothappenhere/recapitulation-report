@@ -1,12 +1,12 @@
 import express from "express";
 import {
-  getReservations,
-  getReservationByCode,
-  createReservation,
-  updateReservationByCode,
-  deleteReservationByCode,
+  getGroupReservations,
+  getGroupReservationByCode,
+  createGroupReservation,
+  updateGroupReservationByCode,
+  deleteGroupReservationByCode,
 } from "../controllers/GroupReservationController.js";
-import { validateSchema } from "../utils/validateSchema.js";
+import { validateSchema } from "../middlewares/validateSchema.js";
 import { GroupReservationSchema } from "@rzkyakbr/schemas";
 
 const router = express.Router();
@@ -15,20 +15,24 @@ const router = express.Router();
  * * @desc Mendapatkan seluruh data reservasi rombongan
  * @route GET /api/group-reservation
  */
-router.get("/", getReservations);
+router.get("/", getGroupReservations);
 
 /**
  * * @desc Mendapatkan satu data reservasi rombongan berdasarkan Kode Unik
  * @route GET /api/group-reservation/:uniqueCode
  * @param uniqueCode - Kode Unik dari reservasi rombongan yang dicari
  */
-router.get("/:uniqueCode", getReservationByCode);
+router.get("/:uniqueCode", getGroupReservationByCode);
 
 /**
  * * @desc Membuat data reservasi rombongan baru
  * @route POST /api/group-reservation
  */
-router.post("/", validateSchema(GroupReservationSchema), createReservation);
+router.post(
+  "/",
+  validateSchema(GroupReservationSchema),
+  createGroupReservation
+);
 
 /**
  * * @desc Memperbarui data reservasi rombongan berdasarkan Kode Unik
@@ -38,7 +42,7 @@ router.post("/", validateSchema(GroupReservationSchema), createReservation);
 router.put(
   "/:uniqueCode",
   validateSchema(GroupReservationSchema),
-  updateReservationByCode
+  updateGroupReservationByCode
 );
 
 /**
@@ -46,6 +50,6 @@ router.put(
  * @route DELETE /api/group-reservation/:uniqueCode
  * @param uniqueCode - Kode Unik dari reservasi rombongan yang akan dihapus
  */
-router.delete("/:uniqueCode", deleteReservationByCode);
+router.delete("/:uniqueCode", deleteGroupReservationByCode);
 
 export default router;

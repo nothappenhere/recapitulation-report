@@ -43,7 +43,7 @@ const navConfig: NavConfig = {
         { title: "Kalender", url: "calendar" },
         { title: "Pengelolaan Pengguna", url: "user-management" },
         { title: "Harga Tiket", url: "ticket-price" },
-        { title: "Reservasi Langsung", url: "walk-in" },
+        { title: "Reservasi Langsung", url: "direct-reservation" },
         { title: "Reservasi Rombongan", url: "group-reservation" },
         { title: "Reservasi Khusus", url: "custom-reservation" },
         { title: "Rekap Harian", url: "daily-recap" },
@@ -57,7 +57,7 @@ const navConfig: NavConfig = {
       items: [
         { title: "Kalender", url: "calendar" },
         { title: "Harga Tiket", url: "ticket-price" },
-        { title: "Reservasi Langsung", url: "walk-in" },
+        { title: "Reservasi Langsung", url: "direct-reservation" },
         { title: "Reservasi Rombongan", url: "group-reservation" },
         { title: "Reservasi Khusus", url: "custom-reservation" },
         { title: "Rekap Harian", url: "daily-recap" },
@@ -83,7 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <img src="/img/logo-mg.png" alt="Logo Museum Geologi" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">Ticketing System</span>
+                  <span className="font-medium">GeoTicketing</span>
                   <span className="text-xs">
                     {capitalizeFirstLetter(user?.position || "Guest")}
                   </span>

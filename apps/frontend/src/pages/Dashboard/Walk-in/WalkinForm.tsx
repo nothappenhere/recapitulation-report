@@ -92,7 +92,7 @@ export default function WalkinForm() {
       setLoading(true);
 
       try {
-        const res = await api.get(`/walk-in/${uniqueCode}`);
+        const res = await api.get(`/direct-reservation/${uniqueCode}`);
         const WalkinData = res.data.data;
 
         const formData: TWalkIn = {
@@ -120,7 +120,7 @@ export default function WalkinForm() {
           : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
         toast.error(message);
 
-        navigate("/dashboard/walk-in", { replace: true });
+        navigate("/dashboard/direct-reservation", { replace: true });
       } finally {
         setLoading(false);
       }
@@ -169,16 +169,18 @@ export default function WalkinForm() {
       let res = null;
       if (!isEditMode) {
         // Create data
-        res = await api.post(`/walk-in`, payload);
+        res = await api.post(`/direct-reservation`, payload);
       } else {
         // Update data
-        res = await api.put(`/walk-in/${uniqueCode}`, payload);
+        res = await api.put(`/direct-reservation/${uniqueCode}`, payload);
       }
 
-      const { walkinNumber } = res.data.data;
+      const { reservationNumber } = res.data.data;
       toast.success(`${res.data.message}.`);
       form.reset();
-      navigate(`/dashboard/walk-in/print/${walkinNumber}`, { replace: true });
+      navigate(`/dashboard/direct-reservation/print/${reservationNumber}`, {
+        replace: true,
+      });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -193,9 +195,9 @@ export default function WalkinForm() {
     if (!uniqueCode || !isEditMode) return;
 
     try {
-      const res = await api.delete(`/walk-in/${uniqueCode}`);
+      const res = await api.delete(`/direct-reservation/${uniqueCode}`);
       toast.success(`${res.data.message}.`);
-      navigate("/dashboard/walk-in");
+      navigate("/dashboard/direct-reservation");
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -223,19 +225,19 @@ export default function WalkinForm() {
             <CardHeader className="text-center">
               <CardTitle>
                 {isEditMode
-                  ? "Edit Data Kunjungan"
-                  : "Pendataan Kunjungan Langsung"}
+                  ? "Edit Data Reservasi Langsung"
+                  : "Pendataan Reservasi Langsung"}
               </CardTitle>
               <CardDescription>
                 {isEditMode
-                  ? ` Ubah detail kunjungan dengan kode: ${uniqueCode}`
-                  : " Isi formulir di bawah untuk mencatat kunjungan langsung."}
+                  ? `Ubah detail reservasi langsung dengan kode: ${uniqueCode}`
+                  : "Isi formulir di bawah untuk mencatat reservasi langsung."}
               </CardDescription>
 
               <CardAction className="flex gap-2">
                 {/* Back */}
                 <Button asChild>
-                  <Link to="/dashboard/walk-in">
+                  <Link to="/dashboard/direct-reservation">
                     <ArrowLeft />
                     Kembali
                   </Link>
@@ -245,7 +247,9 @@ export default function WalkinForm() {
                   <>
                     {/* Print */}
                     <Button variant="outline" asChild>
-                      <Link to={`/dashboard/walk-in/print/${uniqueCode}`}>
+                      <Link
+                        to={`/dashboard/direct-reservation/print/${uniqueCode}`}
+                      >
                         <Printer />
                         Print
                       </Link>
@@ -286,7 +290,7 @@ export default function WalkinForm() {
                         name="ordererName"
                         label="Nama Pemesan"
                         placeholder="Masukan nama pemesan"
-                        tooltip="Nama pemesan yang berkunjungan."
+                        tooltip="Isi dengan nama pemesan yang berkunjung."
                       />
 
                       {/* Nomor Telepon */}
@@ -376,7 +380,7 @@ export default function WalkinForm() {
                             name="visitorMemberTotal"
                             label="Total Seluruh Pengunjung"
                             placeholder="0"
-                            tooltip="Jumlah total pengunjung."
+                            tooltip="Jumlah total seluruh pengunjung."
                             minValue={0}
                             defaultValue={0}
                           />
@@ -387,7 +391,7 @@ export default function WalkinForm() {
                             name="totalPaymentAmount"
                             label="Total Pembayaran Harga Tiket"
                             placeholder="Masukan total pembayaran"
-                            tooltip="Jumlah total pembayaran."
+                            tooltip="Jumlah total pembayaran harga tiket."
                             valueFormatter={(val) => formatRupiah(val || 0)}
                             disabled
                           />
@@ -439,7 +443,7 @@ export default function WalkinForm() {
                               name="visitorMemberTotal"
                               label="Total Seluruh Pengunjung"
                               placeholder="0"
-                              tooltip="Jumlah total pengunjung."
+                              tooltip="Jumlah total seluruh pengunjung."
                               minValue={0}
                               defaultValue={0}
                             />
@@ -485,7 +489,7 @@ export default function WalkinForm() {
                               name="totalPaymentAmount"
                               label="Total Pembayaran Harga Tiket"
                               placeholder="Masukan total pembayaran"
-                              tooltip="Jumlah total pembayaran."
+                              tooltip="Jumlah total pembayaran harga tiket."
                               valueFormatter={(val) => formatRupiah(val || 0)}
                               disabled
                             />
@@ -537,7 +541,7 @@ export default function WalkinForm() {
                             name="visitorMemberTotal"
                             label="Total Seluruh Pengunjung"
                             placeholder="0"
-                            tooltip="Jumlah total pengunjung."
+                            tooltip="Jumlah total seluruh pengunjung."
                             minValue={0}
                             defaultValue={0}
                           />
@@ -581,7 +585,7 @@ export default function WalkinForm() {
                             name="totalPaymentAmount"
                             label="Total Pembayaran Harga Tiket"
                             placeholder="Masukan total pembayaran"
-                            tooltip="Jumlah total pembayaran."
+                            tooltip="Jumlah total pembayaran harga tiket."
                             valueFormatter={(val) => formatRupiah(val || 0)}
                             disabled
                           />
@@ -591,11 +595,11 @@ export default function WalkinForm() {
 
                     {visitorTotal > 19 && (
                       <h2 className="text-xl font-bold text-center max-w-10/12 mx-auto">
-                        Ketentuan Pembuatan Data Kunjungan
+                        Ketentuan Pembuatan Reservasi Langsung
                         <br />
                         <span className="text-base font-normal">
                           Jumlah maksimal pembelian tiket langsung adalah 19
-                          orang. Untuk rombongan lebih dari itu, silakan
+                          orang. Untuk rombongan yang lebih dari itu, silakan
                           melakukan reservasi terlebih dahulu beberapa hari
                           sebelum kedatangan melalui konter tiket atau
                           menghubungi nomor berikut:
@@ -801,14 +805,15 @@ export default function WalkinForm() {
 
             <CardFooter className="flex flex-col justify-center items-center gap-2">
               <h2 className="text-xl font-bold text-center">
-                Ketentuan {isEditMode ? "Pembaruan" : "Pembuatan"} Data
-                Kunjungan
+                Ketentuan {isEditMode ? "Pembaruan" : "Pembuatan"} Reservasi
+                Langsung
               </h2>
 
               <div className="flex justify-center items-center">
                 <span className="text-base font-normal text-center max-w-1/2 border p-4">
-                  {isEditMode ? "Pembaruan" : "Pembuatan"} kunjungan hanya dapat
-                  dilakukan 30 menit sebelum jam operasional: 09:00 – 15:00 WIB.
+                  {isEditMode ? "Pembaruan" : "Pembuatan"} reservasi langsung
+                  hanya dapat dilakukan 30 menit sebelum jam operasional: 09:00
+                  – 15:00 WIB.
                 </span>
 
                 <span className="text-base font-normal text-center max-w-1/2 border p-4">

@@ -212,8 +212,8 @@ export function DataTable<TData, TValue>({
               location.pathname.includes("user-management")
                 ? "Cari berdasarkan NIP, Jabatan, Nama lengkap, Username, Role, dll..."
                 : location.pathname.includes("daily-recap")
-                ? "Cari berdasarkan Kode, Nama Petugas, Tgl/Wkt Rekapitulasi, dll..."
-                : "Cari berdasarkan Kode, Nama Pemesan, No. Telepon, Tgl/Wkt Kunjungan, dll..."
+                ? "Cari berdasarkan Kode, Nama Petugas, Tgl/Jam Rekapitulasi, dll..."
+                : "Cari berdasarkan Kode, Nama Pemesan, No. Telepon, Tgl/Jam Kunjungan, dll..."
             }
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}
@@ -348,7 +348,7 @@ export function DataTable<TData, TValue>({
                     break;
                 }
 
-                if (location.pathname.includes("walk-in")) {
+                if (location.pathname.includes("direct-reservation")) {
                   rowClass = statusPaymentClass;
                 } else if (
                   location.pathname.includes("group-reservation") ||
@@ -369,9 +369,7 @@ export function DataTable<TData, TValue>({
                       if (!location.pathname.includes("user-management")) {
                         navigate(
                           `edit/${
-                            row.original.walkinNumber ||
-                            row.original.groupReservationNumber ||
-                            row.original.customReservationNumber ||
+                            row.original.reservationNumber ||
                             row.original.recapNumber
                           }`
                         );
