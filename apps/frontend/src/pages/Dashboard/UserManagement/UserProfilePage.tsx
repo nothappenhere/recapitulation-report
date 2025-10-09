@@ -165,6 +165,8 @@ export default function UserProfilePage() {
                     /> */}
 
                   <Form {...form}>
+                    <pre>{JSON.stringify(form.formState.errors, null, 3)}</pre>
+
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                       <div className="flex flex-col gap-6">
                         {/* Row 1 */}

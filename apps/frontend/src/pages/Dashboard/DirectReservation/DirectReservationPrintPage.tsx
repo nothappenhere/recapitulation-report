@@ -4,7 +4,7 @@ import { api, formatRupiah } from "@rzkyakbr/libs";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { InfoRow } from "@/components/InfoRow";
-import type { WalkInFullTypes } from "@rzkyakbr/types";
+import type { DirectReservationFullTypes } from "@rzkyakbr/types";
 import {
   Card,
   CardContent,
@@ -18,9 +18,10 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { ArrowLeft, Printer } from "lucide-react";
 
-export default function WalkinPrintPage() {
+export default function DirectReservationPrintPage() {
   const { uniqueCode } = useParams();
-  const [walkInData, setWalkInData] = useState<WalkInFullTypes | null>(null);
+  const [walkInData, setWalkInData] =
+    useState<DirectReservationFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 

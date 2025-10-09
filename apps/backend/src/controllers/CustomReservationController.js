@@ -9,7 +9,7 @@ import { sendResponse } from "../utils/sendResponse.js";
  */
 export const getCustomReservations = async (_, res) => {
   try {
-    const allCustomReservations = await CustomReservation.find()
+    const allReservations = await CustomReservation.find()
       .populate("agent", "fullName username")
       .populate("visitingHour", "timeRange")
       .sort({ createdAt: -1 });
@@ -19,7 +19,7 @@ export const getCustomReservations = async (_, res) => {
       200,
       true,
       "Berhasil mendapatkan seluruh data reservasi khusus",
-      allCustomReservations
+      allReservations
     );
   } catch (err) {
     return sendResponse(res, 500, false, "Internal server error", null, {
@@ -107,7 +107,7 @@ export const createCustomReservation = async (req, res) => {
   try {
     const files = req.files;
 
-    const newCustomReservation = new CustomReservation({
+    const newReservation = new CustomReservation({
       ...req.validatedData,
       agent,
       attachments: files
@@ -121,14 +121,14 @@ export const createCustomReservation = async (req, res) => {
           }))
         : [],
     });
-    await newCustomReservation.save();
+    await newReservation.save();
 
     sendResponse(
       res,
       201,
       true,
       "Berhasil membuat data reservasi khusus baru",
-      newCustomReservation
+      newReservation
     );
   } catch (err) {
     const statusCode = err.statusCode || 500;
@@ -145,19 +145,16 @@ export const createCustomReservation = async (req, res) => {
  */
 export const updateCustomReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
-  const { agent } = req.body;
+  const { agent, existingAttachments } = req.body;
+  const files = req.files || [];
 
   try {
-    const updated = await CustomReservation.findOneAndUpdate(
-      { reservationNumber: uniqueCode },
-      { ...req.validatedData, agent },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    // 1Ambil data lama
+    const existing = await CustomReservation.findOne({
+      reservationNumber: uniqueCode,
+    });
 
-    if (!updated || updated.length === 0) {
+    if (!existing || existing.length === 0) {
       return sendResponse(
         res,
         404,
@@ -165,6 +162,53 @@ export const updateCustomReservationByCode = async (req, res) => {
         `Data reservasi khusus dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
+
+    // Pertahankan file lama yang masih ingin disimpan (jika ada)
+    let attachments = [];
+    let keepIds = [];
+    if (existingAttachments) {
+      keepIds = JSON.parse(existingAttachments);
+      attachments = existing.attachments.filter((a) =>
+        keepIds.includes(a._id.toString())
+      );
+    }
+
+    // Cari file lama yang dihapus oleh user
+    const deletedFiles = existing.attachments.filter(
+      (a) => !keepIds.includes(a._id.toString())
+    );
+
+    // Hapus file fisik dari disk (jika ada)
+    for (const file of deletedFiles) {
+      if (file.path && (await fs.pathExists(file.path))) {
+        try {
+          await fs.remove(file.path);
+          console.log(`🗑️ Berhasil hapus file: ${file.path}`);
+        } catch (err) {
+          console.error(`Gagal hapus file ${file.path}:`, err.message);
+        }
+      }
+    }
+
+    // Tambahkan file baru (jika ada)
+    if (files.length > 0) {
+      const newFiles = files.map((file) => ({
+        originalName: file.originalname,
+        encoding: file.encoding,
+        mimeType: file.mimetype,
+        fileName: file.filename,
+        size: file.size,
+        path: file.path,
+      }));
+      attachments = attachments.concat(newFiles);
+    }
+
+    // Update data di database
+    const updated = await CustomReservation.findOneAndUpdate(
+      { reservationNumber: uniqueCode },
+      { ...req.validatedData, agent, attachments },
+      { new: true, runValidators: true }
+    );
 
     sendResponse(
       res,
@@ -189,7 +233,8 @@ export const deleteCustomReservationByCode = async (req, res) => {
   const { uniqueCode } = req.params;
 
   try {
-    const deleted = await CustomReservation.findOneAndDelete({
+    // Cari data reservasi yang akan dihapus
+    const deleted = await CustomReservation.findOne({
       reservationNumber: uniqueCode,
     });
 
@@ -201,6 +246,23 @@ export const deleteCustomReservationByCode = async (req, res) => {
         `Data reservasi khusus dengan kode ${uniqueCode} tidak ditemukan`
       );
     }
+
+    // Hapus semua file attachment fisik (jika ada)
+    if (deleted.attachments && deleted.attachments.length > 0) {
+      for (const file of deleted.attachments) {
+        if (file.path && (await fs.pathExists(file.path))) {
+          try {
+            await fs.remove(file.path);
+            console.log(`🗑️ File terhapus: ${file.path}`);
+          } catch (err) {
+            console.error(`Gagal hapus file ${file.path}:`, err.message);
+          }
+        }
+      }
+    }
+
+    // Hapus data reservasi dari database
+    await CustomReservation.deleteOne({ reservationNumber: uniqueCode });
 
     sendResponse(
       res,

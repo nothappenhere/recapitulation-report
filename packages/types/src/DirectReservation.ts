@@ -1,6 +1,6 @@
 import type { Agent } from "./Agent.js";
 
-export type WalkInFullTypes = {
+export type DirectReservationFullTypes = {
   _id: string;
   agent: Agent;
   reservationNumber: string;

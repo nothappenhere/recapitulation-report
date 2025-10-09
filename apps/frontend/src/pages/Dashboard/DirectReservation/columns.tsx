@@ -1,9 +1,7 @@
-import { type WalkInFullTypes } from "@rzkyakbr/types";
+import { type DirectReservationFullTypes } from "@rzkyakbr/types";
 import { type ColumnDef } from "@tanstack/react-table";
-import { formatRupiah } from "@rzkyakbr/libs";
+import { formatDate, formatRupiah } from "@rzkyakbr/libs";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
 import {
   createColumn,
   createActionsColumn,
@@ -11,13 +9,13 @@ import {
 } from "@/components/table/column-factory";
 import { useNavigate } from "react-router";
 
-export function useWalkInColumns(
-  onDelete: (item: WalkInFullTypes) => void
-): ColumnDef<WalkInFullTypes>[] {
+export function useDirectReservationColumns(
+  onDelete: (item: DirectReservationFullTypes) => void
+): ColumnDef<DirectReservationFullTypes>[] {
   const navigate = useNavigate();
 
   return [
-    createSelectColumn<WalkInFullTypes>(),
+    createSelectColumn<DirectReservationFullTypes>(),
 
     createColumn("reservationNumber", "Kode Reservasi"),
     createColumn("agent", "Petugas Reservasi", {
@@ -32,10 +30,7 @@ export function useWalkInColumns(
     createColumn("ordererName", "Nama Pemesan"),
     createColumn("phoneNumber", "No. Telepon"),
     createColumn("visitingDate", "Tgl. Kunjungan", {
-      cell: ({ row }) =>
-        format(new Date(row.original.visitingDate), "dd MMM yyyy, HH:mm:ss", {
-          locale: id,
-        }),
+      cell: ({ row }) => formatDate(row.original.visitingDate, true),
     }),
 
     createColumn("address", "Alamat"),
@@ -90,7 +85,7 @@ export function useWalkInColumns(
       },
     }),
 
-    createActionsColumn<WalkInFullTypes>(
+    createActionsColumn<DirectReservationFullTypes>(
       (item) => navigate(`edit/${item.reservationNumber}`),
       onDelete,
       (item) => navigate(`print/${item.reservationNumber}`)

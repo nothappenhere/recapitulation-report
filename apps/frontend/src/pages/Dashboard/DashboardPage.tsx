@@ -50,7 +50,8 @@ export default function DashboardPage() {
                         <BreadcrumbItem>
                           {isLast ? (
                             <BreadcrumbPage>
-                              {location.pathname.includes("edit")
+                              {location.pathname.includes("edit") ||
+                              location.pathname.includes("print")
                                 ? segment
                                 : slugToTitle(segment)}
                             </BreadcrumbPage>

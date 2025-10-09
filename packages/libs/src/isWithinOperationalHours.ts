@@ -9,6 +9,5 @@ export function isWithinOperationalHours(): boolean {
   const open = 8 * 60 + 30; // 08:30
   const close = 15 * 60; // 15:00
 
-  // return totalMinutes >= open && totalMinutes <= close;
-  return true;
+  return totalMinutes >= open && totalMinutes <= close;
 }

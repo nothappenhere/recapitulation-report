@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { type WalkInFullTypes } from "@rzkyakbr/types";
+import { type DirectReservationFullTypes } from "@rzkyakbr/types";
 import { api } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
-import { useWalkInColumns } from "./columns";
+import { useDirectReservationColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
@@ -14,11 +14,10 @@ type ExportColumn<T> = {
   type?: "dateOnly" | "dateWithTime" | "currency" | "timeRange" | "fullName";
 };
 
-export default function WalkinPage() {
-  const [data, setData] = useState<WalkInFullTypes[]>([]);
-  const [selectedItem, setSelectedItem] = useState<WalkInFullTypes | null>(
-    null
-  );
+export default function DirectReservationPage() {
+  const [data, setData] = useState<DirectReservationFullTypes[]>([]);
+  const [selectedItem, setSelectedItem] =
+    useState<DirectReservationFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
 
@@ -104,15 +103,15 @@ export default function WalkinPage() {
   }, [selectedItem]);
 
   //* Handler when the Delete button is clicked (display alert)
-  const handleDeleteClick = useCallback((item: WalkInFullTypes) => {
+  const handleDeleteClick = useCallback((item: DirectReservationFullTypes) => {
     setSelectedItem(item);
     setDeleteOpen(true);
   }, []);
 
   //* Operate to the column
-  const columns = useWalkInColumns(handleDeleteClick);
+  const columns = useDirectReservationColumns(handleDeleteClick);
 
-  const exportColumns: ExportColumn<WalkInFullTypes>[] = [
+  const exportColumns: ExportColumn<DirectReservationFullTypes>[] = [
     { key: "reservationNumber", header: "Kode Reservasi" },
     { key: "agent", header: "Petugas Reservasi", type: "fullName" },
 

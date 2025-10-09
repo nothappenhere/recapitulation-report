@@ -252,7 +252,7 @@ export default function DailyRecapForm() {
                         name="recapDate"
                         label="Tanggal Rekapitulasi"
                         placeholder="Pilih tanggal rekapitulasi"
-                        tooltip="Pilih tanggal laporan harian dibuat."
+                        tooltip="Pilih tanggal laporan rekapitulasi dibuat."
                       />
                     </div>
 
@@ -265,7 +265,7 @@ export default function DailyRecapForm() {
                         maxName="finalStudentSerialNumber"
                         label="No. Seri Pelajar"
                         placeholder={["Nomor seri awal", "Nomor seri akhir"]}
-                        tooltip="Nomor seri tiket kategori Pelajar. Nomor awal otomatis diisi berdasarkan data terakhir, sedangkan nomor akhir perlu Anda masukkan."
+                        tooltip="Nomor seri tiket kategori Pelajar. Nomor awal otomatis diisi dari data terakhir (jika ada), isi nomor akhir sesuai tiket yang dipakai."
                         disableMin={hasLastRecap}
                       />
 
@@ -276,7 +276,7 @@ export default function DailyRecapForm() {
                         maxName="finalPublicSerialNumber"
                         label="No. Seri Umum"
                         placeholder={["Nomor seri awal", "Nomor seri akhir"]}
-                        tooltip="Nomor seri tiket kategori Umum. Nomor awal otomatis diisi dari data terakhir, isi nomor akhir sesuai tiket yang dipakai."
+                        tooltip="Nomor seri tiket kategori Umum. Nomor awal otomatis diisi dari data terakhir (jika ada), isi nomor akhir sesuai tiket yang dipakai."
                         disableMin={hasLastRecap}
                       />
 
@@ -287,7 +287,7 @@ export default function DailyRecapForm() {
                         maxName="finalForeignSerialNumber"
                         label="No. Seri Asing"
                         placeholder={["Nomor seri awal", "Nomor seri akhir"]}
-                        tooltip="Nomor seri tiket kategori Asing. Nomor awal otomatis diisi dari data terakhir, isi nomor akhir sesuai tiket yang dipakai."
+                        tooltip="Nomor seri tiket kategori Asing. Nomor awal otomatis diisi dari data terakhir (jika ada), isi nomor akhir sesuai tiket yang dipakai."
                         disableMin={hasLastRecap}
                       />
                     </div>
@@ -298,7 +298,7 @@ export default function DailyRecapForm() {
                       <SimpleField
                         control={form.control}
                         name="description"
-                        label="Deskripsi"
+                        label="Keterangan"
                         placeholder="Tambahkan keterangan (opsional)"
                         component={<Textarea className="rounded-xs" />}
                         tooltip="Tambahkan catatan tambahan terkait rekap harian."
@@ -385,7 +385,7 @@ export default function DailyRecapForm() {
                             name="visitorMemberTotal"
                             label="Total Seluruh Pengunjung"
                             placeholder="0"
-                            tooltip="Jumlah  total pengunjung (terhitung otomatis)."
+                            tooltip="Jumlah total seluruh pengunjung (terhitung otomatis)."
                             minValue={0}
                             defaultValue={0}
                             disabled
@@ -397,7 +397,7 @@ export default function DailyRecapForm() {
                             name="totalPaymentAmount"
                             label="Total Pendapatan Harga Tiket"
                             placeholder="Masukan total pembayaran"
-                            tooltip="Jumlah total pembayaran."
+                            tooltip="Jumlah total pendapatan harga tiket."
                             valueFormatter={(val) => formatRupiah(val || 0)}
                             disabled
                           />
@@ -452,7 +452,7 @@ export default function DailyRecapForm() {
                               name="visitorMemberTotal"
                               label="Total Seluruh Pengunjung"
                               placeholder="0"
-                              tooltip="Jumlah  total pengunjung (terhitung otomatis)."
+                              tooltip="Jumlah total seluruh pengunjung (terhitung otomatis)."
                               minValue={0}
                               defaultValue={0}
                               disabled
@@ -499,7 +499,7 @@ export default function DailyRecapForm() {
                               name="totalPaymentAmount"
                               label="Total Pendapatan Harga Tiket"
                               placeholder="Masukan total pembayaran"
-                              tooltip="Jumlah total pembayaran."
+                              tooltip="Jumlah total pendapatan harga tiket."
                               valueFormatter={(val) => formatRupiah(val || 0)}
                               disabled
                             />
@@ -554,7 +554,7 @@ export default function DailyRecapForm() {
                             name="visitorMemberTotal"
                             label="Total Seluruh Pengunjung"
                             placeholder="0"
-                            tooltip="Jumlah  total pengunjung (terhitung otomatis)."
+                            tooltip="Jumlah total seluruh pengunjung (terhitung otomatis)."
                             minValue={0}
                             defaultValue={0}
                             disabled
@@ -599,7 +599,7 @@ export default function DailyRecapForm() {
                             name="totalPaymentAmount"
                             label="Total Pendapatan Harga Tiket"
                             placeholder="Masukan total pembayaran"
-                            tooltip="Jumlah total pembayaran."
+                            tooltip="Jumlah total pendapatan harga tiket."
                             valueFormatter={(val) => formatRupiah(val || 0)}
                             disabled
                           />
@@ -608,7 +608,7 @@ export default function DailyRecapForm() {
                     )}
 
                     {/* Submit Button */}
-                    {isWithinOperationalHours() && (
+                    {!isWithinOperationalHours() && (
                       <Button
                         type="submit"
                         className="rounded-xs"

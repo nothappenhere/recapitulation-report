@@ -33,6 +33,7 @@ import {
 import { api } from "@rzkyakbr/libs";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 type FileUploadFieldProps<T extends FieldValues> = {
   control: Control<T>;
@@ -108,6 +109,10 @@ export function FileUploadField<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field, fieldState }) => {
+        const [uploadProgress, setUploadProgress] = useState<
+          { fileId: string; progress: number; completed: boolean }[]
+        >([]);
+
         const [
           { files, isDragging, errors },
           {
@@ -129,6 +134,40 @@ export function FileUploadField<T extends FieldValues>({
           onFilesChange: (newFiles) => {
             const actualFiles = newFiles.map((f) => f.file);
             setValue(name, actualFiles, { shouldValidate: true });
+
+            // Tambah tracking upload progress
+            const newProgressItems = newFiles.map((f) => ({
+              fileId: f.id,
+              progress: 0,
+              completed: false,
+            }));
+
+            setUploadProgress((prev) => [...prev, ...newProgressItems]);
+
+            // Jalankan simulasi untuk setiap file baru
+            newFiles.forEach((file) => {
+              const fileSize = file.file.size || 1000000;
+
+              simulateUpload(
+                fileSize,
+                (progress) => {
+                  setUploadProgress((prev) =>
+                    prev.map((item) =>
+                      item.fileId === file.id ? { ...item, progress } : item
+                    )
+                  );
+                },
+                () => {
+                  setUploadProgress((prev) =>
+                    prev.map((item) =>
+                      item.fileId === file.id
+                        ? { ...item, completed: true }
+                        : item
+                    )
+                  );
+                }
+              );
+            });
           },
         });
 
@@ -148,7 +187,7 @@ export function FileUploadField<T extends FieldValues>({
             const url = window.URL.createObjectURL(blob);
 
             if (
-              contentType.startsWith("image/") ||
+              // contentType.startsWith("image/") ||
               contentType === "application/pdf"
             ) {
               // preview di tab baru
@@ -275,50 +314,88 @@ export function FileUploadField<T extends FieldValues>({
                     </TableHeader>
                     <TableBody className="text-[13px]">
                       {files.map((file) => (
-                        <TableRow key={file.id}>
-                          <TableCell className="max-w-48 py-2 font-medium">
-                            <span className="flex items-center gap-2">
-                              <span className="shrink-0">
-                                {getFileIcon(file)}
-                              </span>{" "}
-                              <span className="truncate">{file.file.name}</span>
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground py-2">
-                            {file.file.type.split("/")[1]?.toUpperCase() ||
-                              "UNKNOWN"}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground py-2">
-                            {formatBytes(file.file.size)}
-                          </TableCell>
-                          <TableCell className="py-2 text-right whitespace-nowrap">
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="ghost"
-                              className="text-muted-foreground hover:text-foreground size-8 hover:bg-transparent"
-                              aria-label={`Download ${file.file.name}`}
-                              onClick={() =>
-                                isEditMode
-                                  ? handleDownload(file.file) // <- panggil fungsinya + kirim data file
-                                  : window.open(file.preview, "_blank")
-                              }
-                            >
-                              <DownloadIcon className="size-4" />
-                            </Button>
+                        <>
+                          <TableRow key={file.id}>
+                            <TableCell className="max-w-48 py-2 font-medium">
+                              <span className="flex items-center gap-2">
+                                <span className="shrink-0">
+                                  {getFileIcon(file)}
+                                </span>{" "}
+                                <span className="truncate">
+                                  {file.file.name}
+                                </span>
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground py-2">
+                              {file.file.type.split("/")[1]?.toUpperCase() ||
+                                "UNKNOWN"}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground py-2">
+                              {formatBytes(file.file.size)}
+                            </TableCell>
+                            <TableCell className="py-2 text-right whitespace-nowrap">
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="text-muted-foreground hover:text-foreground size-8 hover:bg-transparent"
+                                aria-label={`Download ${file.file.name}`}
+                                onClick={() =>
+                                  isEditMode
+                                    ? handleDownload(file.file)
+                                    : window.open(file.preview, "_blank")
+                                }
+                              >
+                                <DownloadIcon className="size-4" />
+                              </Button>
 
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="ghost"
-                              className="text-muted-foreground hover:text-foreground size-8 hover:bg-transparent"
-                              aria-label={`Remove ${file.file.name}`}
-                              onClick={() => removeFile(file.id)}
-                            >
-                              <Trash2Icon className="size-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="text-muted-foreground hover:text-foreground size-8 hover:bg-transparent"
+                                aria-label={`Remove ${file.file.name}`}
+                                onClick={() => {
+                                  removeFile(file.id);
+                                  setUploadProgress((prev) =>
+                                    prev.filter((p) => p.fileId !== file.id)
+                                  );
+                                }}
+                              >
+                                <Trash2Icon className="size-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+
+                          {/* Upload progress bar */}
+                          {(() => {
+                            const progressData = uploadProgress.find(
+                              (p) => p.fileId === file.id
+                            );
+                            if (!progressData || progressData.completed)
+                              return null;
+
+                            return (
+                              <TableRow>
+                                <TableCell colSpan={4} className="py-1">
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                                      <div
+                                        className="bg-primary h-full transition-all duration-300 ease-out"
+                                        style={{
+                                          width: `${progressData.progress}%`,
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-muted-foreground w-10 text-xs tabular-nums">
+                                      {progressData.progress}%
+                                    </span>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })()}
+                        </>
                       ))}
                     </TableBody>
                   </Table>
@@ -348,3 +425,53 @@ export function FileUploadField<T extends FieldValues>({
     />
   );
 }
+
+// Function to simulate file upload with more realistic timing and progress
+const simulateUpload = (
+  totalBytes: number,
+  onProgress: (progress: number) => void,
+  onComplete: () => void
+) => {
+  let timeoutId: NodeJS.Timeout;
+  let uploadedBytes = 0;
+  let lastProgressReport = 0;
+
+  const simulateChunk = () => {
+    // Simulate variable network conditions with random chunk sizes
+    const chunkSize = Math.floor(Math.random() * 300000) + 2000;
+    uploadedBytes = Math.min(totalBytes, uploadedBytes + chunkSize);
+
+    // Calculate progress percentage (0-100)
+    const progressPercent = Math.floor((uploadedBytes / totalBytes) * 100);
+
+    // Only report progress if it's changed by at least 1%
+    if (progressPercent > lastProgressReport) {
+      lastProgressReport = progressPercent;
+      onProgress(progressPercent);
+    }
+
+    // Continue simulation if not complete
+    if (uploadedBytes < totalBytes) {
+      // Variable delay between 50ms and 500ms to simulate network fluctuations (reduced for faster uploads)
+      const delay = Math.floor(Math.random() * 450) + 50;
+
+      // Occasionally add a longer pause to simulate network congestion (5% chance, shorter duration)
+      const extraDelay = Math.random() < 0.05 ? 500 : 0;
+
+      timeoutId = setTimeout(simulateChunk, delay + extraDelay);
+    } else {
+      // Upload complete
+      onComplete();
+    }
+  };
+
+  // Start the simulation
+  timeoutId = setTimeout(simulateChunk, 100);
+
+  // Return a cleanup function to cancel the simulation
+  return () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  };
+};

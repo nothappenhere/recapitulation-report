@@ -67,14 +67,13 @@ export const defaultResetPasswordFormValues: TResetPassword = {
 
 export const UserUpdateSchema = UserSchema.extend({
   newPassword: z.string().optional().default(""),
-});
+}).omit({ password: true });
 export type TUserUpdate = z.infer<typeof UserUpdateSchema>;
 export const defaultUserUpdateFormValues: TUserUpdate = {
   NIP: 0,
   position: "",
   fullName: "",
   username: "",
-  password: "",
   newPassword: "",
   role: "User",
   biography: "",

@@ -1,9 +1,7 @@
 import { type CustomReservationFullTypes } from "@rzkyakbr/types";
 import { type ColumnDef } from "@tanstack/react-table";
-import { formatRupiah } from "@rzkyakbr/libs";
+import { formatDate, formatRupiah } from "@rzkyakbr/libs";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
 import {
   createColumn,
   createActionsColumn,
@@ -32,10 +30,7 @@ export function useCustomReservationColumns(
     createColumn("ordererName", "Nama Pemesan"),
     createColumn("phoneNumber", "No. Telepon"),
     createColumn("visitingDate", "Tgl. Kunjungan", {
-      cell: ({ row }) =>
-        format(new Date(row.original.visitingDate), "dd MMMM yyyy", {
-          locale: id,
-        }),
+      cell: ({ row }) => formatDate(row.original.visitingDate),
     }),
     createColumn("visitingHour", "Jam Kunjungan", {
       cell: ({ row }) => {

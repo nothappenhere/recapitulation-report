@@ -51,6 +51,7 @@ router.post(
  */
 router.put(
   "/:uniqueCode",
+  upload.array("attachments", 5),
   validateSchema(CustomReservationSchema),
   updateCustomReservationByCode
 );

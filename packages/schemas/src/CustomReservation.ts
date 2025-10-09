@@ -78,9 +78,16 @@ export const CustomReservationSchema = z.object({
 
   attachments: z
     .array(
-      z.custom<File>((val) => val instanceof File, {
-        message: "Tipe file tidak valid!",
-      })
+      z.union([
+        z.instanceof(File), // file baru
+        z.object({
+          id: z.string().optional(),
+          name: z.string().optional(),
+          size: z.number().optional(),
+          type: z.string().optional(),
+          path: z.string().optional(),
+        }), // file lama dari server
+      ])
     )
     .max(5, "Maksimal 5 file!")
     .default([]),

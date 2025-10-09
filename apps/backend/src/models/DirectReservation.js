@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { generateRandomCode } from "../utils/generateRandomCode.js";
 
-const walkinSchema = new mongoose.Schema(
+const directReservationSchema = new mongoose.Schema(
   {
     reservationNumber: { type: String, unique: true },
     agent: {
@@ -48,7 +48,7 @@ const walkinSchema = new mongoose.Schema(
 );
 
 // Middleware untuk auto-calculation
-walkinSchema.pre("save", function (next) {
+directReservationSchema.pre("save", function (next) {
   // Mengatur status pembayaran
   if (this.downPayment >= this.totalPaymentAmount) {
     this.statusPayment = "Lunas";
@@ -69,7 +69,7 @@ walkinSchema.pre("save", function (next) {
 });
 
 // Middleware untuk menerapkan default value
-walkinSchema.pre("save", function (next) {
+directReservationSchema.pre("save", function (next) {
   // Ganti semua string kosong dengan default jika ada
   const fieldsWithDefault = [
     "province",
@@ -88,7 +88,7 @@ walkinSchema.pre("save", function (next) {
 });
 
 // Middleware untuk generate reservationNumber acak 6 karakter (unik)
-walkinSchema.pre("save", async function (next) {
+directReservationSchema.pre("save", async function (next) {
   if (!this.reservationNumber) {
     try {
       let unique = false;
@@ -99,7 +99,7 @@ walkinSchema.pre("save", async function (next) {
         const randomCode = generateRandomCode();
         const candidate = `MG-${randomCode}`;
 
-        const existing = await mongoose.models.Walkin.findOne({
+        const existing = await mongoose.models.DirectReservation.findOne({
           reservationNumber: candidate,
         });
 
@@ -126,4 +126,7 @@ walkinSchema.pre("save", async function (next) {
   }
 });
 
-export const Walkin = mongoose.model("Walkin", walkinSchema);
+export const DirectReservation = mongoose.model(
+  "DirectReservation",
+  directReservationSchema
+);

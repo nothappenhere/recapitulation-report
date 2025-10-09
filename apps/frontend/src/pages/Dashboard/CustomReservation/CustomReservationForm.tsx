@@ -179,7 +179,6 @@ export default function CustomReservationForm() {
 
   //* Submit handler: create or update data
   const onSubmit = async (values: TCustomReservation): Promise<void> => {
-    console.log(values);
     try {
       const {
         provinceName,
@@ -231,13 +230,25 @@ export default function CustomReservationForm() {
       formData.append("paymentMethod", values.paymentMethod);
       formData.append("statusPayment", values.statusPayment);
 
-      if (!isEditMode && values.attachments && values.attachments.length > 0) {
-        values.attachments.forEach((file: File) => {
-          formData.append("attachments", file);
-        });
-      } else {
-        const newFiles = values.attachments.filter((f) => f instanceof File);
-        newFiles.forEach((file) => formData.append("attachments", file));
+      // if (!isEditMode && values.attachments && values.attachments.length > 0) {
+      //   values.attachments.forEach((file: File) => {
+      //     formData.append("attachments", file);
+      //   });
+      // } else {
+      //   const newFiles = values.attachments.filter((f) => f instanceof File);
+      //   newFiles.forEach((file) => formData.append("attachments", file));
+      // }
+
+      const newFiles = values.attachments.filter((f) => f instanceof File);
+      newFiles.forEach((file) => formData.append("attachments", file));
+
+      // Jika kamu mau backend tahu file lama yang masih dipakai:
+      const oldFileIds = values.attachments
+        .filter((f: any) => !(f instanceof File) && f.id)
+        .map((f: any) => f.id);
+
+      if (oldFileIds.length > 0) {
+        formData.append("existingAttachments", JSON.stringify(oldFileIds));
       }
 
       let res = null;
@@ -352,7 +363,7 @@ export default function CustomReservationForm() {
             <Separator />
             <CardContent>
               <Form {...form}>
-                <pre>{JSON.stringify(form.formState.errors, null, 2)}</pre>
+                {/* <pre>{JSON.stringify(form.formState.errors, null, 3)}</pre> */}
 
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                   <div className="flex flex-col gap-6">

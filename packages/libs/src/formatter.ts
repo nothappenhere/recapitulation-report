@@ -9,6 +9,14 @@ export function formatRupiah(number: number) {
   }).format(number);
 }
 
+export function formatDate(dateString: string, withTime: boolean = false) {
+  return format(
+    new Date(dateString),
+    `dd MMM yyyy, ${withTime ? "HH:mm:ss" : ""}`,
+    { locale: id }
+  );
+}
+
 export function slugToTitle(str: string) {
   return str
     .split(/[-_]/)
@@ -30,7 +38,7 @@ function normalizePhoneNumber(input: string): string {
 }
 
 export function formatPhoneNumber(input: string): string {
-  const raw = normalizePhoneNumber(input); // ← tambahkan ini
+  const raw = normalizePhoneNumber(input);
 
   const prefix = "+62";
   const firstGroup = raw.slice(2, 5); // e.g. 812
@@ -40,8 +48,4 @@ export function formatPhoneNumber(input: string): string {
   return `${prefix} ${firstGroup}${secondGroup ? `-${secondGroup}` : ""}${
     thirdGroup ? `-${thirdGroup}` : ""
   }`;
-}
-
-export function formatDate(dateString: string) {
-  return format(new Date(dateString), "dd/MM/yyyy", { locale: id });
 }

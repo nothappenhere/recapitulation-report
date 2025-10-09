@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { api, formatRupiah } from "@rzkyakbr/libs";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
-import { type WalkInFullTypes } from "@rzkyakbr/types";
+import { type DirectReservationFullTypes } from "@rzkyakbr/types";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Card,
@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 
 export default function DirectQRPage() {
   const { uniqueCode } = useParams();
-  const [data, setData] = useState<WalkInFullTypes | null>(null);
+  const [data, setData] = useState<DirectReservationFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 

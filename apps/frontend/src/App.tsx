@@ -23,9 +23,9 @@ import UserProfilePage from "./pages/Dashboard/UserManagement/UserProfilePage";
 import TicketPricePage from "./pages/Dashboard/TicketPrice/TicketPricePage";
 import TicketPriceForm from "./pages/Dashboard/TicketPrice/TicketPriceForm";
 // Reservasi Langsung
-import WalkinPage from "./pages/Dashboard/Walk-in/WalkinPage";
-import WalkinForm from "./pages/Dashboard/Walk-in/WalkinForm";
-import WalkinPrintPage from "./pages/Dashboard/Walk-in/WalkinPrintPage";
+import DirectReservationPage from "./pages/Dashboard/DirectReservation/DirectReservationPage";
+import DirectReservationForm from "./pages/Dashboard/DirectReservation/DirectReservationForm";
+import DirectReservationPrintPage from "./pages/Dashboard/DirectReservation/DirectReservationPrintPage";
 // Reservasi Rombongan
 import GroupReservationPage from "./pages/Dashboard/GroupReservation/GroupReservationPage";
 import GroupReservationForm from "./pages/Dashboard/GroupReservation/GroupReservationForm";
@@ -98,20 +98,26 @@ function App() {
 
           {/* Reservasi Langsung */}
           <Route path="direct-reservation">
-            <Route index element={<WalkinPage />} />
-            <Route path="add" element={<WalkinForm />} />
+            <Route index element={<DirectReservationPage />} />
+            <Route path="add" element={<DirectReservationForm />} />
 
             <Route
               path="edit"
               element={<Navigate to="/dashboard/direct-reservation" replace />}
             />
-            <Route path="edit/:uniqueCode" element={<WalkinForm />} />
+            <Route
+              path="edit/:uniqueCode"
+              element={<DirectReservationForm />}
+            />
 
             <Route
               path="print"
               element={<Navigate to="/dashboard/direct-reservation" replace />}
             />
-            <Route path="print/:uniqueCode" element={<WalkinPrintPage />} />
+            <Route
+              path="print/:uniqueCode"
+              element={<DirectReservationPrintPage />}
+            />
           </Route>
 
           {/* Reservasi Rombongan */}

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const WalkInSchema = z.object({
+export const DirectReservation = z.object({
   visitingDate: z.coerce.date().refine((val) => !isNaN(val.getTime()), {
     message: "Tanggal kunjungan tidak boleh kosong/invalid!",
   }),
@@ -63,8 +63,8 @@ export const WalkInSchema = z.object({
     .default("Belum Bayar"),
 });
 
-export type TWalkIn = z.infer<typeof WalkInSchema>;
-export const defaultWalkInFormValues: TWalkIn = {
+export type TDirectReservation = z.infer<typeof DirectReservation>;
+export const defaultDirectReservationFormValues: TDirectReservation = {
   visitingDate: new Date(),
   ordererName: "",
   phoneNumber: "",

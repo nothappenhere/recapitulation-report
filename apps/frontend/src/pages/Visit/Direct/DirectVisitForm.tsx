@@ -13,9 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  WalkInSchema,
-  defaultWalkInFormValues,
-  type TWalkIn,
+  DirectReservation,
+  defaultDirectReservationFormValues,
+  type TDirectReservation,
 } from "@rzkyakbr/schemas";
 import {
   api,
@@ -42,9 +42,9 @@ export default function DirectVisitForm() {
   const isTablet = useMediaQuery({ minWidth: 640, maxWidth: 1023 });
   const isDesktop = useMediaQuery({ minWidth: 1024 });
 
-  const form = useForm<TWalkIn>({
-    resolver: zodResolver(WalkInSchema),
-    defaultValues: defaultWalkInFormValues,
+  const form = useForm<TDirectReservation>({
+    resolver: zodResolver(DirectReservation),
+    defaultValues: defaultDirectReservationFormValues,
   });
 
   //* for submit button validation purposes
@@ -60,7 +60,7 @@ export default function DirectVisitForm() {
   useAutoPayment("/ticket-price", form.watch, form.setValue);
 
   //* Submit handler: create
-  const onSubmit = async (values: TWalkIn): Promise<void> => {
+  const onSubmit = async (values: TDirectReservation): Promise<void> => {
     try {
       const {
         provinceName,
