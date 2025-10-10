@@ -38,7 +38,9 @@ export const defaultLoginFormValues: TLogin = {
   password: "",
 };
 
-export const RegisterSchema = UserSchema.omit({ biography: true });
+export const RegisterSchema = UserSchema.omit({
+  biography: true,
+});
 export type TRegister = z.infer<typeof RegisterSchema>;
 export const defaultRegisterFormValues: TRegister = {
   NIP: 0,

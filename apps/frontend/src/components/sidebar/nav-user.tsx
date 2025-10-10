@@ -101,7 +101,7 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="cursor-pointer">
                 <Link to={`profile/${user.username}`}>
                   <CircleUserRound />
                   Account
@@ -109,7 +109,11 @@ export function NavUser({ user }: NavUserProps) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} variant="destructive">
+            <DropdownMenuItem
+              onClick={handleLogout}
+              variant="destructive"
+              className="cursor-pointer"
+            >
               <LogOut />
               Log out
             </DropdownMenuItem>

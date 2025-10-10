@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { api } from "@rzkyakbr/libs";
+import { api, setTitle } from "@rzkyakbr/libs";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,6 +37,8 @@ export default function ResetPasswordPage({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  setTitle("Reset Password - GeoTicketing");
+
   const [showPassword, setShowPassword] = useState(false);
   const [accountExist, setAccountExist] = useState(false);
   const navigate = useNavigate();
@@ -199,7 +201,7 @@ export default function ResetPasswordPage({
                           {form.formState.isSubmitting ? (
                             <>
                               <Loader2 className="animate-spin" />
-                              Loading
+                              Loading...
                             </>
                           ) : (
                             "Verifikasi akun"

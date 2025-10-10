@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { type CustomReservationFullTypes } from "@rzkyakbr/types";
-import { api } from "@rzkyakbr/libs";
+import { api, setTitle } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { useCustomReservationColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
@@ -15,6 +15,8 @@ type ExportColumn<T> = {
 };
 
 export default function CustomReservationPage() {
+  setTitle("Custom Reservation - GeoTicketing");
+
   const [data, setData] = useState<CustomReservationFullTypes[]>([]);
   const [selectedItem, setSelectedItem] =
     useState<CustomReservationFullTypes | null>(null);

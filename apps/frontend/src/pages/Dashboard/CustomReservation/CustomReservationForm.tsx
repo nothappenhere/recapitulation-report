@@ -196,7 +196,7 @@ export default function CustomReservationForm() {
 
       const formData = new FormData();
 
-      // Append semua data biasa
+      // Append semua data
       formData.append("agent", String(Agent));
 
       formData.append("visitingDate", values.visitingDate.toString());

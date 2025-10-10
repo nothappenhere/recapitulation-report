@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { api } from "@rzkyakbr/libs";
+import { api, setTitle } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
@@ -29,6 +29,8 @@ export default function LoginPage({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  setTitle("Login - GeoTicketing");
+
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -141,7 +143,7 @@ export default function LoginPage({
                       {form.formState.isSubmitting ? (
                         <>
                           <Loader2 className="animate-spin" />
-                          Loading
+                          Loading...
                         </>
                       ) : (
                         "Log in"

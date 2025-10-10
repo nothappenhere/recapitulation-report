@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { type DirectReservationFullTypes } from "@rzkyakbr/types";
-import { api } from "@rzkyakbr/libs";
+import { api, setTitle } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { useDirectReservationColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
@@ -15,6 +15,8 @@ type ExportColumn<T> = {
 };
 
 export default function DirectReservationPage() {
+  setTitle("Direct Reservation - GeoTicketing");
+
   const [data, setData] = useState<DirectReservationFullTypes[]>([]);
   const [selectedItem, setSelectedItem] =
     useState<DirectReservationFullTypes | null>(null);

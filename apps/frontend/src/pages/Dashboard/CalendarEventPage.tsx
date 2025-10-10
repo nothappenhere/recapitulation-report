@@ -4,39 +4,13 @@ import {
   EventCalendar,
   type CalendarEvent,
 } from "@/components/event-calendar/src";
-import { api } from "@rzkyakbr/libs";
+import { api, setTitle } from "@rzkyakbr/libs";
 import { type AxiosError } from "axios";
 import toast from "react-hot-toast";
 
-// Sample events data with hardcoded times
-const sampleEvents: CalendarEvent[] = [
-  {
-    _id: "1",
-    title: "Annual Planning",
-    description: "Strategic planning for next year",
-    startDate: subDays(new Date(), 24),
-    endDate: subDays(new Date(), 23),
-    startHour: "00:00",
-    endHour: "23:59",
-    allDay: true,
-    color: "sky",
-    location: "Main Conference Hall",
-  },
-  {
-    _id: "2",
-    title: "Project Deadline",
-    description: "Submit final deliverables",
-    startDate: setMinutes(setHours(subDays(new Date(), 9), 13), 0),
-    endDate: setMinutes(setHours(subDays(new Date(), 9), 15), 30),
-    startHour: "13:00",
-    endHour: "15:30",
-    allDay: false,
-    color: "amber",
-    location: "Office",
-  },
-];
-
 export default function CalendarEventPage() {
+  setTitle("Calendar Event - GeoTicketing");
+
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
 

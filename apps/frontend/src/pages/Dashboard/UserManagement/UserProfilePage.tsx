@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
   UserUpdateSchema,
   type TUserUpdate,
 } from "@rzkyakbr/schemas";
-import { api } from "@rzkyakbr/libs";
+import { api, setTitle } from "@rzkyakbr/libs";
 import { useNavigate, useParams } from "react-router";
 import { ImagePlusIcon, Loader2, XIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -50,13 +50,15 @@ const initialAvatarImage = [
 ];
 
 export default function UserProfilePage() {
+  setTitle("User Profile - GeoTicketing");
+
   const { username } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [didUpdateUsername, setDidUpdateUsername] = useState(false);
   const [biography, setBiography] = useState("");
 
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const currentUsername = user?.username || null;
   useEffect(() => {
     if (!didUpdateUsername && currentUsername !== username) {
@@ -82,44 +84,59 @@ export default function UserProfilePage() {
   });
 
   //* Fetch data if currently editing
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.get(`/user-manage/${username}`);
+      const userData = res.data.data;
+      form.reset(userData);
 
-        const res = await api.get(`/user-manage/${username}`);
-        const userData = res.data.data;
-        form.reset(userData);
-
-        if (userData.biography != null) {
-          setBiographyValue(userData.biography);
-          setBiography(userData.biography);
-        }
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        const message = error.response?.data?.message
-          ? `${error.response.data.message}!`
-          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
-        toast.error(message);
-
-        navigate("/dashboard", { replace: true });
-      } finally {
-        setLoading(false);
+      if (userData.biography != null) {
+        setBiographyValue(userData.biography);
+        setBiography(userData.biography);
       }
-    };
-
-    fetchData();
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      const message = error.response?.data?.message
+        ? `${error.response.data.message}!`
+        : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
+      toast.error(message);
+      navigate("/dashboard", { replace: true });
+    } finally {
+      setLoading(false);
+    }
   }, [form, navigate, username, setBiographyValue]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   //* Submit handler: update data
   const onSubmit = async (values: TUserUpdate): Promise<void> => {
     try {
       const res = await api.put(`/user-manage/${username}`, values);
       toast.success(`${res.data.message}.`);
-      form.reset();
+      // form.reset();
+
+      // Ambil data terbaru setelah update
+      const updatedUser = res.data?.data || values;
+
+      // Update data global user jika yang sedang login adalah user yang diubah
+      if (user && user.username === username) {
+        setUser((prev) => ({
+          ...prev!,
+          ...updatedUser, // gabungkan dengan data baru
+        }));
+      }
 
       setDidUpdateUsername(true);
-      navigate(`/dashboard/profile/${values.username}`, { replace: true });
+      // Fetch ulang data terbaru tanpa reload halaman
+      await fetchData();
+
+      // Jika username berubah, arahkan ke URL baru
+      if (values.username !== username) {
+        navigate(`/dashboard/profile/${values.username}`, { replace: true });
+      }
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -148,21 +165,21 @@ export default function UserProfilePage() {
                 <CardContent>
                   <ProfileBg />
                   {/* <ImageUploadField
-                      control={form.control}
-                      name="backgroundImage"
-                      shape="rectangle"
-                      label="Background"
-                      initialImage="/img/bg-education.jpg"
-                    /> */}
+                    control={form.control}
+                    name="profileBanner"
+                    shape="rectangle"
+                    label="Background"
+                    initialImage={initialBgImage}
+                  /> */}
 
                   <Avatar />
                   {/* <ImageUploadField
-                      control={form.control}
-                      name="profilePicture"
-                      shape="circle"
-                      label="Foto Profil"
-                      initialImage="/default-avatar.png"
-                    /> */}
+                    control={form.control}
+                    name="avatar"
+                    shape="circle"
+                    label="Foto Profil"
+                    initialImage={initialAvatarImage}
+                  /> */}
 
                   <Form {...form}>
                     <pre>{JSON.stringify(form.formState.errors, null, 3)}</pre>
@@ -303,7 +320,7 @@ function ProfileBg() {
 
   return (
     <div className="h-44">
-      <div className="bg-black/10 border-b-2 border-black/10 relative flex size-full items-center justify-center overflow-hidden">
+      <div className="bg-black/10 border-b-2 border-black/10 relative size-full flex items-center justify-center overflow-hidden">
         {currentImage && (
           <img
             className="size-full object-cover"
@@ -359,7 +376,7 @@ function Avatar() {
 
   return (
     <div className="-mt-12 px-6">
-      <div className="border-black/10 bg-muted relative flex size-24 items-center justify-center overflow-hidden rounded-full border-3 shadow-xs shadow-black/10">
+      <div className="border-black/10 bg-muted relative size-24 flex items-center justify-center overflow-hidden rounded-full border-3 shadow-xs shadow-black/10">
         {currentImage && (
           <img
             src={currentImage}

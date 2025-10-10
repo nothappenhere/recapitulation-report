@@ -1,4 +1,4 @@
-import { api } from "@rzkyakbr/libs";
+import { api, setTitle } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { useCallback, useEffect, useState } from "react";
 import { TicketPriceCard } from "./TicketPriceCard";
@@ -12,6 +12,8 @@ import { RefreshCw, TicketIcon } from "lucide-react";
 import type { TicketPriceFullTypes } from "@rzkyakbr/types";
 
 export default function TicketPricePage() {
+  setTitle("Ticket Price - GeoTicketing");
+
   const [data, setData] = useState<TicketPriceFullTypes[]>([]);
   const [selectedItem, setSelectedItem] = useState<TicketPriceFullTypes | null>(
     null

@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { api } from "@rzkyakbr/libs";
+import { api, setTitle } from "@rzkyakbr/libs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -29,6 +29,8 @@ export default function RegisterPage({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  setTitle("Register - GeoTicketing");
+
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -58,7 +60,7 @@ export default function RegisterPage({
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm md:max-w-3xl">
+      <div className="w-full max-w-sm md:max-w-4xl">
         <div className={cn("flex flex-col gap-6", className)} {...props}>
           <Card className="overflow-hidden p-0">
             <CardContent className="grid p-0 md:grid-cols-2">
@@ -170,7 +172,7 @@ export default function RegisterPage({
                       {form.formState.isSubmitting ? (
                         <>
                           <Loader2 className="animate-spin" />
-                          Loading
+                          Loading...
                         </>
                       ) : (
                         "Buat akun"

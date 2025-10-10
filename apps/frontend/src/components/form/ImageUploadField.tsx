@@ -3,12 +3,19 @@ import { useController } from "react-hook-form";
 import { ImagePlusIcon, XIcon } from "lucide-react";
 import { useFileUpload } from "@/hooks/use-file-upload";
 
+type FileMetadata = {
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  id: string;
+};
 interface ImageUploadFieldProps {
   control: any;
   name: string;
   label?: string;
   shape?: "circle" | "rectangle"; // circle untuk avatar, rectangle untuk background
-  initialImage?: string | null;
+  initialImage?: FileMetadata[];
   className?: string;
 }
 
@@ -24,7 +31,7 @@ export function ImageUploadField({
   const [{ files }, { removeFile, openFileDialog, getInputProps }] =
     useFileUpload({
       accept: "image/*",
-      initialFiles: initialImage ? [{ preview: initialImage }] : [],
+      initialFiles: initialImage,
     });
 
   const currentImage = files[0]?.preview || null;
@@ -39,43 +46,41 @@ export function ImageUploadField({
 
   return (
     <div
-      className={`relative flex items-center justify-center ${
+      className={`relative flex items-center justify-center overflow-hidden ${
         shape === "circle"
-          ? "size-24 rounded-full border-2 border-black/10 bg-muted shadow-xs overflow-hidden"
-          : "h-42 w-full border-b-2 border-black/10 bg-black/10 overflow-hidden"
+          ? "border-black/10 bg-muted relative -mt-12 mx-6 size-24 rounded-full border-3 shadow-xs"
+          : "bg-black/10 border-b-2 border-black/10 relative size-full h-44"
       } ${className}`}
     >
       {currentImage && (
         <img
           src={currentImage}
+          className="object-cover size-full"
+          width={shape === "circle" ? 80 : 512}
+          height={shape === "circle" ? 80 : 96}
           alt={label || "Uploaded image"}
-          className={`${
-            shape === "circle"
-              ? "object-cover size-full"
-              : "object-cover size-full"
-          }`}
         />
       )}
 
       {/* Tombol aksi */}
       <div
-        className={`absolute inset-0 flex items-center justify-center gap-3 ${
-          shape === "circle" ? "" : "bg-black/30"
+        className={`absolute inset-0 flex items-center justify-center gap-3 bg-black/10 ${
+          shape === "circle" ? "" : "bg-black/10"
         }`}
       >
         <button
           type="button"
-          className="flex size-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-white"
+          className="focus-visible:border-ring focus-visible:ring-ring/50 z-50 flex size-10 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white transition-[color,box-shadow] outline-none hover:bg-black/70 focus-visible:ring-[3px]"
           onClick={openFileDialog}
           aria-label={currentImage ? "Ubah gambar" : "Unggah gambar"}
         >
           <ImagePlusIcon size={16} />
         </button>
 
-        {currentImage && (
+        {currentImage && shape !== "circle" && (
           <button
             type="button"
-            className="flex size-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-white"
+            className="focus-visible:border-ring focus-visible:ring-ring/50 z-50 flex size-10 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white transition-[color,box-shadow] outline-none hover:bg-black/70 focus-visible:ring-[3px]"
             onClick={() => removeFile(files[0]?.id)}
             aria-label="Hapus gambar"
           >

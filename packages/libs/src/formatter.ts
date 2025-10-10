@@ -12,7 +12,7 @@ export function formatRupiah(number: number) {
 export function formatDate(dateString: string, withTime: boolean = false) {
   return format(
     new Date(dateString),
-    `dd MMM yyyy, ${withTime ? "HH:mm:ss" : ""}`,
+    `dd MMMM yyyy ${withTime ? ", HH:mm:ss" : ""}`,
     { locale: id }
   );
 }

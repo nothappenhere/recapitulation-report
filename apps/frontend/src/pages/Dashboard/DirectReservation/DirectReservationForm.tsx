@@ -47,7 +47,7 @@ import { NumberFieldInput } from "@/components/form/NumberField";
 import { SelectField } from "@/components/form/SelectField";
 import { useUser } from "@/hooks/use-user-context";
 import { useCallback, useEffect, useState } from "react";
-import WalkinFormSkeleton from "@/components/skeleton/WalkinFormSkeleton";
+import ReservationFormSkeleton from "@/components/skeleton/ReservationFormSkeleton";
 import AlertDelete from "@/components/AlertDelete";
 
 export default function DirectReservationForm() {
@@ -212,7 +212,7 @@ export default function DirectReservationForm() {
   return (
     <>
       {loading ? (
-        <WalkinFormSkeleton />
+        <ReservationFormSkeleton />
       ) : (
         <>
           <AlertDelete

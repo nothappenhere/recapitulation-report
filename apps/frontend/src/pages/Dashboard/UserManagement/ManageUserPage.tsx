@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { type UserFullTypes } from "@rzkyakbr/types";
-import { api } from "@rzkyakbr/libs";
+import { api, setTitle } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { useUserColumns } from "./columns";
 import { DataTable } from "@/components/table/data-table";
@@ -17,6 +17,8 @@ type ExportColumn<T> = {
 };
 
 export default function ManageUserPage() {
+  setTitle("User Management - GeoTicketing");
+
   const [data, setData] = useState<UserFullTypes[]>([]);
   const [selectedItem, setSelectedItem] = useState<UserFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
