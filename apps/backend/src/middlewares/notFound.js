@@ -1,7 +1,11 @@
-const notFound = (req, res, next) => {
-  const error = new Error('Not Found Endpoint!')
-  error.status = 404
-  next(error)
-}
+import { sendResponse } from "../utils/sendResponse.js";
 
-export default notFound
+const notFound = (_, res) => {
+  const statusCode = 404;
+  const message = "Not found endpoint!";
+  return sendResponse(res, statusCode, false, "Internal server error", null, {
+    detail: message,
+  });
+};
+
+export default notFound;

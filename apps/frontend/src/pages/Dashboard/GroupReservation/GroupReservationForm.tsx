@@ -241,7 +241,7 @@ export default function GroupReservationForm() {
               <CardDescription>
                 {isEditMode
                   ? `Ubah detail reservasi rombongan dengan kode: ${uniqueCode}`
-                  : "Isi formulir di bawah untuk mencatat reservasi rombongan."}
+                  : "Isi formulir di bawah untuk mencatat reservasi rombongan baru."}
               </CardDescription>
 
               <CardAction className="flex gap-2">

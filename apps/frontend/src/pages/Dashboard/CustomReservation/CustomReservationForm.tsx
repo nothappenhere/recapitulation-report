@@ -324,7 +324,7 @@ export default function CustomReservationForm() {
               <CardDescription>
                 {isEditMode
                   ? `Ubah detail reservasi khusus dengan kode: ${uniqueCode}`
-                  : "Isi formulir di bawah untuk mencatat reservasi khusus."}
+                  : "Isi formulir di bawah untuk mencatat reservasi khusus baru."}
               </CardDescription>
 
               <CardAction className="flex gap-2">

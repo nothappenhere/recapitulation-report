@@ -24,7 +24,7 @@ export default function DirectReservationPage() {
   const [isDeleteOpen, setDeleteOpen] = useState(false);
 
   //* Fetch data for displaying table
-  const fetchWalkIns = useCallback(async () => {
+  const fetchReservations = useCallback(async () => {
     setLoading(true);
 
     try {
@@ -42,16 +42,16 @@ export default function DirectReservationPage() {
   }, []);
 
   useEffect(() => {
-    fetchWalkIns();
-  }, [fetchWalkIns]);
+    fetchReservations();
+  }, [fetchReservations]);
 
   //* Conduct a poll
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     const startPolling = () => {
-      fetchWalkIns(); // langsung fetch begitu tab aktif
-      interval = setInterval(fetchWalkIns, 60000);
+      fetchReservations(); // langsung fetch begitu tab aktif
+      interval = setInterval(fetchReservations, 60000);
     };
 
     const stopPolling = () => {
@@ -78,7 +78,7 @@ export default function DirectReservationPage() {
       stopPolling();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [fetchWalkIns]);
+  }, [fetchReservations]);
 
   //* Delete handler: delete data after confirmation
   const confirmDelete = useCallback(async () => {
@@ -166,7 +166,7 @@ export default function DirectReservationPage() {
             data={loading ? [] : data}
             addTitle="Tambah Reservasi"
             colSpan={8}
-            onRefresh={fetchWalkIns}
+            onRefresh={fetchReservations}
             worksheetName="Reservasi Langsung"
             exportColumns={exportColumns}
           />

@@ -85,7 +85,7 @@ export default function DirectQRPage() {
               }}
             />
 
-            {/* Walk-in number */}
+            {/* reservation number */}
             <div className="text-center space-y-1">
               <p className="text-sm text-muted-foreground">Kode Reservasi</p>
               <p className="text-lg font-bold tracking-wide">

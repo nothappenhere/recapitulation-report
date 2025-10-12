@@ -24,7 +24,7 @@ import { toast } from "react-hot-toast";
 import type { AxiosError } from "axios";
 import { SelectField } from "@/components/form/SelectField";
 import { SimpleField } from "@/components/form/SimpleField";
-import TicketPriceFormSkeleton from "@/components/skeleton/TicketPriceFormSkeleton";
+import FormSkeleton from "@/components/skeleton/FormSkeleton";
 import AlertDelete from "@/components/AlertDelete";
 import { useUser } from "@/hooks/use-user-context";
 
@@ -162,7 +162,7 @@ export default function TicketPriceForm() {
   return (
     <>
       {loading ? (
-        <TicketPriceFormSkeleton />
+        <FormSkeleton />
       ) : (
         <>
           <AlertDelete

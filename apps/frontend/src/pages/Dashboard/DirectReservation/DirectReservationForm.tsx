@@ -93,23 +93,26 @@ export default function DirectReservationForm() {
 
       try {
         const res = await api.get(`/direct-reservation/${uniqueCode}`);
-        const WalkinData = res.data.data;
+        const reservationData = res.data.data;
 
         const formData: TDirectReservation = {
-          ...WalkinData,
-          visitingDate: new Date(WalkinData.visitingDate),
+          ...reservationData,
+          visitingDate: new Date(reservationData.visitingDate),
           province:
-            provinces.find((p) => p.name === WalkinData.province)?.code || "-",
-          regencyOrCity:
-            regencies.find((r) => r.name === WalkinData.regencyOrCity)?.code ||
+            provinces.find((p) => p.name === reservationData.province)?.code ||
             "-",
+          regencyOrCity:
+            regencies.find((r) => r.name === reservationData.regencyOrCity)
+              ?.code || "-",
           district:
-            districts.find((d) => d.name === WalkinData.district)?.code || "-",
+            districts.find((d) => d.name === reservationData.district)?.code ||
+            "-",
           village:
-            villages.find((v) => v.name === WalkinData.village)?.code || "-",
+            villages.find((v) => v.name === reservationData.village)?.code ||
+            "-",
           country:
-            countries.find((c) => c.name === WalkinData.country)?.name ||
-            WalkinData.country,
+            countries.find((c) => c.name === reservationData.country)?.name ||
+            reservationData.country,
         };
 
         form.reset(formData);
@@ -231,7 +234,7 @@ export default function DirectReservationForm() {
               <CardDescription>
                 {isEditMode
                   ? `Ubah detail reservasi langsung dengan kode: ${uniqueCode}`
-                  : "Isi formulir di bawah untuk mencatat reservasi langsung."}
+                  : "Isi formulir di bawah untuk mencatat reservasi langsung baru."}
               </CardDescription>
 
               <CardAction className="flex gap-2">

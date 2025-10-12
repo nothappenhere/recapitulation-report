@@ -51,12 +51,13 @@ export const register = async (req, res) => {
     const userExist = await User.findOne({
       $or: [{ NIP }, { username }],
     });
+    
     if (userExist) {
       return sendResponse(
         res,
         409,
         false,
-        "Pengguna dengan NIP/username tersebut telah terdaftar"
+        "Pengguna dengan NIP/Username tersebut telah terdaftar"
       );
     }
 

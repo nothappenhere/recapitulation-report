@@ -7,11 +7,13 @@ import {
   createActionsColumn,
   createSelectColumn,
 } from "@/components/table/column-factory";
+import { useNavigate } from "react-router";
 
 export function useUserColumns(
-  onDelete: (item: UserFullTypes) => void,
-  onEdit: (item: UserFullTypes) => void
+  onDelete: (item: UserFullTypes) => void
 ): ColumnDef<UserFullTypes>[] {
+  const navigate = useNavigate();
+
   return [
     createSelectColumn<UserFullTypes>(),
 
@@ -45,6 +47,9 @@ export function useUserColumns(
         }),
     }),
 
-    createActionsColumn<UserFullTypes>(onEdit, onDelete),
+    createActionsColumn<UserFullTypes>(
+      (item) => navigate(`edit/${item.username}`),
+      onDelete
+    ),
   ];
 }

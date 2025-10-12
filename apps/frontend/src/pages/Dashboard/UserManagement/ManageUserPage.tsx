@@ -7,7 +7,6 @@ import { DataTable } from "@/components/table/data-table";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
-import DetailUser from "./DetailUser";
 import type { TUserUpdate } from "@rzkyakbr/schemas";
 
 type ExportColumn<T> = {
@@ -22,7 +21,6 @@ export default function ManageUserPage() {
   const [data, setData] = useState<UserFullTypes[]>([]);
   const [selectedItem, setSelectedItem] = useState<UserFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isEditOpen, setEditOpen] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
 
   //* Fetch data for displaying table
@@ -169,18 +167,11 @@ export default function ManageUserPage() {
           <DataTable
             columns={columns}
             data={loading ? [] : data}
+            addTitle="Tambah Pengguna"
             colSpan={8}
             onRefresh={fetchUsers}
-            setOpen={setEditOpen}
             worksheetName="Pengeolaan Pengguna"
             exportColumns={exportColumns}
-          />
-
-          <DetailUser
-            open={isEditOpen}
-            setOpen={setEditOpen}
-            onEdit={handleSaveEdit}
-            data={selectedItem}
           />
 
           <AlertDelete

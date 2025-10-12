@@ -20,7 +20,7 @@ import { ArrowLeft, Printer } from "lucide-react";
 
 export default function DirectReservationPrintPage() {
   const { uniqueCode } = useParams();
-  const [walkInData, setWalkInData] =
+  const [reservationData, setReservationData] =
     useState<DirectReservationFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ export default function DirectReservationPrintPage() {
 
       try {
         const res = await api.get(`/direct-reservation/${uniqueCode}`);
-        setWalkInData(res.data.data);
+        setReservationData(res.data.data);
       } catch (err) {
         const error = err as AxiosError<{ message?: string }>;
         const message = error.response?.data?.message
@@ -51,7 +51,7 @@ export default function DirectReservationPrintPage() {
     fetchData();
   }, [uniqueCode, navigate]);
 
-  if (loading || !walkInData) {
+  if (loading || !reservationData) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <p className="text-muted-foreground">Memuat data...</p>
@@ -61,7 +61,7 @@ export default function DirectReservationPrintPage() {
 
   return (
     <>
-      {walkInData && (
+      {reservationData && (
         <div className="print:w-[76mm] print:mx-auto print:text-xs print:font-mono print:m-0 print:p-0">
           <Card className="max-w-[76mm] mx-auto font-mono text-xs">
             <CardHeader className="flex flex-col items-center justify-center">
@@ -82,13 +82,13 @@ export default function DirectReservationPrintPage() {
             <CardContent className="border-y py-4 grid gap-2">
               <InfoRow
                 label="Kode Reservasi (Reservation code)"
-                value={walkInData.reservationNumber}
+                value={reservationData.reservationNumber}
               />
 
               <InfoRow
                 label="Tgl. Kunjungan (Visiting Date)"
                 value={format(
-                  new Date(walkInData.visitingDate),
+                  new Date(reservationData.visitingDate),
                   `dd MMM yyyy`,
                   {
                     locale: id,
@@ -97,62 +97,66 @@ export default function DirectReservationPrintPage() {
               />
               <InfoRow
                 label="Waktu Kunjungan (Visiting Hour)"
-                value={format(new Date(walkInData.visitingDate), `HH:mm:ss`, {
-                  locale: id,
-                })}
+                value={format(
+                  new Date(reservationData.visitingDate),
+                  `HH:mm:ss`,
+                  {
+                    locale: id,
+                  }
+                )}
               />
               <InfoRow
                 label="Nama Pemesan (Orderer Name)"
-                value={walkInData.ordererName}
+                value={reservationData.ordererName}
               />
               <InfoRow
                 label="No. Telepon (Phone Number)"
-                value={`${walkInData.phoneNumber}`}
+                value={`${reservationData.phoneNumber}`}
               />
 
               <InfoRow
                 label="Pelajar (Student)"
-                value={`${walkInData.studentMemberTotal} pengunjung`}
+                value={`${reservationData.studentMemberTotal} pengunjung`}
               />
               <InfoRow
                 label="Harga Tiket (Ticket Price)"
-                value={`${formatRupiah(walkInData.studentTotalAmount)}`}
+                value={`${formatRupiah(reservationData.studentTotalAmount)}`}
               />
 
               <InfoRow
                 label="Umum (Public)"
-                value={`${walkInData.publicMemberTotal} pengunjung`}
+                value={`${reservationData.publicMemberTotal} pengunjung`}
               />
               <InfoRow
                 label="Harga Tiket (Ticket Price)"
-                value={`${formatRupiah(walkInData.publicTotalAmount)}`}
+                value={`${formatRupiah(reservationData.publicTotalAmount)}`}
               />
 
               <InfoRow
                 label="Asing (Foreigner)"
-                value={`${walkInData.foreignMemberTotal} pengunjung`}
+                value={`${reservationData.foreignMemberTotal} pengunjung`}
               />
               <InfoRow
                 label="Harga Tiket (Ticket Price)"
-                value={`${formatRupiah(walkInData.foreignTotalAmount)}`}
+                value={`${formatRupiah(reservationData.foreignTotalAmount)}`}
               />
 
               <InfoRow
                 label="Total Pengunjung (Visitors)"
-                value={`${walkInData.visitorMemberTotal} pengunjung`}
+                value={`${reservationData.visitorMemberTotal} pengunjung`}
               />
               <InfoRow
                 label="Total Harga Tiket (Ttl. Ticket Price)"
-                value={`${formatRupiah(walkInData.totalPaymentAmount)}`}
+                value={`${formatRupiah(reservationData.totalPaymentAmount)}`}
               />
 
               <InfoRow
                 label="Metode Pembayaran (Payment Method)"
-                value={walkInData.paymentMethod}
+                value={reservationData.paymentMethod}
               />
               <InfoRow
                 label="Status Pembayaran (Payment Status)"
-                value={walkInData.statusPayment}
+                value={reservationData.statusPayment}
               />
             </CardContent>
 

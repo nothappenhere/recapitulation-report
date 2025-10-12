@@ -15,6 +15,8 @@ import DailyRecapRoutes from "./routes/DailyRecapRoutes.js";
 import RegionRoutes from "./routes/RegionRoutes.js";
 import VisitingHourRoutes from "./routes/VisitingHourRoutes.js";
 
+import notFound from "./middlewares/notFound.js";
+
 //* Load environment variables
 dotenv.config();
 const app = express();
@@ -41,6 +43,9 @@ app.use("/api/custom-reservation", CustomReservationRoutes);
 app.use("/api/daily-recap", DailyRecapRoutes);
 app.use("/api/region", RegionRoutes);
 app.use("/api/visit-hour", VisitingHourRoutes);
+
+//* Error Handling
+app.use(notFound);
 
 //* Start server after DB connection
 connectDB().then(() => {

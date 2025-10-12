@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   defaultUserUpdateFormValues,
   UserUpdateSchema,
@@ -18,36 +25,18 @@ import {
 } from "@rzkyakbr/schemas";
 import { api, setTitle } from "@rzkyakbr/libs";
 import { useNavigate, useParams } from "react-router";
-import { ImagePlusIcon, Loader2, XIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Loader2, ShieldUser } from "lucide-react";
 import { toast } from "react-hot-toast";
 import type { AxiosError } from "axios";
 import { SimpleField } from "@/components/form/SimpleField";
-import TicketPriceFormSkeleton from "@/components/skeleton/TicketPriceFormSkeleton";
+import FormSkeleton from "@/components/skeleton/FormSkeleton";
 import { useUser } from "@/hooks/use-user-context";
-import { useFileUpload } from "@/hooks/use-file-upload";
 import { Textarea } from "@/components/ui/textarea";
 import { useCharacterLimit } from "@/hooks/use-character-limit";
-import { ImageUploadField } from "@/components/form/ImageUploadField";
-
-const initialBgImage = [
-  {
-    name: "Background Image Museum Geologi",
-    size: 716.8,
-    type: "image/jpeg",
-    url: "/img/bg-education.jpg",
-    id: "bg-123456789",
-  },
-];
-
-const initialAvatarImage = [
-  {
-    name: "Logo Museum Geologi",
-    size: 28.672,
-    type: "image/png",
-    url: "/img/logo-mg.png",
-    id: "avatar-123456789",
-  },
-];
+import { SelectField } from "@/components/form/SelectField";
+import { Input } from "@/components/ui/input";
+import ProfileBanner from "@/components/ProfileBanner";
+import ProfileAvatar from "@/components/ProfileAvatar";
 
 export default function UserProfilePage() {
   setTitle("User Profile - GeoTicketing");
@@ -55,17 +44,10 @@ export default function UserProfilePage() {
   const { username } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [didUpdateUsername, setDidUpdateUsername] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [biography, setBiography] = useState("");
 
-  const { user, setUser } = useUser();
-  const currentUsername = user?.username || null;
-  useEffect(() => {
-    if (!didUpdateUsername && currentUsername !== username) {
-      toast.error("Anda tidak memiliki akses untuk mengunjungi halaman ini.");
-      navigate("/dashboard", { replace: true });
-    }
-  }, [currentUsername, username, navigate, didUpdateUsername]);
+  const { setUser } = useUser();
 
   const form = useForm<TUserUpdate>({
     resolver: zodResolver(UserUpdateSchema),
@@ -84,59 +66,46 @@ export default function UserProfilePage() {
   });
 
   //* Fetch data if currently editing
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/user-manage/${username}`);
-      const userData = res.data.data;
-      form.reset(userData);
-
-      if (userData.biography != null) {
-        setBiographyValue(userData.biography);
-        setBiography(userData.biography);
-      }
-    } catch (err) {
-      const error = err as AxiosError<{ message?: string }>;
-      const message = error.response?.data?.message
-        ? `${error.response.data.message}!`
-        : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
-      toast.error(message);
-      navigate("/dashboard", { replace: true });
-    } finally {
-      setLoading(false);
-    }
-  }, [form, navigate, username, setBiographyValue]);
-
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+
+      try {
+        const res = await api.get(`/user-manage/${username}`);
+        const userData = res.data.data;
+        form.reset(userData);
+
+        if (userData.biography != null) {
+          setBiographyValue(userData.biography);
+          setBiography(userData.biography);
+        }
+      } catch (err) {
+        const error = err as AxiosError<{ message?: string }>;
+        const message = error.response?.data?.message
+          ? `${error.response.data.message}!`
+          : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
+        toast.error(message);
+        navigate("/dashboard", { replace: true });
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
-  }, [fetchData]);
+  }, [form, navigate, username, setBiographyValue]);
 
   //* Submit handler: update data
   const onSubmit = async (values: TUserUpdate): Promise<void> => {
     try {
       const res = await api.put(`/user-manage/${username}`, values);
       toast.success(`${res.data.message}.`);
-      // form.reset();
-
-      // Ambil data terbaru setelah update
-      const updatedUser = res.data?.data || values;
 
       // Update data global user jika yang sedang login adalah user yang diubah
-      if (user && user.username === username) {
-        setUser((prev) => ({
-          ...prev!,
-          ...updatedUser, // gabungkan dengan data baru
-        }));
-      }
-
-      setDidUpdateUsername(true);
-      // Fetch ulang data terbaru tanpa reload halaman
-      await fetchData();
-
-      // Jika username berubah, arahkan ke URL baru
-      if (values.username !== username) {
-        navigate(`/dashboard/profile/${values.username}`, { replace: true });
-      }
+      const updatedUser = res.data?.data || values;
+      setUser((prev: any) => ({
+        ...prev!,
+        ...updatedUser, // gabungkan dengan data baru
+      }));
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -149,11 +118,11 @@ export default function UserProfilePage() {
   return (
     <>
       {loading ? (
-        <TicketPriceFormSkeleton />
+        <FormSkeleton />
       ) : (
         <>
           <div className="flex justify-center items-center">
-            <div className="w-full max-w-lg">
+            <div className="w-full max-w-xl">
               <Card className="shadow-lg rounded-md">
                 <CardHeader className="text-center">
                   <CardTitle>Edit Data Pengguna</CardTitle>
@@ -163,27 +132,10 @@ export default function UserProfilePage() {
                 </CardHeader>
                 <Separator />
                 <CardContent>
-                  <ProfileBg />
-                  {/* <ImageUploadField
-                    control={form.control}
-                    name="profileBanner"
-                    shape="rectangle"
-                    label="Background"
-                    initialImage={initialBgImage}
-                  /> */}
-
-                  <Avatar />
-                  {/* <ImageUploadField
-                    control={form.control}
-                    name="avatar"
-                    shape="circle"
-                    label="Foto Profil"
-                    initialImage={initialAvatarImage}
-                  /> */}
+                  <ProfileBanner />
+                  <ProfileAvatar />
 
                   <Form {...form}>
-                    <pre>{JSON.stringify(form.formState.errors, null, 3)}</pre>
-
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                       <div className="flex flex-col gap-6">
                         {/* Row 1 */}
@@ -225,14 +177,22 @@ export default function UserProfilePage() {
                             name="username"
                             label="Username"
                             placeholder="Masukan username"
+                            disabled
                           />
-
                           {/* Role */}
-                          <SimpleField
+                          <SelectField
                             control={form.control}
                             name="role"
                             label="Role"
-                            placeholder="Masukan role"
+                            placeholder="Pilih role"
+                            icon={ShieldUser}
+                            options={[
+                              {
+                                value: "Administrator",
+                                label: "Administrator",
+                              },
+                              { value: "User", label: "User" },
+                            ]}
                             disabled
                           />
                         </div>
@@ -240,11 +200,40 @@ export default function UserProfilePage() {
                         {/* Row 4 */}
                         <div className="grid gap-3">
                           {/* Password */}
-                          <SimpleField
+                          <FormField
                             control={form.control}
-                            name="newPassword"
-                            label="Password Baru"
-                            placeholder="Masukan password baru"
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Password Baru</FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      type={showPassword ? "text" : "password"}
+                                      placeholder="Masukan password baru"
+                                      className="rounded-xs"
+                                      {...field}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="link"
+                                      size="icon"
+                                      className="absolute right-2 top-1/2 -translate-y-1/2"
+                                      onClick={() =>
+                                        setShowPassword(!showPassword)
+                                      }
+                                    >
+                                      {showPassword ? (
+                                        <EyeOffIcon className="size-5" />
+                                      ) : (
+                                        <EyeIcon className="size-5" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
 
@@ -293,7 +282,7 @@ export default function UserProfilePage() {
                               Loading...
                             </>
                           ) : (
-                            "Perbarui"
+                            "Perbarui Pengguna"
                           )}
                         </Button>
                       </div>
@@ -306,106 +295,5 @@ export default function UserProfilePage() {
         </>
       )}
     </>
-  );
-}
-
-function ProfileBg() {
-  const [{ files }, { removeFile, openFileDialog, getInputProps }] =
-    useFileUpload({
-      accept: "image/*",
-      initialFiles: initialBgImage,
-    });
-
-  const currentImage = files[0]?.preview || null;
-
-  return (
-    <div className="h-44">
-      <div className="bg-black/10 border-b-2 border-black/10 relative size-full flex items-center justify-center overflow-hidden">
-        {currentImage && (
-          <img
-            className="size-full object-cover"
-            src={currentImage}
-            alt={
-              files[0]?.preview
-                ? "Preview of uploaded image"
-                : "Default profile background"
-            }
-            width={512}
-            height={96}
-          />
-        )}
-        <div className="absolute inset-0 flex items-center justify-center gap-3">
-          <button
-            type="button"
-            className="focus-visible:border-ring focus-visible:ring-ring/50 z-50 flex size-10 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white transition-[color,box-shadow] outline-none hover:bg-black/70 focus-visible:ring-[3px]"
-            onClick={openFileDialog}
-            aria-label={currentImage ? "Change image" : "Upload image"}
-          >
-            <ImagePlusIcon size={16} aria-hidden="true" />
-          </button>
-
-          {currentImage && (
-            <button
-              type="button"
-              className="focus-visible:border-ring focus-visible:ring-ring/50 z-50 flex size-10 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white transition-[color,box-shadow] outline-none hover:bg-black/70 focus-visible:ring-[3px]"
-              onClick={() => removeFile(files[0]?.id)}
-              aria-label="Remove image"
-            >
-              <XIcon size={16} aria-hidden="true" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      <input
-        {...getInputProps()}
-        className="sr-only"
-        aria-label="Upload image file"
-      />
-    </div>
-  );
-}
-
-function Avatar() {
-  const [{ files }, { openFileDialog, getInputProps }] = useFileUpload({
-    accept: "image/*",
-    initialFiles: initialAvatarImage,
-  });
-
-  const currentImage = files[0]?.preview || null;
-
-  return (
-    <div className="-mt-12 px-6">
-      <div className="border-black/10 bg-muted relative size-24 flex items-center justify-center overflow-hidden rounded-full border-3 shadow-xs shadow-black/10">
-        {currentImage && (
-          <img
-            src={currentImage}
-            className="size-full object-cover"
-            width={80}
-            height={80}
-            alt={
-              files[0]?.preview
-                ? "Preview of uploaded profile image"
-                : "Default profile image"
-            }
-          />
-        )}
-
-        <button
-          type="button"
-          className="focus-visible:border-ring focus-visible:ring-ring/50 absolute flex size-10 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white transition-[color,box-shadow] outline-none hover:bg-black/70 focus-visible:ring-[3px]"
-          onClick={openFileDialog}
-          aria-label="Change profile picture"
-        >
-          <ImagePlusIcon size={16} aria-hidden="true" />
-        </button>
-
-        <input
-          {...getInputProps()}
-          className="sr-only"
-          aria-label="Upload profile picture"
-        />
-      </div>
-    </div>
   );
 }

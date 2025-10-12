@@ -366,14 +366,13 @@ export function DataTable<TData, TValue>({
                     data-state={row.getIsSelected() && "selected"}
                     className={`cursor-pointer ${rowClass}`}
                     onClick={() => {
-                      if (!location.pathname.includes("user-management")) {
-                        navigate(
-                          `edit/${
-                            row.original.reservationNumber ||
-                            row.original.recapNumber
-                          }`
-                        );
-                      }
+                      navigate(
+                        `edit/${
+                          row.original.username ||
+                          row.original.reservationNumber ||
+                          row.original.recapNumber
+                        }`
+                      );
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (

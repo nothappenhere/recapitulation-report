@@ -83,20 +83,40 @@ export const updateUserByUsername = async (req, res) => {
     // Update field-field lain (selain password)
     const updateFields = { ...req.validatedData };
 
-    // Jika kolom password baru diisi (tidak kosong), hash dan update
+    // Periksa apakah NIP diubah
     if (
-      req.validatedData.newPassword &&
-      req.validatedData.newPassword.trim() !== ""
+      updateFields.NIP && // hanya jika user mengisi NIP di body
+      updateFields.NIP !== user.NIP // dan nilainya berbeda dari yang lama
     ) {
-      const hashedPassword = await bcrypt.hash(
-        req.validatedData.newPassword,
-        10
-      );
-      updateFields.password = hashedPassword;
+      // Cek apakah NIP baru sudah digunakan oleh pengguna lain
+      const nipExists = await User.findOne({
+        NIP: updateFields.NIP,
+        username: { $ne: username }, // pastikan bukan user yang sedang diedit
+      });
+
+      if (nipExists) {
+        return sendResponse(
+          res,
+          400,
+          false,
+          `Pengguna dengan NIP ${updateFields.NIP} telah terdaftar`
+        );
+      }
+
+      // Jika belum digunakan, maka NIP lama akan digantikan otomatis nanti oleh Object.assign
     } else {
-      // Jika tidak diisi, hapus password dari update
-      delete updateFields.password;
+      // Jika NIP tidak diubah, hapus dari updateFields agar tidak ditimpa
+      delete updateFields.NIP;
     }
+
+    // Tangani perubahan password
+    if (updateFields.newPassword && updateFields.newPassword.trim() !== "") {
+      const hashedPassword = await bcrypt.hash(updateFields.newPassword, 10);
+      updateFields.password = hashedPassword;
+    }
+
+    // Jangan sertakan field `newPassword` ke database
+    delete updateFields.newPassword;
 
     // Lakukan update
     Object.assign(user, updateFields);
