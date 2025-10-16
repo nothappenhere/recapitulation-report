@@ -83,7 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <img src="/img/logo-mg.png" alt="Logo Museum Geologi" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">GeoTicketing</span>
+                  <span className="font-medium">GeoVisit</span>
                   <span className="text-xs">
                     {capitalizeFirstLetter(user?.position || "Guest")}
                   </span>

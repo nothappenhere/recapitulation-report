@@ -37,7 +37,7 @@ export default function ResetPasswordPage({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  setTitle("Reset Password - GeoTicketing");
+  setTitle("Reset Password - GeoVisit");
 
   const [showPassword, setShowPassword] = useState(false);
   const [accountExist, setAccountExist] = useState(false);

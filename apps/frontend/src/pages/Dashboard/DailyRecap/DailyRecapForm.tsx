@@ -213,7 +213,7 @@ export default function DailyRecapForm() {
               <CardDescription>
                 {isEditMode
                   ? ` Ubah detail rekap harian dengan kode: ${uniqueCode}`
-                  : " Isi formulir di bawah untuk mencatat rekap harian."}
+                  : " Isi formulir di bawah untuk mencatat rekap harian baru."}
               </CardDescription>
 
               <CardAction className="flex gap-2">

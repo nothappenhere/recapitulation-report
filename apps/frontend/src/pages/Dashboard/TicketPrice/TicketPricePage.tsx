@@ -12,7 +12,7 @@ import { RefreshCw, TicketIcon } from "lucide-react";
 import type { TicketPriceFullTypes } from "@rzkyakbr/types";
 
 export default function TicketPricePage() {
-  setTitle("Ticket Price - GeoTicketing");
+  setTitle("Ticket Price - GeoVisit");
 
   const [data, setData] = useState<TicketPriceFullTypes[]>([]);
   const [selectedItem, setSelectedItem] = useState<TicketPriceFullTypes | null>(

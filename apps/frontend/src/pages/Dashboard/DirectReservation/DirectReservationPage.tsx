@@ -15,7 +15,7 @@ type ExportColumn<T> = {
 };
 
 export default function DirectReservationPage() {
-  setTitle("Direct Reservation - GeoTicketing");
+  setTitle("Direct Reservation - GeoVisit");
 
   const [data, setData] = useState<DirectReservationFullTypes[]>([]);
   const [selectedItem, setSelectedItem] =

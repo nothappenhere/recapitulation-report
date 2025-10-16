@@ -15,7 +15,7 @@ type ExportColumn<T> = {
 };
 
 export default function DailyRecapPage() {
-  setTitle("Daily Recap - GeoTicketing");
+  setTitle("Daily Recap - GeoVisit");
 
   const [data, setData] = useState<DailyRecapFullTypes[]>([]);
   const [selectedItem, setSelectedItem] = useState<DailyRecapFullTypes | null>(

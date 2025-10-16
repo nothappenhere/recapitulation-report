@@ -39,7 +39,7 @@ import ProfileBanner from "@/components/ProfileBanner";
 import ProfileAvatar from "@/components/ProfileAvatar";
 
 export default function UserProfilePage() {
-  setTitle("User Profile - GeoTicketing");
+  setTitle("User Profile - GeoVisit");
 
   const { username } = useParams();
   const navigate = useNavigate();

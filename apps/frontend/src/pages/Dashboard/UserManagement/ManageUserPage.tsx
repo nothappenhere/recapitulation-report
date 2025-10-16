@@ -16,7 +16,7 @@ type ExportColumn<T> = {
 };
 
 export default function ManageUserPage() {
-  setTitle("User Management - GeoTicketing");
+  setTitle("User Management - GeoVisit");
 
   const [data, setData] = useState<UserFullTypes[]>([]);
   const [selectedItem, setSelectedItem] = useState<UserFullTypes | null>(null);

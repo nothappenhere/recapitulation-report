@@ -15,7 +15,7 @@ type ExportColumn<T> = {
 };
 
 export default function CustomReservationPage() {
-  setTitle("Custom Reservation - GeoTicketing");
+  setTitle("Custom Reservation - GeoVisit");
 
   const [data, setData] = useState<CustomReservationFullTypes[]>([]);
   const [selectedItem, setSelectedItem] =

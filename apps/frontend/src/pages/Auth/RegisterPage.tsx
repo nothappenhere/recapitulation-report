@@ -29,7 +29,7 @@ export default function RegisterPage({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  setTitle("Register - GeoTicketing");
+  setTitle("Register - GeoVisit");
 
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();

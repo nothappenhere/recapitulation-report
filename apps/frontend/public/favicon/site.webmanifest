@@ -1,6 +1,6 @@
 {
-  "name": "GeoTicket",
-  "short_name": "GeoTicket",
+  "name": "GeoVisit",
+  "short_name": "GeoVisit",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

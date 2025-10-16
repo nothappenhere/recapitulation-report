@@ -9,7 +9,7 @@ import { type AxiosError } from "axios";
 import toast from "react-hot-toast";
 
 export default function CalendarEventPage() {
-  setTitle("Calendar Event - GeoTicketing");
+  setTitle("Calendar Event - GeoVisit");
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
