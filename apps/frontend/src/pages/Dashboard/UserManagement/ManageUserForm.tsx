@@ -48,6 +48,7 @@ import { SelectField } from "@/components/form/SelectField";
 import { Input } from "@/components/ui/input";
 import ProfileBanner from "@/components/ProfileBanner";
 import ProfileAvatar from "@/components/ProfileAvatar";
+import { useUser } from "@/hooks/use-user-context";
 
 export default function ManageUserForm() {
   const { username } = useParams();
@@ -57,6 +58,13 @@ export default function ManageUserForm() {
   const [isDeleteOpen, setDeleteOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [biography, setBiography] = useState("");
+
+  const { user } = useUser();
+  const role = user?.role || null;
+  if (role !== "Administrator") {
+    toast.error("Anda tidak memiliki akses untuk mengunjungi halaman ini.");
+    navigate("/dashboard", { replace: true });
+  }
 
   type FormValues = TUserUpdate | TRegister;
   const form = useForm<FormValues>({

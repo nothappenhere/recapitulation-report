@@ -2,7 +2,7 @@ const FormSkeleton = () => {
   return (
     <div className="flex justify-center items-center mt-16 transition-opacity duration-300">
       <div className="w-full max-w-sm bg-muted">
-        <div className="animate-pulse rounded-md border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 shadow-lg">
+        <div className="animate-pulse rounded-md border border-neutral-200 dark:border-neutral-700 shadow-lg">
           {/* Header */}
           <div className="p-4">
             <div className="h-6 bg-neutral-300 dark:bg-neutral-700 rounded w-1/2 mb-3"></div>

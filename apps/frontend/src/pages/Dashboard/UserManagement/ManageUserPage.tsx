@@ -8,6 +8,8 @@ import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
 import type { TUserUpdate } from "@rzkyakbr/schemas";
+import { useUser } from "@/hooks/use-user-context";
+import { useNavigate } from "react-router";
 
 type ExportColumn<T> = {
   key: keyof T;
@@ -22,6 +24,14 @@ export default function ManageUserPage() {
   const [selectedItem, setSelectedItem] = useState<UserFullTypes | null>(null);
   const [loading, setLoading] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const { user } = useUser();
+  const role = user?.role || null;
+  if (role !== "Administrator") {
+    toast.error("Anda tidak memiliki akses untuk mengunjungi halaman ini.");
+    navigate("/dashboard", { replace: true });
+  }
 
   //* Fetch data for displaying table
   const fetchUsers = useCallback(async () => {

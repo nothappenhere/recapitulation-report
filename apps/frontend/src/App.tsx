@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
+// Index Page
+import Index from "./pages/Index";
 // Auth Page
 import LoginPage from "./pages/Auth/LoginPage";
 import RegisterPage from "./pages/Auth/RegisterPage";
@@ -37,18 +39,23 @@ import CustomReservationPrintPage from "./pages/Dashboard/CustomReservation/Cust
 // Rekapitulasi Harian
 import DailyRecapPage from "./pages/Dashboard/DailyRecap/DailyRecapPage";
 import DailyRecapForm from "./pages/Dashboard/DailyRecap/DailyRecapForm";
+import NotFound from "./components/NotFound";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/">
-          <Route index element={<Navigate to="/auth/login" replace />} />
-          <Route path="/auth/login" element={<LoginPage />} />
-          <Route path="/auth/register" element={<RegisterPage />} />
-          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/" element={<Index />} />
+
+        {/* Authentication */}
+        <Route path="/auth">
+          <Route index element={<Navigate to="login" replace />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="reset-password" element={<ResetPasswordPage />} />
         </Route>
 
+        {/* Kunjungan */}
         <Route path="/visit">
           <Route index element={<Navigate to="direct" replace />} />
 
@@ -71,9 +78,12 @@ function App() {
           </Route>
         </Route>
 
+        {/* Dashboard */}
         <Route path="/dashboard" element={<DashboardPage />}>
           <Route index element={<Navigate to="calendar" replace />} />
           <Route path="calendar" element={<CalendarEventPage />} />
+
+          {/* Profile Pengguna */}
           <Route path="profile">
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path=":username" element={<UserProfilePage />} />
@@ -183,7 +193,11 @@ function App() {
             />
             <Route path="edit/:uniqueCode" element={<DailyRecapForm />} />
           </Route>
+
+          <Route path="*" element={<NotFound />} />
         </Route>
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

@@ -2,13 +2,21 @@ import { api, setTitle } from "@rzkyakbr/libs";
 import toast from "react-hot-toast";
 import { useCallback, useEffect, useState } from "react";
 import { TicketPriceCard } from "./TicketPriceCard";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
 import { type AxiosError } from "axios";
 import { useUser } from "@/hooks/use-user-context";
 import AlertDelete from "@/components/AlertDelete";
 import CardSkeleton from "@/components/skeleton/CardSkeleton";
-import { RefreshCw, TicketIcon } from "lucide-react";
+import { ArrowUpRightIcon, RefreshCw, TicketIcon } from "lucide-react";
 import type { TicketPriceFullTypes } from "@rzkyakbr/types";
 
 export default function TicketPricePage() {
@@ -70,7 +78,7 @@ export default function TicketPricePage() {
 
   return (
     <>
-      {loading ? (
+      {loading && data.length > 0 ? (
         <CardSkeleton />
       ) : (
         <div className="flex flex-1 flex-col">
@@ -95,41 +103,46 @@ export default function TicketPricePage() {
                 role === "Administrator" ? (
                   <>
                     {/* Teks dan tombol untuk admin */}
-                    <div className="flex flex-col items-center justify-center py-16 space-y-2.5 max-w-md mx-auto text-center">
-                      <div className="bg-primary/10 rounded-full p-7">
-                        <TicketIcon className="size-10" />
-                      </div>
-                      <h3 className="text-xl font-bold">
-                        Tidak ada daftar harga tiket.
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Siap untuk mengatur harga tiket Museum Geologi? Buat
-                        data pertama untuk memulai.
-                      </p>
-                      <Button asChild>
-                        <Link to="add">Tambah Harga Tiket</Link>
-                      </Button>
-                    </div>
+                    <Empty className="mt-16">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <TicketIcon />
+                        </EmptyMedia>
+                        <EmptyTitle> Tidak ada daftar harga tiket.</EmptyTitle>
+                        <EmptyDescription>
+                          Siap untuk mengatur harga tiket kunjungan ke Museum
+                          Geologi? Buat data pertama untuk memulai.
+                        </EmptyDescription>
+                      </EmptyHeader>
+                      <EmptyContent>
+                        <Button
+                          variant="link"
+                          asChild
+                          className="text-muted-foreground"
+                          size="sm"
+                        >
+                          <Link to="add">
+                            Tambah Harga Tiket <ArrowUpRightIcon />
+                          </Link>
+                        </Button>
+                      </EmptyContent>
+                    </Empty>
                   </>
                 ) : (
                   <>
                     {/* Teks dan tombol untuk user biasa */}
-                    <div className="flex flex-col items-center justify-center py-16 space-y-2.5 max-w-md mx-auto text-center">
-                      <div className="bg-primary/10 rounded-full p-7">
-                        <TicketIcon className="size-10" />
-                      </div>
-                      <h3 className="text-xl font-bold">
-                        Tidak ada daftar harga tiket.
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Anda tidak memiliki akses untuk menambahkan harga tiket.
-                        Silakan hubungi Administrator jika diperlukan.
-                      </p>
-                      <Button onClick={fetchTicketPrices}>
-                        <RefreshCw className="mt-0.5" />
-                        Refresh
-                      </Button>
-                    </div>
+                    <Empty className="mt-16">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <TicketIcon />
+                        </EmptyMedia>
+                        <EmptyTitle> Tidak ada daftar harga tiket.</EmptyTitle>
+                        <EmptyDescription>
+                          Anda tidak memiliki akses untuk menambahkan harga
+                          tiket. Silakan hubungi Administrator jika diperlukan.
+                        </EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
                   </>
                 )
               ) : data.length > 0 && data.length < 4 ? (
