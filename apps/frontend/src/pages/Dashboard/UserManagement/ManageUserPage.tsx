@@ -7,7 +7,6 @@ import { DataTable } from "@/components/table/data-table";
 import { type AxiosError } from "axios";
 import AlertDelete from "@/components/AlertDelete";
 import TableSkeleton from "@/components/skeleton/TableSkeleton";
-import type { TUserUpdate } from "@rzkyakbr/schemas";
 import { useUser } from "@/hooks/use-user-context";
 import { useNavigate } from "react-router";
 
@@ -57,7 +56,7 @@ export default function ManageUserPage() {
 
   //* Conduct a poll
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     const startPolling = () => {
       fetchUsers(); // langsung fetch begitu tab aktif
@@ -90,40 +89,6 @@ export default function ManageUserPage() {
     };
   }, [fetchUsers]);
 
-  //* Update handler: update data after confirmation
-  const handleSaveEdit = useCallback(
-    async (formData: TUserUpdate) => {
-      if (!selectedItem) return;
-      setLoading(true);
-
-      try {
-        const res = await api.put(
-          `/user-manage/${selectedItem.username}`,
-          formData
-        );
-        toast.success(`${res.data.message}.`);
-        fetchUsers();
-      } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        const message = error.response?.data?.message
-          ? `${error.response.data.message}!`
-          : "Terjadi kesalahan saat menyimpan data, silakan coba lagi.";
-        toast.error(message);
-      } finally {
-        setEditOpen(false);
-        setSelectedItem(null);
-        setLoading(false);
-      }
-    },
-    [selectedItem, fetchUsers]
-  );
-
-  //* Handler when the Edit button is clicked (display dialog)
-  const handleEditClick = useCallback((item: UserFullTypes) => {
-    setSelectedItem(item);
-    setEditOpen(true);
-  }, []);
-
   //* Delete handler: delete data after confirmation
   const confirmDelete = useCallback(async () => {
     if (!selectedItem) return;
@@ -153,7 +118,7 @@ export default function ManageUserPage() {
   }, []);
 
   //* Operate to the column
-  const columns = useUserColumns(handleDeleteClick, handleEditClick);
+  const columns = useUserColumns(handleDeleteClick);
 
   const exportColumns: ExportColumn<UserFullTypes>[] = [
     { key: "NIP", header: "Nomor Induk Pegawai" },
@@ -174,7 +139,7 @@ export default function ManageUserPage() {
         <TableSkeleton />
       ) : (
         <>
-          <DataTable
+          <DataTable<UserFullTypes, unknown>
             columns={columns}
             data={loading ? [] : data}
             addTitle="Tambah Pengguna"

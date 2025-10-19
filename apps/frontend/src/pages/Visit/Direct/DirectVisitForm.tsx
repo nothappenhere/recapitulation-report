@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,7 @@ export default function DirectVisitForm() {
   const isDesktop = useMediaQuery({ minWidth: 1024 });
 
   const form = useForm<TDirectReservation>({
-    resolver: zodResolver(DirectReservation),
+    resolver: zodResolver(DirectReservation) as Resolver<TDirectReservation>,
     defaultValues: defaultDirectReservationFormValues,
   });
 

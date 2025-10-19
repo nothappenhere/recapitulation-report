@@ -6,7 +6,6 @@ type InfoRowProps = {
 export function InfoRow({ label, value }: InfoRowProps) {
   // Match label dalam format: "Bahasa Indonesia (Bahasa Inggris)"
   const match = label.match(/^(.*?)\s*\((.*?)\)$/);
-
   const labelIndo = match ? match[1] : label;
   const labelEng = match ? match[2] : null;
 

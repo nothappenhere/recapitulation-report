@@ -10,7 +10,7 @@ type RadioOption = {
   disabled?: boolean;
 };
 
-type RadioFieldProps<T extends FieldValues> = {
+type RadioFieldProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;

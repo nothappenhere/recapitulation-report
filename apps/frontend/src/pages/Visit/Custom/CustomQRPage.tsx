@@ -37,7 +37,6 @@ export default function CustomQRPage() {
           : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
         toast.error(message);
 
-        // window.location.href = "https://museum.geologi.esdm.go.id/";
         navigate("/visit/custom", { replace: true });
       } finally {
         setLoading(false);

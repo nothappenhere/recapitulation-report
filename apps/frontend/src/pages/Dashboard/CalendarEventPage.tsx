@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { addDays, setHours, setMinutes, subDays } from "date-fns";
 import {
   EventCalendar,
   type CalendarEvent,
@@ -12,17 +11,15 @@ export default function CalendarEventPage() {
   setTitle("Calendar Event - GeoVisit");
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [loading, setLoading] = useState(false);
 
   // TODO: Ambil data dari API
   useEffect(() => {
     async function fetchEvents() {
-      setLoading(true);
       try {
         const res = await api.get("/calendar-event");
         const data = res.data.data;
 
-        const normalized: CalendarEvent[] = data.map((e: any) => ({
+        const normalized: CalendarEvent[] = data.map((e: CalendarEvent) => ({
           _id: e._id,
           title: e.title,
           description: e.description,
@@ -41,8 +38,6 @@ export default function CalendarEventPage() {
           ? `${error.response.data.message}!`
           : "Terjadi kesalahan saat memuat data, silakan coba lagi.";
         toast.error(message);
-      } finally {
-        setLoading(false);
       }
     }
 

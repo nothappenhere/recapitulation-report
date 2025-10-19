@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import type { ReactNode } from "react";
 import { Info } from "lucide-react";
 
-type CheckboxFieldProps<T extends FieldValues> = {
+type CheckboxFieldProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;

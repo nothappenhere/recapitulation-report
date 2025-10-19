@@ -10,7 +10,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
 import {
   Table,
   TableBody,
@@ -38,7 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useLocation, useNavigate } from "react-router";
-import { formatRupiah, slugToTitle } from "@rzkyakbr/libs";
+import { formatRupiah } from "@rzkyakbr/libs";
 import { Label } from "../ui/label";
 import {
   SelectItem,
@@ -55,7 +54,7 @@ import { id } from "date-fns/locale";
 interface ExportColumnsProps {
   key: string;
   header: string;
-  type: string;
+  type?: string;
 }
 
 interface DataTableProps<TData, TValue> {
@@ -68,7 +67,10 @@ interface DataTableProps<TData, TValue> {
   exportColumns?: ExportColumnsProps[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<
+  TData extends Record<string, any>,
+  TValue
+>({
   columns,
   data,
   addTitle,
@@ -132,9 +134,10 @@ export function DataTable<TData, TValue>({
     // 3. Tambahkan data dengan format
     rows.forEach((item) => {
       const rowData: Record<string, unknown> = {};
+      const typedItem = item as Record<string, any>;
 
       exportColumns.forEach((col) => {
-        let value = item[col.key];
+        let value = typedItem[col.key];
 
         // Format khusus
         switch (col.type) {
@@ -445,7 +448,7 @@ export function DataTable<TData, TValue>({
                     );
                   }
 
-                  if (idx < colSpan) return null;
+                  if (idx < (colSpan ?? 0)) return null;
 
                   return <TableCell key={column.id}>&ndash;</TableCell>;
                 })}

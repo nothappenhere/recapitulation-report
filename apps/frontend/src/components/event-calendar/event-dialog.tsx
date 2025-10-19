@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { ClockIcon, Loader2, Trash2 } from "lucide-react";
@@ -45,7 +45,7 @@ export function EventDialog({
   onDelete,
 }: EventDialogProps) {
   const form = useForm<TCalendarEvent>({
-    resolver: zodResolver(CalendarEventSchema),
+    resolver: zodResolver(CalendarEventSchema) as Resolver<TCalendarEvent>,
     defaultValues: defaultCalendarEventFormValues,
   });
 
@@ -61,12 +61,16 @@ export function EventDialog({
     if (event) {
       const formData: TCalendarEvent = {
         ...event,
+        description: event.description ?? "",
+        location: event.location ?? "",
+        allDay: event.allDay ?? false,
         startDate: new Date(event.startDate),
         endDate: new Date(event.endDate),
         startHour: event.startHour,
         endHour: event.endHour,
         color: event.color as EventColor,
       };
+
       form.reset(formData);
     } else {
       form.reset();

@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import * as React from "react";
 import { Info } from "lucide-react";
 
-type SimpleFieldProps<T extends FieldValues> = {
+type SimpleFieldProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: Path<T>;
   label: string;
@@ -30,7 +30,7 @@ type SimpleFieldProps<T extends FieldValues> = {
   /** untuk formatting tampilan value (misal Rupiah) */
   valueFormatter?: (value: any) => string;
   /** bisa Input, Textarea, Select, dll. */
-  component?: React.ReactElement;
+  component?: React.ReactElement<any>;
   /** override onChange (misal handle rupiah -> angka) */
   onChangeOverride?: (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -76,13 +76,13 @@ export function SimpleField<T extends FieldValues>({
           </div>
           <FormControl>
             {component ? (
-              React.cloneElement(component, {
-                placeholder: placeholder,
+              React.cloneElement<any>(component, {
+                placeholder,
                 ...field,
-                onChange: (value: any) =>
+                onChange: (e: any) =>
                   onChangeOverride
-                    ? onChangeOverride(value, field)
-                    : field.onChange(value),
+                    ? onChangeOverride(e, field)
+                    : field.onChange(e),
               })
             ) : (
               <Input

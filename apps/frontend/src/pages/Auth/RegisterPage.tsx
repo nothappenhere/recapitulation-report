@@ -7,7 +7,7 @@ import { useState } from "react";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { api, setTitle } from "@rzkyakbr/libs";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -35,7 +35,7 @@ export default function RegisterPage({
   const navigate = useNavigate();
 
   const form = useForm<TRegister>({
-    resolver: zodResolver(RegisterSchema),
+    resolver: zodResolver(RegisterSchema) as Resolver<TRegister>,
     defaultValues: defaultRegisterFormValues,
   });
 

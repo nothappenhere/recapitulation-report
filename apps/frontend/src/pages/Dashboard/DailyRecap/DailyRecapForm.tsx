@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ export default function DailyRecapForm() {
   const Agent = user?._id || null;
 
   const form = useForm<TDailyRecap>({
-    resolver: zodResolver(DailyRecapSchema),
+    resolver: zodResolver(DailyRecapSchema) as Resolver<TDailyRecap>,
     defaultValues: defaultDailyRecapFormValues,
   });
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -68,7 +68,9 @@ export default function ManageUserForm() {
 
   type FormValues = TUserUpdate | TRegister;
   const form = useForm<FormValues>({
-    resolver: zodResolver(isEditMode ? UserUpdateSchema : RegisterSchema),
+    resolver: zodResolver(
+      isEditMode ? UserUpdateSchema : RegisterSchema
+    ) as Resolver<FormValues>,
     defaultValues: isEditMode
       ? defaultUserUpdateFormValues
       : defaultRegisterFormValues,

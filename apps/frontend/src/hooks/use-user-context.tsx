@@ -12,7 +12,8 @@ type User = {
   fullName: string;
   username: string;
   role: string;
-  avatar?: string;
+  profileAvatar?: string;
+  profileBanner?: string;
 };
 
 type UserContextType = {

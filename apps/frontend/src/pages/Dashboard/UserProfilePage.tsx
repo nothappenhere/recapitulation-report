@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -47,10 +47,10 @@ export default function UserProfilePage() {
   const [showPassword, setShowPassword] = useState(false);
   const [biography, setBiography] = useState("");
 
-  const { setUser } = useUser();
+  const { user: prevUser, setUser } = useUser();
 
   const form = useForm<TUserUpdate>({
-    resolver: zodResolver(UserUpdateSchema),
+    resolver: zodResolver(UserUpdateSchema) as Resolver<TUserUpdate>,
     defaultValues: defaultUserUpdateFormValues,
   });
 
@@ -102,10 +102,7 @@ export default function UserProfilePage() {
 
       // Update data global user jika yang sedang login adalah user yang diubah
       const updatedUser = res.data?.data || values;
-      setUser((prev: any) => ({
-        ...prev!,
-        ...updatedUser, // gabungkan dengan data baru
-      }));
+      setUser({ ...prevUser, ...updatedUser });
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       const message = error.response?.data?.message
@@ -202,7 +199,7 @@ export default function UserProfilePage() {
                           {/* Password */}
                           <FormField
                             control={form.control}
-                            name="password"
+                            name="newPassword"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Password Baru</FormLabel>

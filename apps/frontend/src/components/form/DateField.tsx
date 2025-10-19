@@ -17,7 +17,7 @@ import { id } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { type ReactNode } from "react";
 
-type DateFieldProps<T extends FieldValues> = {
+type DateFieldProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;

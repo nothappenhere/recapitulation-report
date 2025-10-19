@@ -7,9 +7,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      // "@schemas/*": ["./schemas/*"]
+      "@/*": ["./src/*"]
     }
-  },
-  "include": ["src", "../schemas"]
+  }
+  // "include": ["src/**/*", "src/types/**/*"]
 }

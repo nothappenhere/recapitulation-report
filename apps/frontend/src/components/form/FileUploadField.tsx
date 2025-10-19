@@ -35,7 +35,7 @@ import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
 
-type FileUploadFieldProps<T extends FieldValues> = {
+type FileUploadFieldProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: Path<T>;
   label?: string;
@@ -108,7 +108,7 @@ export function FileUploadField<T extends FieldValues>({
     <Controller
       control={control}
       name={name}
-      render={({ field, fieldState }) => {
+      render={({ fieldState }) => {
         const [uploadProgress, setUploadProgress] = useState<
           { fileId: string; progress: number; completed: boolean }[]
         >([]);
@@ -133,7 +133,9 @@ export function FileUploadField<T extends FieldValues>({
           initialFiles,
           onFilesChange: (newFiles) => {
             const actualFiles = newFiles.map((f) => f.file);
-            setValue(name, actualFiles, { shouldValidate: true });
+            setValue(name as Path<T>, actualFiles as any, {
+              shouldValidate: true,
+            });
 
             // Tambah tracking upload progress
             const newProgressItems = newFiles.map((f) => ({
@@ -432,7 +434,7 @@ const simulateUpload = (
   onProgress: (progress: number) => void,
   onComplete: () => void
 ) => {
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: ReturnType<typeof setInterval>;
   let uploadedBytes = 0;
   let lastProgressReport = 0;
 

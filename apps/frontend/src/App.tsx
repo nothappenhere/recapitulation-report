@@ -17,10 +17,10 @@ import CustomQRPage from "./pages/Visit/Custom/CustomQRPage";
 // Dashboard
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import CalendarEventPage from "./pages/Dashboard/CalendarEventPage";
-import UserProfileForm from "./pages/Dashboard/UserManagement/ManageUserForm";
+import UserProfilePage from "./pages/Dashboard/UserProfilePage";
 // Pengelolaan Pengguna
 import ManageUserPage from "./pages/Dashboard/UserManagement/ManageUserPage";
-import UserProfilePage from "./pages/Dashboard/UserProfilePage";
+import ManageUserForm from "./pages/Dashboard/UserManagement/ManageUserForm";
 // Harga Tiket
 import TicketPricePage from "./pages/Dashboard/TicketPrice/TicketPricePage";
 import TicketPriceForm from "./pages/Dashboard/TicketPrice/TicketPriceForm";
@@ -47,7 +47,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
 
-        {/* Authentication */}
+        {/* Auth Page */}
         <Route path="/auth">
           <Route index element={<Navigate to="login" replace />} />
           <Route path="login" element={<LoginPage />} />
@@ -55,7 +55,7 @@ function App() {
           <Route path="reset-password" element={<ResetPasswordPage />} />
         </Route>
 
-        {/* Kunjungan */}
+        {/* Visit Page */}
         <Route path="/visit">
           <Route index element={<Navigate to="direct" replace />} />
 
@@ -92,13 +92,13 @@ function App() {
           {/* Pengelolaan Pengguna */}
           <Route path="user-management">
             <Route index element={<ManageUserPage />} />
-            <Route path="add" element={<UserProfileForm />} />
+            <Route path="add" element={<ManageUserForm />} />
 
             <Route
               path="edit"
               element={<Navigate to="/dashboard/user-management" replace />}
             />
-            <Route path="edit/:username" element={<UserProfileForm />} />
+            <Route path="edit/:username" element={<ManageUserForm />} />
           </Route>
 
           {/* Harga Tiket */}

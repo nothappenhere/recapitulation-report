@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,10 @@ export default function CustomVisitForm() {
   const isDesktop = useMediaQuery({ minWidth: 1024 });
 
   const form = useForm<TCustomReservation>({
-    resolver: zodResolver(CustomReservationSchema),
+    resolver: zodResolver(
+      CustomReservationSchema
+    ) as Resolver<TCustomReservation>,
+
     defaultValues: defaultCustomReservationFormValues,
   });
 
@@ -118,11 +121,8 @@ export default function CustomVisitForm() {
       formData.append("customTotalAmount", String(values.customTotalAmount));
       formData.append("totalPaymentAmount", String(values.totalPaymentAmount));
 
-      if (values.attachments && values.attachments.length > 0) {
-        values.attachments.forEach((file: File) => {
-          formData.append("attachments", file);
-        });
-      }
+      const newFiles = values.attachments.filter((f) => f instanceof File);
+      newFiles.forEach((file) => formData.append("attachments", file));
 
       const res = await api.post("/custom-reservation", formData, {
         headers: {

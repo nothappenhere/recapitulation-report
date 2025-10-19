@@ -11,7 +11,7 @@ type ColorOption = {
   borderClass: string;
 };
 
-type ColorRadioFieldProps<T extends FieldValues> = {
+type ColorRadioFieldProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;

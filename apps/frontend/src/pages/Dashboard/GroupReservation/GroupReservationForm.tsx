@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,9 @@ export default function GroupReservationForm() {
   const Agent = user?._id || null;
 
   const form = useForm<TGroupReservation>({
-    resolver: zodResolver(GroupReservationSchema),
+    resolver: zodResolver(
+      GroupReservationSchema
+    ) as Resolver<TGroupReservation>,
     defaultValues: defaultGroupReservationFormValues,
   });
 

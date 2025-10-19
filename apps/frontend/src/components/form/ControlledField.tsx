@@ -18,7 +18,7 @@ import {
 import { type ReactNode } from "react";
 import { Info } from "lucide-react";
 
-type ControlledFieldProps<T extends FieldValues> = {
+type ControlledFieldProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;

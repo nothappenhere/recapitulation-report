@@ -47,7 +47,7 @@ export default function CustomReservationPage() {
 
   //* Conduct a poll
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     const startPolling = () => {
       fetchReservations(); // langsung fetch begitu tab aktif
@@ -167,7 +167,7 @@ export default function CustomReservationPage() {
         <TableSkeleton />
       ) : (
         <>
-          <DataTable
+          <DataTable<CustomReservationFullTypes, unknown>
             columns={columns}
             data={loading ? [] : data}
             addTitle="Tambah Reservasi"

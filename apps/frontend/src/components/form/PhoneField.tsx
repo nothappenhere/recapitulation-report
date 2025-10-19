@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
 
-type PhoneFieldProps<T extends FieldValues> = {
+type PhoneFieldProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;

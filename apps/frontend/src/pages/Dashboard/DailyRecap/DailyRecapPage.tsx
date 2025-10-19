@@ -48,7 +48,7 @@ export default function DailyRecapPage() {
 
   //* Conduct a poll
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     const startPolling = () => {
       fetchDailyRecaps(); // langsung fetch begitu tab aktif
@@ -154,7 +154,7 @@ export default function DailyRecapPage() {
         <TableSkeleton />
       ) : (
         <>
-          <DataTable
+          <DataTable<DailyRecapFullTypes, unknown>
             columns={columns}
             data={loading ? [] : data}
             addTitle="Tambah Rekap"

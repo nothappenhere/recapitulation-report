@@ -139,7 +139,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               fullName: "Guest",
               username: "guest",
               role: "Guest",
-              avatar: "/img/logo-mg.png",
+              profileAvatar: "/img/logo-mg.png",
+              profileBanner: "/img/bg-education.jpg",
             }
           }
         />

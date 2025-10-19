@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,7 @@ export default function TicketPriceForm() {
   }
 
   const form = useForm<TTicketPrice>({
-    resolver: zodResolver(TicketPriceSchema),
+    resolver: zodResolver(TicketPriceSchema) as Resolver<TTicketPrice>,
     defaultValues: defaultTicketPriceFormValues,
   });
 

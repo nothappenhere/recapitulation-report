@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -78,7 +78,9 @@ export default function CustomReservationForm() {
   const Agent = user?._id || null;
 
   const form = useForm<TCustomReservation>({
-    resolver: zodResolver(CustomReservationSchema),
+    resolver: zodResolver(
+      CustomReservationSchema
+    ) as Resolver<TCustomReservation>,
     defaultValues: defaultCustomReservationFormValues,
   });
 
@@ -229,15 +231,6 @@ export default function CustomReservationForm() {
 
       formData.append("paymentMethod", values.paymentMethod);
       formData.append("statusPayment", values.statusPayment);
-
-      // if (!isEditMode && values.attachments && values.attachments.length > 0) {
-      //   values.attachments.forEach((file: File) => {
-      //     formData.append("attachments", file);
-      //   });
-      // } else {
-      //   const newFiles = values.attachments.filter((f) => f instanceof File);
-      //   newFiles.forEach((file) => formData.append("attachments", file));
-      // }
 
       const newFiles = values.attachments.filter((f) => f instanceof File);
       newFiles.forEach((file) => formData.append("attachments", file));

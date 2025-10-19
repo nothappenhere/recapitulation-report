@@ -15,7 +15,7 @@ import {
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { useId } from "react";
 
-type NumberFieldInputProps<T extends FieldValues> = {
+type NumberFieldInputProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;

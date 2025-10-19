@@ -10,7 +10,7 @@ import {
 import { type ReactNode } from "react";
 import { type LucideIcon } from "lucide-react";
 
-type SelectFieldProps<T extends FieldValues> = {
+type SelectFieldProps<T extends Record<string, any>> = {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;
