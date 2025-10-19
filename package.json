@@ -4,14 +4,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {
-    "dayjs": "^1.11.18",
-    "turbo-windows-64": "^2.5.6"
-  },
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run check-types"
   },
   "packageManager": "npm@10.0.0",
   "workspaces": [
