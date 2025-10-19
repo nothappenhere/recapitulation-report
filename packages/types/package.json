@@ -1,7 +1,7 @@
 {
   "name": "@rzkyakbr/types",
   "version": "1.0.0",
-  "description": "Shared type declaration for frontend & backend",
+  "description": "Shared Type Declaration for frontend & backend",
   "type": "module",
   "private": true,
   "main": "./dist/index.js",

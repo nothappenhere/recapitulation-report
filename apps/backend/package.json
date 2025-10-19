@@ -1,18 +1,18 @@
 {
   "name": "@rzkyakbr/backend",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
+  "type": "module",
+  "description": "Express App fro backend",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
   "dependencies": {
+    "@rzkyakbr/libs": "*",
     "@rzkyakbr/schemas": "*",
+    "@rzkyakbr/types": "*",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

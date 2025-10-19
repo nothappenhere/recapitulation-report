@@ -6,40 +6,37 @@
     "outDir": "./dist",
 
     // Environment Settings
-    // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
-    "target": "esnext",
     "types": [],
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
+    "target": "ES2020", // cukup modern tapi aman
+    "module": "NodeNext", // biar cocok dengan "type": "module" di package.json
+    "moduleResolution": "NodeNext", // resolusi modul modern (ESM + CJS)
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
 
-    // Other Outputs
-    "sourceMap": true,
+    /* Type Declarations */
     "declaration": true,
     "declarationMap": true,
+    "sourceMap": true,
 
-    // Stricter Typechecking Options
+    /* Type Checking */
+    "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
+    "skipLibCheck": true,
 
-    // Style Options
+    /* Module/Import */
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
+
+    /* Optional stricter style checks */
     // "noImplicitReturns": true,
     // "noImplicitOverride": true,
     // "noUnusedLocals": true,
     // "noUnusedParameters": true,
     // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
-    "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
+    // "noPropertyAccessFromIndexSignature": true
   },
-  "include": ["src", "../schemas"]
+  "include": ["src"],
+  "exclude": ["dist", "node_modules"]
 }
