@@ -5,6 +5,7 @@
     "useDefineForClassFields": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
+    "types": ["vite/client"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -23,12 +24,10 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    /*Shadcn config*/
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@schemas/*": ["./schemas/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "schemas"]
+  "include": ["src"]
 }
